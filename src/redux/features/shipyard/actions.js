@@ -20,18 +20,24 @@ import {
   fetchShipyardApi,
   createSYUserApi
 } from 'api/shipyard';
-import { openSnackbar } from 'api/snackbar';
 import { updateUserAPI } from 'api/user';
+import { toast } from 'react-toastify';
 
 const handleError = (dispatch, error, message) => {
   dispatch(requestFailure(error.message));
-  openSnackbar({
-    open: true,
-    message: `${message}: ${error?.response?.data?.error?.message || error.message}`,
-    anchorOrigin: { vertical: 'top', horizontal: 'right' },
-    variant: 'alert',
-    alert: { color: 'error' }
-  });
+  toast.error(
+    error?.response?.data?.message || error?.response?.data?.error?.message || 'Some error occurred while making action on shipyard',
+    {
+      position: 'top-right',
+      autoClose: 5000,
+      hideProgressBar: false,
+      closeOnClick: false,
+      pauseOnHover: true,
+      draggable: true,
+      progress: undefined,
+      theme: 'light'
+    }
+  );
 };
 
 export const fetchShipyards = () => async (dispatch) => {

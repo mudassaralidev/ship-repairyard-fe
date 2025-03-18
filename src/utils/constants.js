@@ -1,4 +1,3 @@
-import { current } from '@reduxjs/toolkit';
 import { useMemo } from 'react';
 
 export const shipyardColumnsWithoutActions = [
@@ -12,23 +11,23 @@ export const shipyardColumnsWithoutActions = [
   },
   {
     header: 'Address',
-    accessorKey: 'location.address'
+    accessorKey: 'address'
   },
   {
     header: 'City',
-    accessorKey: 'location.city'
+    accessorKey: 'city'
   },
   {
     header: 'Country',
-    accessorKey: 'location.country'
+    accessorKey: 'country'
   },
   {
     header: 'Postal Code',
-    accessorKey: 'location.postal_code'
+    accessorKey: 'postal_code'
   },
   {
     header: 'creator',
-    accessorKey: 'creator.name'
+    accessorKey: 'creator'
   }
 ];
 
@@ -48,11 +47,11 @@ export const userTableColumns = (role) => {
     },
     {
       header: 'Role',
-      accessorKey: 'Role.name'
+      accessorKey: 'role.name'
     },
     {
       header: 'Shipyard',
-      accessorKey: 'Shipyard.name'
+      accessorKey: 'shipyard.name'
     }
   ];
   const columnsMapToRoles = {
@@ -61,7 +60,18 @@ export const userTableColumns = (role) => {
       ...commonColumns,
       {
         header: 'Client Name',
-        accessorKey: 'Client.name'
+        accessorKey: 'client.name'
+      }
+    ],
+    deptUsers: [
+      ...commonColumns,
+      {
+        header: 'Department Name',
+        accessorKey: 'department.name'
+      },
+      {
+        header: 'Foreman',
+        accessorKey: 'foreman.name'
       }
     ]
   };
@@ -69,13 +79,43 @@ export const userTableColumns = (role) => {
   return columnsMapToRoles[role] ?? [];
 };
 
-export const getFieldsByRole = ({ role, roles = [], shipyard_id, shipyards = [], dept_id, dropdownDependentData = {} }) => {
-  if (!shipyard_id) return [{ key: 'shipyard_id', label: 'Shipyard', type: 'select', options: shipyards, colVal: 6 }];
+export const departmentColumns = [
+  {
+    header: '#',
+    accessorKey: 'idx'
+  },
+  {
+    header: 'Shipyard Name',
+    accessorKey: 'name'
+  },
+  {
+    header: 'creator',
+    accessorKey: 'creator'
+  },
+  {
+    header: 'Foreman',
+    accessorKey: 'foreman.name'
+  }
+];
 
-  const dependentData = dropdownDependentData[shipyard_id] ?? {};
+export const getFieldsByRole = ({ role, roles = [], shipyard_id, shipyards = [], departments = [] }) => {
+  if (!shipyard_id) return [{ key: 'shipyard_id', label: 'Shipyard', type: 'select', options: shipyards, colVal: 6 }];
 
   const defaultFields = [
     { key: 'shipyard_id', label: 'Shipyard', type: 'select', options: shipyards, colVal: 6 },
+    ...(departments.length > 0
+      ? [
+          {
+            key: 'department_id',
+            label: 'Select Department',
+            type: 'select',
+            options: departments,
+            colVal: 6,
+            placeholder: 'Please select a Department',
+            emptyDataMsg: 'Departments do not exist, please create it.'
+          }
+        ]
+      : []),
     ...(shipyard_id ? [{ key: 'role_id', label: 'Role', type: 'select', options: roles, colVal: 6 }] : [])
   ];
 
@@ -84,78 +124,13 @@ export const getFieldsByRole = ({ role, roles = [], shipyard_id, shipyards = [],
     { key: 'last_name', label: 'Last Name', type: 'text', colVal: 6 }
   ];
 
-  // const formatDepartments = (data) =>
-  //   data.map(({ department_name, department_id }) => ({
-  //     label: department_name,
-  //     value: department_id
-  //   }));
-
-  // const formatForeman = (data) =>
-  //   data
-  //     .filter(({ department_id }) => department_id === dept_id)
-  //     .map(({ foreman_name, foreman_id }) => ({
-  //       label: foreman_name,
-  //       value: foreman_id
-  //     }));
-
-  // const formatClients = (data) =>
-  //   data.map(({ name, id }) => ({
-  //     label: name,
-  //     value: id
-  //   }));
-
   const roleSpecificFields = {
     shared: [
       { key: 'email', label: 'Email', type: 'text', colVal: 6 },
       { key: 'password', label: 'Password', type: 'text', colVal: 6 }
     ],
-
-    SUPERINTENDENT: [
-      // {
-      //   key: 'client_user_id',
-      //   label: 'Select Client User',
-      //   type: 'autocomplete',
-      //   options: formatClients(dependentData.CLIENT || []),
-      //   colVal: 6,
-      //   placeholder: 'Please select a Client User',
-      //   emptyDataMsg: 'Client User does not exist, please create it.'
-      // }
-    ],
-    FOREMAN: [
-      { key: 'email', label: 'Email', type: 'text', colVal: 6 },
-      { key: 'password', label: 'Password', type: 'text', colVal: 6 }
-      // {
-      //   key: 'department_id',
-      //   label: 'Select Department',
-      //   type: 'autocomplete',
-      //   options: formatDepartments(dependentData.FOREMAN || []),
-      //   colVal: 6,
-      //   placeholder: 'Please select a Department',
-      //   emptyDataMsg: 'Departments do not exist, please create it.'
-      // }
-    ],
-    EMPLOYEE: [
-      { key: 'email', label: 'Email', type: 'text', colVal: 6 },
-      { key: 'password', label: 'Password', type: 'text', colVal: 6 }
-      // {
-      //   key: 'department_id',
-      //   label: 'Select Department',
-      //   type: 'autocomplete',
-      //   options: formatDepartments(dependentData.FOREMAN || []),
-      //   colVal: 6,
-      //   placeholder: 'Please select a Department',
-      //   emptyDataMsg: 'Departments do not exist, please create it.'
-      // },
-      // {
-      //   key: 'foreman_id',
-      //   label: 'Select Foreman',
-      //   type: 'autocomplete',
-      //   options: formatForeman(dependentData.FOREMAN || []),
-      //   colVal: 6,
-      //   placeholder: 'Please select a Foreman',
-      //   emptyDataMsg: 'Select/Create Department'
-      // }
-    ],
+    SUPERINTENDENT: [],
+    EMPLOYEE: [],
     CLIENT: []
   };
 
@@ -174,6 +149,8 @@ export const roleBasedUserCreation = (currentUserRole) => {
     const roleUserCreationMap = {
       ADMIN: ['CALCULATOR_ENGINEER', 'DOCKING_MASTER', 'PROJECT_MANAGER'],
       ADMIN_CLIENT: ['CLIENT', 'SUPERINTENDENT'],
+      ADMIN_FOREMAN: ['FOREMAN'],
+      ADMIN_EMP: ['EMPLOYEE'],
       SUPER_ADMIN: ['ADMIN', 'CALCULATOR_ENGINEER', 'DOCKING_MASTER', 'PROJECT_MANAGER'],
       FOREMAN: ['ADMIN', 'SUPER_ADMIN', 'CALCULATOR_ENGINEER', 'DOCKING_MASTER', 'PROJECT_MANAGER', 'SUPERINTENDENT', 'FOREMAN'],
       CALCULATOR_ENGINEER: ['ADMIN', 'SUPER_ADMIN', 'CALCULATOR_ENGINEER', 'DOCKING_MASTER', 'PROJECT_MANAGER', 'SUPERINTENDENT'],

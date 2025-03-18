@@ -57,7 +57,7 @@ const DepartmentModal = ({ open, modalToggler, department, handleUpdateDepartmen
                 }
               }}
             >
-              <DialogTitle>Assign Client</DialogTitle>
+              <DialogTitle>{department ? 'Update Department' : 'Create Department'}</DialogTitle>
               <Divider />
               <DialogContent sx={{ p: 2.5 }}>
                 <TextField fullWidth id="name" placeholder="Enter Department Name" value={name} onChange={(e) => setName(e.target.value)} />
@@ -68,7 +68,7 @@ const DepartmentModal = ({ open, modalToggler, department, handleUpdateDepartmen
                   Cancel
                 </Button>
                 <Button type="submit" variant="contained" disabled={!name} onClick={handleSubmit}>
-                  Add
+                  {department ? 'Update' : 'Add'}
                 </Button>
               </DialogActions>
             </SimpleBar>

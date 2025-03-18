@@ -55,6 +55,7 @@ import AlertUserDelete from 'components/users/AlertDelete';
 import _ from 'lodash';
 import useAuth from 'hooks/useAuth';
 import ClientAssignmentModal from 'components/users/ClientAssignmentModal';
+import { getDepartments } from 'api/department';
 
 export const fuzzyFilter = (row, columnId, value, addMeta) => {
   const itemRank = rankItem(row.getValue(columnId), value);
@@ -163,59 +164,58 @@ function ReactTable({ data, columns, globalFilter, setGlobalFilter }) {
   );
 }
 
-const ManageClientUser = () => {
+const ManageDeptUsers = () => {
   const theme = useTheme();
   const matchDownSM = useMediaQuery(theme.breakpoints.down('sm'));
   const { user } = useAuth();
 
   const dispatch = useDispatch();
   const { shipyard, shipyardUsers: lists, status } = useSelector((state) => state.shipyard);
+  const [departments, setDepartments] = useState([]);
+  const [selectedDepartment, setSelectedDepartment] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   const [open, setOpen] = useState(false);
   const [globalFilter, setGlobalFilter] = useState('');
 
   const [userModal, setUserModal] = useState(false);
+  const [roleMap, setRoleMap] = useState('');
   const [selectedUser, setSelectedUser] = useState(null);
   const [deleteId, setDeleteId] = useState('');
-  const [activeBtn, setActiveBtn] = useState('');
-  const [assignClientModal, setAssignClientModal] = useState(false);
 
-  const userColsWithoutActions = userTableColumns('clientUsers');
+  const userColsWithoutActions = userTableColumns('deptUsers');
 
   const handleClose = () => {
     setOpen(!open);
   };
 
   useEffect(() => {
-    if (user) {
-      dispatch(fetchShipyard(user?.shipyard_id));
-      dispatch(sySpecificUsers({ shipyard_id: user?.shipyard_id, query_params: 'user_types=clients' }));
+    if (!user) return;
+    try {
+      (async () => {
+        dispatch(fetchShipyard(user.shipyard_id));
+        const departments = await getDepartments(user.shipyard_id);
+        setDepartments(departments);
+      })();
+    } catch (error) {
+      console.error('Error occurred while getting departments', error);
+    } finally {
+      setLoading(false);
     }
-  }, [user]);
+  }, [user?.shipyard_id]);
+
+  useEffect(() => {
+    if (!user || !selectedDepartment?.value) return;
+
+    dispatch(
+      sySpecificUsers({ shipyard_id: user?.shipyard_id, query_params: `department_id=${selectedDepartment.value}&user_types=deptMembers` })
+    );
+  }, [selectedDepartment?.value]);
 
   const columns = useMemo(
     () => [
       ...userColsWithoutActions,
-      {
-        header: 'Assign Client',
-        disableSortBy: true,
-        cell: ({ row }) => {
-          return row.original?.role?.name === 'SUPERINTENDENT' ? (
-            <Button
-              variant="text"
-              size="small"
-              onClick={() => {
-                setAssignClientModal(true);
-                setSelectedUser(row.original);
-              }}
-            >
-              {!row.original.client?.name ? 'Assign' : 'Update'}
-            </Button>
-          ) : (
-            <></>
-          );
-        }
-      },
+
       {
         header: 'Actions',
         meta: {
@@ -273,111 +273,113 @@ const ManageClientUser = () => {
           }
         }}
       >
-        Manage Client Users
+        Manage Departmental Users
       </Typography>
       {_.isEmpty(shipyard) ? (
         <></>
       ) : (
         <Grid container spacing={2} sx={{ marginTop: '16px', marginBottom: '8px' }}>
-          <Grid item xs={12} md={6} lg={2}>
-            <FormControl>
-              <InputLabel id="demo-simple-select-helper-label">Shipyard</InputLabel>
-              <Select labelId="demo-simple-select-helper-label" id="demo-simple-select-helper" value={shipyard?.id} label="Shipyard">
-                <MenuItem value={shipyard?.id}>{shipyard?.name}</MenuItem>
-              </Select>
-            </FormControl>
-          </Grid>
-          <Grid item xs={12} md={6}>
-            <Stack direction="row" gap={2}>
-              <Button
-                variant={activeBtn === 'client' ? 'contained' : 'outlined'}
-                onClick={() => {
-                  if (activeBtn === 'client') {
-                    setActiveBtn('');
-                    setGlobalFilter('');
-                    return;
-                  }
-                  setActiveBtn('client');
-                  setGlobalFilter('CLIENT');
-                }}
-              >
-                Clients
-              </Button>
-              <Button
-                variant={activeBtn === 'superintendent' ? 'contained' : 'outlined'}
-                onClick={() => {
-                  if (activeBtn === 'superintendent') {
-                    setActiveBtn('');
-                    setGlobalFilter('');
-                    return;
-                  }
-                  setActiveBtn('superintendent');
-                  setGlobalFilter('SUPERINTENDENT');
-                }}
-              >
-                Superintendents
-              </Button>
+          <Grid item xs={12}>
+            <Stack direction="row" spacing={2} alignItems="center">
+              {/* Shipyard Select */}
+              <FormControl sx={{ minWidth: 200 }}>
+                <InputLabel id="shipyard-select-label">Shipyard</InputLabel>
+                <Select labelId="shipyard-select-label" id="shipyard-select" value={shipyard?.id || ''} label="Shipyard">
+                  <MenuItem value={shipyard?.id}>{shipyard?.name}</MenuItem>
+                </Select>
+              </FormControl>
+
+              {/* Department Autocomplete */}
+              <Autocomplete
+                sx={{ width: 300 }}
+                options={departments.map(({ id, name }) => ({ label: name, value: id }))}
+                isOptionEqualToValue={(option, value) => option.value === value?.value}
+                getOptionLabel={(option) => option.label || ''}
+                onChange={(_, value) => setSelectedDepartment(value)}
+                renderInput={(params) => <TextField {...params} label="Select Department" />}
+              />
+
+              {!lists.some((user) => user.role.name === 'FOREMAN') && !_.isEmpty(selectedDepartment) && (
+                <Button
+                  variant="contained"
+                  onClick={() => {
+                    setRoleMap('ADMIN_FOREMAN');
+                    setUserModal(true);
+                  }}
+                >
+                  Add Foreman
+                </Button>
+              )}
+              {lists.some((user) => user.role.name === 'FOREMAN') && !_.isEmpty(selectedDepartment) && (
+                <Button
+                  variant="contained"
+                  onClick={() => {
+                    setRoleMap('ADMIN_EMP');
+                    setUserModal(true);
+                  }}
+                >
+                  Add Employees
+                </Button>
+              )}
             </Stack>
           </Grid>
         </Grid>
       )}
 
-      <MainCard content={false}>
-        <Stack
-          direction={{ xs: 'column', sm: 'row' }}
-          spacing={2}
-          alignItems="center"
-          justifyContent="space-between"
-          sx={{ padding: 2, ...(matchDownSM && { '& .MuiOutlinedInput-root, & .MuiFormControl-root': { width: '100%' } }) }}
+      {_.isEmpty(selectedDepartment) ? (
+        <Typography
+          variant="body1"
+          sx={{
+            color: 'gray',
+            fontStyle: 'italic',
+            marginTop: '8px'
+          }}
         >
-          <DebouncedInput
-            value={globalFilter ?? ''}
-            onFilterChange={(value) => setGlobalFilter(String(value))}
-            placeholder={`Search ${lists.length} records...`}
-          />
-
-          <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} alignItems="center" sx={{ width: { xs: '100%', sm: 'auto' } }}>
-            <Stack direction="row" spacing={2} alignItems="center">
-              <Button variant="contained" startIcon={<PlusOutlined />} onClick={modalToggler}>
-                Create User
-              </Button>
-            </Stack>
+          Please select a specific Department to list its <strong>USERS</strong>.
+        </Typography>
+      ) : (
+        <MainCard content={false}>
+          <Stack
+            direction={{ xs: 'column', sm: 'row' }}
+            spacing={2}
+            alignItems="center"
+            justifyContent="space-between"
+            sx={{ padding: 2, ...(matchDownSM && { '& .MuiOutlinedInput-root, & .MuiFormControl-root': { width: '100%' } }) }}
+          >
+            <DebouncedInput
+              value={globalFilter ?? ''}
+              onFilterChange={(value) => setGlobalFilter(String(value))}
+              placeholder={`Search ${lists.length} records...`}
+            />
           </Stack>
-        </Stack>
 
-        {status !== 'loading' || lists?.length ? (
-          <ReactTable
-            {...{
-              data: lists,
-              columns,
-              globalFilter,
-              setGlobalFilter
-            }}
-          />
-        ) : (
-          <EmptyReactTable columns={userColsWithoutActions} />
-        )}
-        {open && <AlertUserDelete id={deleteId} title={deleteId} open={open} handleClose={handleClose} />}
-        {userModal && (
-          <UserModal
-            open={userModal}
-            modalToggler={modalToggler}
-            user={selectedUser}
-            shipyard={{ value: shipyard?.id, label: shipyard?.name }}
-            roleMap={'ADMIN_CLIENT'}
-          />
-        )}
-        {assignClientModal && (
-          <ClientAssignmentModal
-            open={assignClientModal}
-            modalToggler={setAssignClientModal}
-            shipyard_id={shipyard.id}
-            user={selectedUser}
-          />
-        )}
-      </MainCard>
+          {loading || lists?.length ? (
+            <ReactTable
+              {...{
+                data: lists,
+                columns,
+                globalFilter,
+                setGlobalFilter
+              }}
+            />
+          ) : (
+            <EmptyReactTable columns={userColsWithoutActions} />
+          )}
+          {open && <AlertUserDelete id={deleteId} title={deleteId} open={open} handleClose={handleClose} />}
+          {userModal && (
+            <UserModal
+              open={userModal}
+              modalToggler={modalToggler}
+              user={selectedUser}
+              shipyard={{ value: shipyard?.id, label: shipyard?.name }}
+              department={selectedDepartment}
+              roleMap={roleMap}
+            />
+          )}
+        </MainCard>
+      )}
     </>
   );
 };
 
-export default ManageClientUser;
+export default ManageDeptUsers;

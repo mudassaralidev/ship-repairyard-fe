@@ -45,6 +45,7 @@ import { DeleteOutlined, EditOutlined, PlusOutlined } from '@ant-design/icons';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchShipyards } from '../../redux/features/shipyard/actions';
 import { shipyardColumnsWithoutActions } from 'utils/constants';
+import UserModal from 'components/users/UserModal';
 
 const avatarImage = require.context('assets/images/users', true);
 
@@ -168,6 +169,7 @@ const ShipyardListPage = () => {
   const [shipyardModal, setShipyardModal] = useState(false);
   const [selectedShipyard, setSelectedShipyard] = useState(null);
   const [deleteId, setDeleteId] = useState('');
+  const [userModal, setUserModal] = useState(false);
 
   const handleClose = () => {
     setOpen(!open);
@@ -193,8 +195,9 @@ const ShipyardListPage = () => {
                 <IconButton
                   color="primary"
                   onClick={(e) => {
+                    const { id, name, address, city, state, postal_code, country } = row.original;
                     e.stopPropagation();
-                    setSelectedShipyard(row.original);
+                    setSelectedShipyard({ id, name, location: { address, city, state, postal_code, country } });
                     setShipyardModal(true);
                   }}
                 >
@@ -213,6 +216,16 @@ const ShipyardListPage = () => {
                   <DeleteOutlined />
                 </IconButton>
               </Tooltip>
+              <Button
+                size="sm"
+                variant="outlined"
+                onClick={() => {
+                  setSelectedShipyard({ label: row.original.name, value: row.original.id });
+                  setUserModal(true);
+                }}
+              >
+                Add User
+              </Button>
             </Stack>
           );
         }
@@ -264,6 +277,7 @@ const ShipyardListPage = () => {
       )}
       {open && <AlertShipyardDelete id={deleteId} title={deleteId} open={open} handleClose={handleClose} />}
       {shipyardModal && <ShipyardModal open={shipyardModal} modalToggler={setShipyardModal} shipyard={selectedShipyard} />}
+      {userModal && <UserModal open={userModal} modalToggler={() => setUserModal(!userModal)} shipyard={selectedShipyard} />}
     </MainCard>
   );
 };

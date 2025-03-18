@@ -17,6 +17,7 @@ import { fetchRoles } from '../redux/features/roles/actions';
 const ManageAdministratorUsers = Loadable(lazy(() => import('pages/admin/ManageAdministratorUsers')));
 const ManageClientUser = Loadable(lazy(() => import('pages/admin/ManageClientUser')));
 const ManageDepartments = Loadable(lazy(() => import('pages/admin/ManageDepartments')));
+const ManageDeptUsers = Loadable(lazy(() => import('pages/admin/ManageDeptUsers')));
 
 const MainRoutes = () => {
   const { user } = useAuth();
@@ -36,7 +37,8 @@ const MainRoutes = () => {
       { path: 'users', element: <SuperAdminUserManagement /> },
       { path: 'administrator-users', element: <ManageAdministratorUsers /> },
       { path: 'client-users', element: <ManageClientUser /> },
-      { path: 'departments', element: <ManageDepartments /> }
+      { path: 'departments', element: <ManageDepartments /> },
+      { path: 'dept-users', element: <ManageDeptUsers /> }
     ];
 
     return [

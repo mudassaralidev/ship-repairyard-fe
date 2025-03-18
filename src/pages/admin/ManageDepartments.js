@@ -49,11 +49,12 @@ import ShipyardModal from 'components/shipyard/ShipyardModal';
 import { DeleteOutlined, EditOutlined, PlusOutlined } from '@ant-design/icons';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchShipyard } from '../../redux/features/shipyard/actions';
-import { shipyardColumnsWithoutActions } from 'utils/constants';
+import { departmentColumns } from 'utils/constants';
 import useAuth from 'hooks/useAuth';
 import { getDepartments } from 'api/department';
 import AlertDepartmentDelete from 'components/department/AlertDepartmentDelete';
 import DepartmentModal from 'components/department/DepartmentModal';
+import UserModal from 'components/users/UserModal';
 
 const avatarImage = require.context('assets/images/users', true);
 
@@ -179,6 +180,7 @@ const ManageDepartments = () => {
 
   const [addEditModal, setAddEditModal] = useState(false);
   const [selectedDepartment, setSelectedDepartment] = useState(null);
+  const [userModal, setUserModal] = useState(false);
 
   const handleClose = () => {
     setOpen(!open);
@@ -190,18 +192,38 @@ const ManageDepartments = () => {
       (async () => {
         dispatch(fetchShipyard(user.shipyard_id));
         const departments = await getDepartments(user.shipyard_id);
-        setDepartments(departments);
+        setDepartments(departments.map((dept, idx) => ({ idx, ...dept })));
       })();
     } catch (error) {
       console.error('Error occurred while getting departments', error);
     } finally {
       setLoading(false);
     }
-  }, [user.shipyard_id]);
+  }, [user?.shipyard_id]);
 
   const columns = useMemo(
     () => [
-      ...shipyardColumnsWithoutActions,
+      ...departmentColumns,
+      {
+        header: 'Add Foreman',
+        cell: ({ row }) => {
+          return row?.original?.foreman?.name ? (
+            <></>
+          ) : (
+            <Button
+              size="sm"
+              startIcon={<PlusOutlined />}
+              onClick={(e) => {
+                e.stopPropagation();
+                setSelectedDepartment({ label: row.original.name, value: row.original.id });
+                setUserModal(true);
+              }}
+            >
+              Add
+            </Button>
+          );
+        }
+      },
       {
         header: 'Actions',
         meta: {
@@ -299,11 +321,11 @@ const ManageDepartments = () => {
         </Stack>
 
         {loading || !departments.length ? (
-          <EmptyReactTable columns={shipyardColumnsWithoutActions} />
+          <EmptyReactTable columns={departmentColumns} />
         ) : (
           <ReactTable
             {...{
-              data: lists,
+              data: departments,
               columns,
               globalFilter,
               setGlobalFilter
@@ -314,15 +336,26 @@ const ManageDepartments = () => {
         {addEditModal && (
           <DepartmentModal
             open={addEditModal}
-            modalToggler={setAddEditModal}
+            modalToggler={() => setAddEditModal(false)}
             department={selectedDepartment}
             handleUpdateDepartmentsState={(department) => {
               if (!selectedDepartment) {
-                setDepartments((preState) => [department, ...preState]);
+                setDepartments((preState = []) => {
+                  return [department, ...preState];
+                });
               } else {
                 setDepartments((preState) => preState.map((dept) => (dept.id === department.id ? department : dept)));
               }
             }}
+          />
+        )}
+        {userModal && (
+          <UserModal
+            open={userModal}
+            modalToggler={() => setUserModal(false)}
+            shipyard={{ label: shipyard.name, value: shipyard.id }}
+            department={selectedDepartment}
+            roleMap="ADMIN_FOREMAN"
           />
         )}
       </MainCard>

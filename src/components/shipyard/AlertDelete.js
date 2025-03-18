@@ -10,6 +10,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { deleteShipyard } from '../../redux/features/shipyard/actions';
 import { useEffect } from 'react';
 import { clearSuccessMessage } from '../../redux/features/shipyard/slice';
+import { toast } from 'react-toastify';
 
 export default function AlertShipyardDelete({ id, title, open, handleClose }) {
   const dispatch = useDispatch();
@@ -21,16 +22,15 @@ export default function AlertShipyardDelete({ id, title, open, handleClose }) {
 
   useEffect(() => {
     if (successMessage) {
-      openSnackbar({
-        open: true,
-        message: successMessage,
-        anchorOrigin: { vertical: 'top', horizontal: 'right' },
-        variant: 'alert',
-        alert: {
-          color: 'success'
-        }
+      toast.success(successMessage, {
+        position: 'top-right',
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: false,
+        pauseOnHover: true,
+        draggable: true,
+        theme: 'light'
       });
-
       dispatch(clearSuccessMessage());
       handleClose();
     }

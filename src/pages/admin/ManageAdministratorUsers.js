@@ -235,7 +235,7 @@ const ManageAdministratorUsers = () => {
   );
 
   const modalToggler = () => {
-    setUserModal(true);
+    setUserModal(!userModal);
     setSelectedUser(null);
   };
 
@@ -298,7 +298,7 @@ const ManageAdministratorUsers = () => {
         {userModal && (
           <UserModal
             open={userModal}
-            modalToggler={setUserModal}
+            modalToggler={modalToggler}
             user={selectedUser}
             shipyard={{ value: shipyard?.id, label: shipyard?.name }}
           />

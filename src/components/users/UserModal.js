@@ -6,15 +6,13 @@ import MainCard from 'components/MainCard';
 import SimpleBar from 'components/third-party/SimpleBar';
 import FormAddUser from './FormAddEdit';
 
-const UserModal = ({ open, modalToggler, user, shipyard, roleMap }) => {
-  const closeModal = () => modalToggler(false);
-
+const UserModal = ({ open, modalToggler, user, shipyard, roleMap, department }) => {
   return (
     <>
       {open && (
         <Modal
           open={open}
-          onClose={closeModal}
+          onClose={modalToggler}
           aria-labelledby="modal-user-add-label"
           aria-describedby="modal-user-add-description"
           sx={{
@@ -37,7 +35,7 @@ const UserModal = ({ open, modalToggler, user, shipyard, roleMap }) => {
                 }
               }}
             >
-              <FormAddUser user={user || null} closeModal={closeModal} shipyard={shipyard} roleMap={roleMap} />
+              <FormAddUser user={user || null} closeModal={modalToggler} shipyard={shipyard} roleMap={roleMap} department={department} />
             </SimpleBar>
           </MainCard>
         </Modal>

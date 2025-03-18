@@ -1,5 +1,5 @@
 // material-ui
-import { Modal } from '@mui/material';
+import { Modal, Stack } from '@mui/material';
 
 // project-imports
 import MainCard from 'components/MainCard';
@@ -11,6 +11,7 @@ import axios from 'utils/dataApi';
 import { updateSYUser } from '../../redux/features/shipyard/slice';
 import { useDispatch } from 'react-redux';
 import { openSnackbar } from 'api/snackbar';
+import CircularWithPath from 'components/@extended/progress/CircularWithPath';
 
 const ClientAssignmentModal = ({ open, modalToggler, shipyard_id, user }) => {
   const closeModal = () => modalToggler(false);
@@ -28,10 +29,15 @@ const ClientAssignmentModal = ({ open, modalToggler, shipyard_id, user }) => {
       (async () => {
         const { data } = await axios.get(`v1/shipyards/${shipyard_id}/clients`);
         setClients(data || []);
+
+        if (user.client?.id) {
+          const defaultClient = data.find((client) => client.id === user?.client?.id) || null;
+          setSelectedClient(defaultClient);
+        }
+        setLoading(false);
       })();
     } catch (err) {
       console.error('Error getting clients', err);
-    } finally {
       setLoading(false);
     }
   }, []);
@@ -94,13 +100,18 @@ const ClientAssignmentModal = ({ open, modalToggler, shipyard_id, user }) => {
               }}
             >
               {loading ? (
-                <Loadable />
+                <Stack alignItems="center">
+                  <CircularWithPath />
+                </Stack>
               ) : (
                 <>
-                  <DialogTitle>Assign Client</DialogTitle>
+                  <DialogTitle>
+                    {user?.client?.id ? 'Update Assigned Client to Superintendent ' : 'Assign Client to Superintendent'} "{user?.name}"
+                  </DialogTitle>
                   <Divider />
                   <DialogContent sx={{ p: 2.5 }}>
                     <Autocomplete
+                      value={selectedClient}
                       options={clients}
                       getOptionLabel={(option) => option.name}
                       onChange={(e, value) => setSelectedClient(value?.id)}
@@ -118,7 +129,7 @@ const ClientAssignmentModal = ({ open, modalToggler, shipyard_id, user }) => {
                       Cancel
                     </Button>
                     <Button type="submit" variant="contained" disabled={!selectedClient} onClick={handleSubmit}>
-                      Assign
+                      {user?.client?.id ? 'Update' : 'Assign'}
                     </Button>
                   </DialogActions>
                 </>

@@ -12,6 +12,7 @@ import { Provider } from 'react-redux';
 import store from './redux/store';
 
 import { JWTProvider as AuthProvider } from 'contexts/JWTContext';
+import { ToastContainer } from 'react-toastify';
 
 // ==============================|| APP - THEME, ROUTER, LOCAL ||============================== //
 
@@ -34,6 +35,7 @@ const App = () => {
           </ScrollTop>
         </Locales>
       </RTLLayout>
+      <ToastContainer />
     </ThemeCustomization>
   );
 };

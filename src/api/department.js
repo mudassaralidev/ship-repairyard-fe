@@ -2,9 +2,9 @@ import axios from 'utils/dataApi';
 
 export const getDepartments = async (shipyardID) => {
   try {
-    const departments = await axios.get(`v1/shipyards/${shipyardID}/departments`);
+    const { data } = await axios.get(`v1/shipyards/${shipyardID}/departments`);
 
-    return departments;
+    return data.departments || [];
   } catch (error) {
     throw new Error(error);
   }

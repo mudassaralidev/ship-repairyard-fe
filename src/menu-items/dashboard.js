@@ -48,6 +48,12 @@ const dashboard = {
       title: <FormattedMessage id="Departments" />,
       type: 'item',
       url: '/dashboard/departments'
+    },
+    {
+      id: 'Department Users',
+      title: <FormattedMessage id="Department Users" />,
+      type: 'item',
+      url: '/dashboard/dept-users'
     }
   ]
 };
