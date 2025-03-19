@@ -10,6 +10,16 @@ export const getDepartments = async (shipyardID) => {
   }
 };
 
+export const getDepartment = async (departmentID) => {
+  try {
+    const { data } = await axios.get(`v1/departments/${departmentID}`);
+
+    return data.department || [];
+  } catch (error) {
+    throw new Error(error);
+  }
+};
+
 export const createDepartment = async (data) => {
   try {
     const department = await axios.post(`v1/departments`, data);

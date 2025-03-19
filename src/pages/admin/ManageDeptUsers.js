@@ -46,16 +46,15 @@ import EmptyReactTable from 'components/react-table/empty';
 import { DebouncedInput, RowSelection, TablePagination } from 'components/third-party/react-table';
 
 // assets
-import { DeleteOutlined, EditOutlined, PlusOutlined } from '@ant-design/icons';
+import { DeleteOutlined, EditOutlined } from '@ant-design/icons';
 import { useDispatch, useSelector } from 'react-redux';
 import { userTableColumns } from 'utils/constants';
-import { fetchShipyard, fetchShipyards, sySpecificUsers } from '../../redux/features/shipyard/actions';
+import { fetchShipyard, sySpecificUsers } from '../../redux/features/shipyard/actions';
 import UserModal from 'components/users/UserModal';
 import AlertUserDelete from 'components/users/AlertDelete';
 import _ from 'lodash';
 import useAuth from 'hooks/useAuth';
-import ClientAssignmentModal from 'components/users/ClientAssignmentModal';
-import { getDepartments } from 'api/department';
+import { getDepartment, getDepartments } from 'api/department';
 
 export const fuzzyFilter = (row, columnId, value, addMeta) => {
   const itemRank = rankItem(row.getValue(columnId), value);
@@ -170,7 +169,7 @@ const ManageDeptUsers = () => {
   const { user } = useAuth();
 
   const dispatch = useDispatch();
-  const { shipyard, shipyardUsers: lists, status } = useSelector((state) => state.shipyard);
+  const { shipyard, shipyardUsers: lists } = useSelector((state) => state.shipyard);
   const [departments, setDepartments] = useState([]);
   const [selectedDepartment, setSelectedDepartment] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -194,15 +193,20 @@ const ManageDeptUsers = () => {
     try {
       (async () => {
         dispatch(fetchShipyard(user.shipyard_id));
-        const departments = await getDepartments(user.shipyard_id);
-        setDepartments(departments);
+        if (user.role === 'FOREMAN') {
+          const department = await getDepartment(user.department_id);
+          setSelectedDepartment({ value: department.id, label: department.name });
+        } else {
+          const departments = await getDepartments(user.shipyard_id);
+          setDepartments(departments);
+        }
+
+        setLoading(false);
       })();
     } catch (error) {
       console.error('Error occurred while getting departments', error);
-    } finally {
-      setLoading(false);
     }
-  }, [user?.shipyard_id]);
+  }, [user]);
 
   useEffect(() => {
     if (!user || !selectedDepartment?.value) return;
@@ -210,7 +214,7 @@ const ManageDeptUsers = () => {
     dispatch(
       sySpecificUsers({ shipyard_id: user?.shipyard_id, query_params: `department_id=${selectedDepartment.value}&user_types=deptMembers` })
     );
-  }, [selectedDepartment?.value]);
+  }, [selectedDepartment]);
 
   const columns = useMemo(
     () => [
@@ -290,16 +294,30 @@ const ManageDeptUsers = () => {
               </FormControl>
 
               {/* Department Autocomplete */}
-              <Autocomplete
-                sx={{ width: 300 }}
-                options={departments.map(({ id, name }) => ({ label: name, value: id }))}
-                isOptionEqualToValue={(option, value) => option.value === value?.value}
-                getOptionLabel={(option) => option.label || ''}
-                onChange={(_, value) => setSelectedDepartment(value)}
-                renderInput={(params) => <TextField {...params} label="Select Department" />}
-              />
+              {user?.department_id ? (
+                <FormControl sx={{ minWidth: 200 }}>
+                  <InputLabel id="department-select-label">Department</InputLabel>
+                  <Select
+                    labelId="department-select-label"
+                    id="department-select"
+                    value={selectedDepartment?.value || ''}
+                    label="Department"
+                  >
+                    <MenuItem value={selectedDepartment?.value}>{selectedDepartment?.label}</MenuItem>
+                  </Select>
+                </FormControl>
+              ) : (
+                <Autocomplete
+                  sx={{ width: 300 }}
+                  options={departments.map(({ id, name }) => ({ label: name, value: id }))}
+                  isOptionEqualToValue={(option, value) => option.value === value?.value}
+                  getOptionLabel={(option) => option.label || ''}
+                  onChange={(_, value) => setSelectedDepartment(value)}
+                  renderInput={(params) => <TextField {...params} label="Select Department" />}
+                />
+              )}
 
-              {!lists.some((user) => user.role.name === 'FOREMAN') && !_.isEmpty(selectedDepartment) && (
+              {user?.role !== 'FOREMAN' && !lists.some((user) => user.role.name === 'FOREMAN') && !_.isEmpty(selectedDepartment) && (
                 <Button
                   variant="contained"
                   onClick={() => {
@@ -310,7 +328,7 @@ const ManageDeptUsers = () => {
                   Add Foreman
                 </Button>
               )}
-              {lists.some((user) => user.role.name === 'FOREMAN') && !_.isEmpty(selectedDepartment) && (
+              {(user?.role === 'FOREMAN' || (lists.some((user) => user.role.name === 'FOREMAN') && !_.isEmpty(selectedDepartment))) && (
                 <Button
                   variant="contained"
                   onClick={() => {

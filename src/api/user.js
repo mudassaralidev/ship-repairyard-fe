@@ -16,13 +16,3 @@ export const updateUserAPI = async (id, data) => {
 export const deleteUserAPI = async (id) => {
   await axios.delete(`v1/users/${id}`);
 };
-
-export const getDependentDropdownUserData = async () => {
-  try {
-    const { data } = await axios.get(`v1/users/dropdown-dependent-data`);
-    return data?.dependentData;
-  } catch (err) {
-    console.log('Error occurred while fetching dropdown dependent', err);
-    return {};
-  }
-};

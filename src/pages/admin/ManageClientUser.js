@@ -179,6 +179,7 @@ const ManageClientUser = () => {
   const [deleteId, setDeleteId] = useState('');
   const [activeBtn, setActiveBtn] = useState('');
   const [assignClientModal, setAssignClientModal] = useState(false);
+  const [roleMap, setRoleMap] = useState('');
 
   const userColsWithoutActions = userTableColumns('clientUsers');
 
@@ -188,6 +189,15 @@ const ManageClientUser = () => {
 
   useEffect(() => {
     if (user) {
+      setRoleMap(() => {
+        if (user.role === 'ADMIN') {
+          return 'ADMIN_CLIENT';
+        } else if (user.role === 'CALCULATOR_ENGINEER') {
+          return 'CALC_CLINET';
+        } else {
+          return '';
+        }
+      });
       dispatch(fetchShipyard(user?.shipyard_id));
       dispatch(sySpecificUsers({ shipyard_id: user?.shipyard_id, query_params: 'user_types=clients' }));
     }
@@ -287,38 +297,40 @@ const ManageClientUser = () => {
               </Select>
             </FormControl>
           </Grid>
-          <Grid item xs={12} md={6}>
-            <Stack direction="row" gap={2}>
-              <Button
-                variant={activeBtn === 'client' ? 'contained' : 'outlined'}
-                onClick={() => {
-                  if (activeBtn === 'client') {
-                    setActiveBtn('');
-                    setGlobalFilter('');
-                    return;
-                  }
-                  setActiveBtn('client');
-                  setGlobalFilter('CLIENT');
-                }}
-              >
-                Clients
-              </Button>
-              <Button
-                variant={activeBtn === 'superintendent' ? 'contained' : 'outlined'}
-                onClick={() => {
-                  if (activeBtn === 'superintendent') {
-                    setActiveBtn('');
-                    setGlobalFilter('');
-                    return;
-                  }
-                  setActiveBtn('superintendent');
-                  setGlobalFilter('SUPERINTENDENT');
-                }}
-              >
-                Superintendents
-              </Button>
-            </Stack>
-          </Grid>
+          {user.role === 'ADMIN' && (
+            <Grid item xs={12} md={6}>
+              <Stack direction="row" gap={2}>
+                <Button
+                  variant={activeBtn === 'client' ? 'contained' : 'outlined'}
+                  onClick={() => {
+                    if (activeBtn === 'client') {
+                      setActiveBtn('');
+                      setGlobalFilter('');
+                      return;
+                    }
+                    setActiveBtn('client');
+                    setGlobalFilter('CLIENT');
+                  }}
+                >
+                  Clients
+                </Button>
+                <Button
+                  variant={activeBtn === 'superintendent' ? 'contained' : 'outlined'}
+                  onClick={() => {
+                    if (activeBtn === 'superintendent') {
+                      setActiveBtn('');
+                      setGlobalFilter('');
+                      return;
+                    }
+                    setActiveBtn('superintendent');
+                    setGlobalFilter('SUPERINTENDENT');
+                  }}
+                >
+                  Superintendents
+                </Button>
+              </Stack>
+            </Grid>
+          )}
         </Grid>
       )}
 
@@ -364,7 +376,7 @@ const ManageClientUser = () => {
             modalToggler={modalToggler}
             user={selectedUser}
             shipyard={{ value: shipyard?.id, label: shipyard?.name }}
-            roleMap={'ADMIN_CLIENT'}
+            roleMap={roleMap}
           />
         )}
         {assignClientModal && (
