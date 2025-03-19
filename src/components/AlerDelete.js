@@ -3,17 +3,14 @@ import { Button, Dialog, DialogContent, Stack, Typography } from '@mui/material'
 import Avatar from 'components/@extended/Avatar';
 import { PopupTransition } from 'components/@extended/Transitions';
 
-import { openSnackbar } from 'api/snackbar';
-
 import { DeleteFilled } from '@ant-design/icons';
-import { deleteDepartment } from 'api/department';
 
-export default function AlertDepartmentDelete({ department, open, handleClose }) {
+export default function AlertDeleteRecord({ data, open, handleClose, handleDelete = async () => {} }) {
   const deleteHandler = async () => {
     try {
-      await deleteDepartment(department.id);
+      await handleDelete();
     } catch (error) {
-      console.error('Error deleting department', error);
+      console.error('Error deleting data', error);
     }
   };
 
@@ -40,9 +37,9 @@ export default function AlertDepartmentDelete({ department, open, handleClose })
               By deleting
               <Typography variant="subtitle1" component="span">
                 {' '}
-                &quot;{department?.name}&quot;{' '}
+                &quot;{data?.name}&quot;{' '}
               </Typography>
-              department, all task assigned to that shipyard will also be deleted.
+              , all task assigned to this will also be deleted.
             </Typography>
           </Stack>
 

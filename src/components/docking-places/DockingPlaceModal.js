@@ -5,20 +5,22 @@ import { Button, DialogActions, DialogContent, DialogTitle, Divider, Modal, Text
 import MainCard from 'components/MainCard';
 import SimpleBar from 'components/third-party/SimpleBar';
 import { useState } from 'react';
-import { createDepartment, updateDepartment } from 'api/department';
 import useAuth from 'hooks/useAuth';
+import { createDockingPlace, updateDockingPlace } from 'api/dockingPlaces';
+import { toast } from 'react-toastify';
 
-const DepartmentModal = ({ open, modalToggler, department, handleUpdateDepartmentsState }) => {
+const DockingPlaceModal = ({ open, modalToggler, place, handleUpdatePlaceState }) => {
   const closeModal = () => modalToggler(false);
-  const [name, setName] = useState(department?.name ?? '');
+  const [name, setName] = useState(place?.place_name ?? '');
+
   const { user } = useAuth();
 
   const handleSubmit = async () => {
     try {
-      let dept;
-      if (department) {
-        dept = await updateDepartment(department.id, { name });
-        toast.success('Department updated successfully', {
+      let dockingPlace;
+      if (place) {
+        dockingPlace = await updateDockingPlace(place.id, { place_name: name });
+        toast.success('Docking Place updated successfully', {
           position: 'top-right',
           autoClose: 5000,
           hideProgressBar: false,
@@ -28,8 +30,8 @@ const DepartmentModal = ({ open, modalToggler, department, handleUpdateDepartmen
           theme: 'light'
         });
       } else {
-        dept = await createDepartment({ name, shipyard_id: user.shipyard_id, created_by: user.id });
-        toast.success('Department created successfully', {
+        dockingPlace = await createDockingPlace({ place_name: name, shipyard_id: user.shipyard_id, created_by: user.id });
+        toast.success('Docking Place created successfully', {
           position: 'top-right',
           autoClose: 5000,
           hideProgressBar: false,
@@ -40,7 +42,7 @@ const DepartmentModal = ({ open, modalToggler, department, handleUpdateDepartmen
         });
       }
 
-      handleUpdateDepartmentsState(dept);
+      handleUpdatePlaceState(dockingPlace);
       closeModal();
     } catch (error) {
       console.error(error);
@@ -75,10 +77,16 @@ const DepartmentModal = ({ open, modalToggler, department, handleUpdateDepartmen
                 }
               }}
             >
-              <DialogTitle>{department ? 'Update Department' : 'Create Department'}</DialogTitle>
+              <DialogTitle>{place ? 'Update Docking Place' : 'Create Docking Place'}</DialogTitle>
               <Divider />
               <DialogContent sx={{ p: 2.5 }}>
-                <TextField fullWidth id="name" placeholder="Enter Department Name" value={name} onChange={(e) => setName(e.target.value)} />
+                <TextField
+                  fullWidth
+                  id="name"
+                  placeholder="Enter Docking Place Name"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                />
               </DialogContent>
               <Divider />
               <DialogActions sx={{ p: 2.5 }}>
@@ -86,7 +94,7 @@ const DepartmentModal = ({ open, modalToggler, department, handleUpdateDepartmen
                   Cancel
                 </Button>
                 <Button type="submit" variant="contained" disabled={!name} onClick={handleSubmit}>
-                  {department ? 'Update' : 'Add'}
+                  {place ? 'Update' : 'Add'}
                 </Button>
               </DialogActions>
             </SimpleBar>
@@ -97,4 +105,4 @@ const DepartmentModal = ({ open, modalToggler, department, handleUpdateDepartmen
   );
 };
 
-export default DepartmentModal;
+export default DockingPlaceModal;

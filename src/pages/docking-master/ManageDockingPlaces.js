@@ -47,12 +47,12 @@ import { DebouncedInput, RowSelection, TablePagination } from 'components/third-
 import { DeleteOutlined, EditOutlined, PlusOutlined } from '@ant-design/icons';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchShipyard } from '../../redux/features/shipyard/actions';
-import { departmentColumns } from 'utils/constants';
+import { placeColumns } from 'utils/constants';
 import useAuth from 'hooks/useAuth';
-import { deleteDepartment, getDepartments } from 'api/department';
-import DepartmentModal from 'components/department/DepartmentModal';
-import UserModal from 'components/users/UserModal';
-import AlertDeleteRecord from 'components/AlerDelete';
+import { deleteDockingPlace, getDockingPlaces } from 'api/dockingPlaces';
+import DockingPlaceModal from 'components/docking-places/DockingPlaceModal';
+
+const avatarImage = require.context('assets/images/users', true);
 
 export const fuzzyFilter = (row, columnId, value, addMeta) => {
   const itemRank = rankItem(row.getValue(columnId), value);
@@ -161,22 +161,21 @@ function ReactTable({ data, columns, globalFilter, setGlobalFilter }) {
   );
 }
 
-const ManageDepartments = () => {
+const ManageDockingPlaces = () => {
   const theme = useTheme();
   const matchDownSM = useMediaQuery(theme.breakpoints.down('sm'));
 
   const dispatch = useDispatch();
   const { shipyard } = useSelector((state) => state.shipyard);
   const { user } = useAuth();
-  const [departments, setDepartments] = useState([]);
+  const [dockingPlaces, setDockingPlaces] = useState([]);
   const [loading, setLoading] = useState(true);
 
   const [open, setOpen] = useState(false);
   const [globalFilter, setGlobalFilter] = useState('');
 
   const [addEditModal, setAddEditModal] = useState(false);
-  const [selectedDepartment, setSelectedDepartment] = useState(null);
-  const [userModal, setUserModal] = useState(false);
+  const [selectedDockingPlace, setSelectedDockingPlace] = useState(null);
 
   const handleClose = () => {
     setOpen(!open);
@@ -187,39 +186,19 @@ const ManageDepartments = () => {
     try {
       (async () => {
         dispatch(fetchShipyard(user.shipyard_id));
-        const departments = await getDepartments(user.shipyard_id);
-        setDepartments(departments.map((dept, idx) => ({ idx: idx + 1, ...dept })));
+        const places = await getDockingPlaces(user.shipyard_id);
+        setDockingPlaces(places.map((place, idx) => ({ idx: idx + 1, ...place })));
       })();
     } catch (error) {
       console.error('Error occurred while getting departments', error);
     } finally {
       setLoading(false);
     }
-  }, [user?.shipyard_id]);
+  }, [user]);
 
   const columns = useMemo(
     () => [
-      ...departmentColumns,
-      {
-        header: 'Add Foreman',
-        cell: ({ row }) => {
-          return row?.original?.foreman?.name ? (
-            <></>
-          ) : (
-            <Button
-              size="sm"
-              startIcon={<PlusOutlined />}
-              onClick={(e) => {
-                e.stopPropagation();
-                setSelectedDepartment({ label: row.original.name, value: row.original.id });
-                setUserModal(true);
-              }}
-            >
-              Add
-            </Button>
-          );
-        }
-      },
+      ...placeColumns,
       {
         header: 'Actions',
         meta: {
@@ -234,7 +213,7 @@ const ManageDepartments = () => {
                   color="primary"
                   onClick={(e) => {
                     e.stopPropagation();
-                    setSelectedDepartment(row.original);
+                    setSelectedDockingPlace(row.original);
                     setAddEditModal(true);
                   }}
                 >
@@ -247,7 +226,7 @@ const ManageDepartments = () => {
                   onClick={(e) => {
                     e.stopPropagation();
                     handleClose();
-                    setSelectedDepartment(row.original);
+                    setSelectedDockingPlace(row.original);
                   }}
                 >
                   <DeleteOutlined />
@@ -263,7 +242,7 @@ const ManageDepartments = () => {
 
   const modalToggler = () => {
     setAddEditModal(true);
-    setSelectedDepartment(null);
+    setSelectedDockingPlace(null);
   };
 
   return (
@@ -277,7 +256,7 @@ const ManageDepartments = () => {
           }
         }}
       >
-        Manage Departments
+        Manage Docking Places
       </Typography>
       {_.isEmpty(shipyard) ? (
         <></>
@@ -304,24 +283,24 @@ const ManageDepartments = () => {
           <DebouncedInput
             value={globalFilter ?? ''}
             onFilterChange={(value) => setGlobalFilter(String(value))}
-            placeholder={`Search ${departments.length} records...`}
+            placeholder={`Search ${dockingPlaces.length} records...`}
           />
 
           <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} alignItems="center" sx={{ width: { xs: '100%', sm: 'auto' } }}>
             <Stack direction="row" spacing={2} alignItems="center">
               <Button variant="contained" startIcon={<PlusOutlined />} onClick={modalToggler}>
-                Create Department
+                Create Place
               </Button>
             </Stack>
           </Stack>
         </Stack>
 
-        {loading || !departments.length ? (
-          <EmptyReactTable columns={departmentColumns} />
+        {loading || !dockingPlaces.length ? (
+          <EmptyReactTable columns={placeColumns} />
         ) : (
           <ReactTable
             {...{
-              data: departments,
+              data: dockingPlaces,
               columns,
               globalFilter,
               setGlobalFilter
@@ -330,37 +309,28 @@ const ManageDepartments = () => {
         )}
         {open && (
           <AlertDeleteRecord
-            data={selectedDepartment}
+            data={selectedDockingPlace}
             open={open}
             handleClose={handleClose}
             handleDelete={async () => {
-              await deleteDepartment(selectedDepartment.id);
+              await deleteDockingPlace(selectedDockingPlace.id);
             }}
           />
         )}
         {addEditModal && (
-          <DepartmentModal
+          <DockingPlaceModal
             open={addEditModal}
             modalToggler={() => setAddEditModal(false)}
-            department={selectedDepartment}
-            handleUpdateDepartmentsState={(department) => {
-              if (!selectedDepartment) {
-                setDepartments((preState = []) => {
-                  return [department, ...preState].map((dept, idx) => ({ ...dept, idx: idx + 1 }));
+            place={selectedDockingPlace}
+            handleUpdatePlaceState={(place) => {
+              if (!selectedDockingPlace) {
+                setDockingPlaces((preState = []) => {
+                  return [place, ...preState].map((plc, idx) => ({ ...plc, idx: idx + 1 }));
                 });
               } else {
-                setDepartments((preState) => preState.map((dept) => (dept.id === department.id ? department : dept)));
+                setDockingPlaces((preState) => preState.map((plc) => (plc.id === place.id ? place : plc)));
               }
             }}
-          />
-        )}
-        {userModal && (
-          <UserModal
-            open={userModal}
-            modalToggler={() => setUserModal(false)}
-            shipyard={{ label: shipyard.name, value: shipyard.id }}
-            department={selectedDepartment}
-            roleMap="ADMIN_FOREMAN"
           />
         )}
       </MainCard>
@@ -368,4 +338,4 @@ const ManageDepartments = () => {
   );
 };
 
-export default ManageDepartments;
+export default ManageDockingPlaces;

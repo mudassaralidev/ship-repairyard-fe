@@ -98,6 +98,25 @@ export const departmentColumns = [
   }
 ];
 
+export const placeColumns = [
+  {
+    header: '#',
+    accessorKey: 'idx'
+  },
+  {
+    header: 'Place Name',
+    accessorKey: 'place_name'
+  },
+  {
+    header: 'Is Used',
+    accessorKey: 'is_used'
+  },
+  {
+    header: 'creator',
+    accessorKey: 'creator'
+  }
+];
+
 export const getFieldsByRole = ({ role, roles = [], shipyard_id, shipyards = [], departments = [] }) => {
   if (!shipyard_id) return [{ key: 'shipyard_id', label: 'Shipyard', type: 'select', options: shipyards, colVal: 6 }];
 

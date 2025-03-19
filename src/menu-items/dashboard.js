@@ -20,6 +20,12 @@ const dashboard = {
   type: 'group',
   children: [
     {
+      id: 'Welcome',
+      title: <FormattedMessage id="Welcome" />,
+      type: 'item',
+      url: '/dashboard/welcome'
+    },
+    {
       id: 'Shipyards',
       title: <FormattedMessage id="Shipyard" />,
       type: 'item',
@@ -54,6 +60,12 @@ const dashboard = {
       title: <FormattedMessage id="Department Users" />,
       type: 'item',
       url: '/dashboard/dept-users'
+    },
+    {
+      id: 'Docking Places',
+      title: <FormattedMessage id="Docking Places" />,
+      type: 'item',
+      url: '/dashboard/docking-places'
     }
   ]
 };
