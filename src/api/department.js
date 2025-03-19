@@ -22,9 +22,9 @@ export const getDepartment = async (departmentID) => {
 
 export const createDepartment = async (data) => {
   try {
-    const department = await axios.post(`v1/departments`, data);
+    const { data: response } = await axios.post(`v1/departments`, data);
 
-    return department;
+    return response.department;
   } catch (error) {
     throw new Error(error);
   }

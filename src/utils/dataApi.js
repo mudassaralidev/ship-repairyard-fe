@@ -20,4 +20,15 @@ dataApi.interceptors.request.use(
   }
 );
 
+dataApi.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    const { response } = error;
+    if (response && response.status === 401) {
+      window.location = '/dashboard/welcome';
+    }
+    return Promise.reject(error);
+  }
+);
+
 export default dataApi;

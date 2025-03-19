@@ -85,7 +85,7 @@ export const departmentColumns = [
     accessorKey: 'idx'
   },
   {
-    header: 'Shipyard Name',
+    header: 'Name',
     accessorKey: 'name'
   },
   {
