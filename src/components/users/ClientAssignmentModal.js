@@ -5,7 +5,6 @@ import { Modal, Stack } from '@mui/material';
 import MainCard from 'components/MainCard';
 import SimpleBar from 'components/third-party/SimpleBar';
 import { useEffect, useState } from 'react';
-import Loadable from 'components/Loadable';
 import { Button, DialogActions, DialogContent, DialogTitle, Divider, TextField, Autocomplete } from '@mui/material';
 import axios from 'utils/dataApi';
 import { updateSYUser } from '../../redux/features/shipyard/slice';
@@ -28,7 +27,7 @@ const ClientAssignmentModal = ({ open, modalToggler, shipyard_id, user }) => {
     try {
       (async () => {
         const { data } = await axios.get(`v1/shipyards/${shipyard_id}/clients`);
-        setClients(data || []);
+        setClients(data.clients || []);
 
         if (user.client?.id) {
           const defaultClient = data.find((client) => client.id === user?.client?.id) || null;

@@ -1,15 +1,17 @@
 import { requestStart, requestSuccess, requestFailure } from './slice';
 import { fetchRolesAPI } from 'api/role';
-import { openSnackbar } from 'api/snackbar';
+import { toast } from 'react-toastify';
 
 const handleError = (dispatch, error, message) => {
   dispatch(requestFailure(error.message));
-  openSnackbar({
-    open: true,
-    message: `${message}: ${error.message}`,
-    anchorOrigin: { vertical: 'top', horizontal: 'right' },
-    variant: 'alert',
-    alert: { color: 'error' }
+  toast.error(`${message}: ${error.message}`, {
+    position: 'top-right',
+    autoClose: 5000,
+    hideProgressBar: false,
+    closeOnClick: false,
+    pauseOnHover: true,
+    draggable: true,
+    theme: 'light'
   });
 };
 
@@ -19,6 +21,6 @@ export const fetchRoles = () => async (dispatch) => {
     const res = await fetchRolesAPI();
     dispatch(requestSuccess(res.roles));
   } catch (error) {
-    handleError(dispatch, error, 'Error while fetching shipyards');
+    handleError(dispatch, error, 'Error while fetching roles');
   }
 };

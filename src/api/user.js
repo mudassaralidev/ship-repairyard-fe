@@ -13,6 +13,11 @@ export const updateUserAPI = async (id, data) => {
   return responseData.data;
 };
 
+export const getClientSpecificSuperintendents = async (id) => {
+  const { data: responseData } = await axios.get(`v1/users/${id}/superintendents`);
+  return responseData.superintendents;
+};
+
 export const deleteUserAPI = async (id) => {
   await axios.delete(`v1/users/${id}`);
 };

@@ -59,7 +59,7 @@ export const userTableColumns = (role) => {
     clientUsers: [
       ...commonColumns,
       {
-        header: 'Client Name',
+        header: 'Company Name',
         accessorKey: 'client.name'
       }
     ],
@@ -114,6 +114,57 @@ export const placeColumns = [
   {
     header: 'creator',
     accessorKey: 'creator'
+  }
+];
+
+export const shipColumns = [
+  {
+    header: '#',
+    accessorKey: 'idx'
+  },
+  {
+    header: 'Ship Name',
+    accessorKey: 'name'
+  },
+  {
+    header: 'Type',
+    accessorKey: 'type'
+  },
+  {
+    header: 'Length',
+    accessorKey: 'length'
+  },
+  {
+    header: 'Beam',
+    accessorKey: 'beam'
+  },
+  {
+    header: 'Draft',
+    accessorKey: 'draft'
+  },
+  {
+    header: 'Gross Tonnage',
+    accessorKey: 'gross_tonnage'
+  },
+  {
+    header: 'Net Tonnage',
+    accessorKey: 'net_tonnage'
+  },
+  {
+    header: 'Year Built',
+    accessorKey: 'year_built'
+  },
+  {
+    header: 'Classification',
+    accessorKey: 'classification'
+  },
+  {
+    header: 'Flag',
+    accessorKey: 'flag'
+  },
+  {
+    header: 'Company Name',
+    accessorKey: 'client.name'
   }
 ];
 

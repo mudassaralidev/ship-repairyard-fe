@@ -38,34 +38,55 @@ const dashboard = {
       url: '/dashboard/users'
     },
     {
-      id: 'Administrator Users',
-      title: <FormattedMessage id="Administrator Users" />,
-      type: 'item',
-      url: '/dashboard/administrator-users'
-    },
-    {
-      id: 'Client Users',
-      title: <FormattedMessage id="Client Users" />,
-      type: 'item',
-      url: '/dashboard/client-users'
+      id: 'Manage Users',
+      title: <FormattedMessage id="Manage Users" />,
+      type: 'collapse',
+      children: [
+        {
+          id: 'Administrator Users',
+          title: <FormattedMessage id="Administrator Users" />,
+          type: 'item',
+          url: '/dashboard/administrator-users'
+        },
+        {
+          id: 'Client Users',
+          title: <FormattedMessage id="Client Users" />,
+          type: 'item',
+          url: '/dashboard/client-users'
+        }
+      ]
     },
     {
       id: 'Manage Departments',
-      title: <FormattedMessage id="Departments" />,
-      type: 'item',
-      url: '/dashboard/departments'
+      title: <FormattedMessage id="Manage Departments" />,
+      type: 'collapse',
+      children: [
+        {
+          id: 'Departments',
+          title: <FormattedMessage id="Departments" />,
+          type: 'item',
+          url: '/dashboard/departments'
+        },
+        {
+          id: 'Department Users',
+          title: <FormattedMessage id="Department Users" />,
+          type: 'item',
+          url: '/dashboard/dept-users'
+        }
+      ]
     },
-    {
-      id: 'Department Users',
-      title: <FormattedMessage id="Department Users" />,
-      type: 'item',
-      url: '/dashboard/dept-users'
-    },
+
     {
       id: 'Docking Places',
       title: <FormattedMessage id="Docking Places" />,
       type: 'item',
       url: '/dashboard/docking-places'
+    },
+    {
+      id: 'Manage Ships',
+      title: <FormattedMessage id="Manage Ships" />,
+      type: 'item',
+      url: '/dashboard/ships'
     }
   ]
 };
