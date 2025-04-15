@@ -46,18 +46,18 @@ import EmptyReactTable from 'components/react-table/empty';
 import { DebouncedInput, RowSelection, TablePagination } from 'components/third-party/react-table';
 
 // assets
-import { DeleteOutlined, EditOutlined, PlusOutlined } from '@ant-design/icons';
+import { DeleteOutlined, EditOutlined, EyeOutlined, PlusOutlined } from '@ant-design/icons';
 import { useDispatch, useSelector } from 'react-redux';
 import { shipColumns } from 'utils/constants';
-import { fetchShipyard } from '../../redux/features/shipyard/actions';
 import AlertUserDelete from 'components/users/AlertDelete';
 import _ from 'lodash';
 import useAuth from 'hooks/useAuth';
 import { fetchShips } from '../../redux/features/ships/actions';
 import { fetchClients } from 'api/client';
 import { toast } from 'react-toastify';
-import AddSuperintendentModal from 'components/ships/AddSuperIntendentToShipModal';
 import AddEditShipModal from 'components/ships/AddEditShipModal';
+import DockingModal from 'components/docking/DokcingModal';
+import { getAvailableDockingPlaces } from 'api/dockingPlaces';
 
 export const fuzzyFilter = (row, columnId, value, addMeta) => {
   const itemRank = rankItem(row.getValue(columnId), value);
@@ -184,8 +184,9 @@ const ManageShips = () => {
   const [globalFilter, setGlobalFilter] = useState('');
 
   const [addEditModal, setAddEditModal] = useState(false);
-  const [userModal, setUserModal] = useState(false);
+  const [addDockModal, setAddDockModal] = useState(false);
   const [deleteId, setDeleteId] = useState('');
+  const [dockingPlaces, setDockingPlaces] = useState([]);
 
   const handleClose = () => {
     setOpen(!open);
@@ -195,10 +196,11 @@ const ManageShips = () => {
     if (!user) return;
     try {
       (async () => {
-        dispatch(fetchShipyard(user.shipyard_id));
         dispatch(fetchShips(user.shipyard_id));
         const clientsData = await fetchClients(user.shipyard_id);
         setClients(clientsData);
+        const dockingData = await getAvailableDockingPlaces(user?.shipyard_id);
+        setDockingPlaces(dockingData);
 
         setLoading(false);
       })();
@@ -211,26 +213,6 @@ const ManageShips = () => {
   const columns = useMemo(
     () => [
       ...shipColumns,
-      {
-        header: 'Superintendent Name',
-        cell: ({ row }) => {
-          return (
-            <Stack direction="column" alignItems="center" justifyContent="center" spacing={0}>
-              <Typography>{row.original?.superintendent?.name}</Typography>
-              <Button
-                variant="text"
-                size="small"
-                onClick={() => {
-                  setSelectedShip(row.original);
-                  setUserModal(true);
-                }}
-              >
-                {!row.original?.superintendent?.name ? 'Add Superintendent' : 'Update'}
-              </Button>
-            </Stack>
-          );
-        }
-      },
 
       {
         header: 'Actions',
@@ -241,6 +223,31 @@ const ManageShips = () => {
         cell: ({ row }) => {
           return (
             <Stack direction="row" alignItems="center" justifyContent="center" spacing={0}>
+              {!row.original?.dockings?.length ? (
+                <Button
+                  variant="text"
+                  size="small"
+                  onClick={() => {
+                    setSelectedShip(row.original);
+                    setAddDockModal(true);
+                  }}
+                >
+                  Dock
+                </Button>
+              ) : (
+                <Tooltip title="View">
+                  <IconButton
+                    color="secondary"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleClose();
+                      setSelectedShip(row.original);
+                    }}
+                  >
+                    <EyeOutlined />
+                  </IconButton>
+                </Tooltip>
+              )}
               <Tooltip title="Edit">
                 <IconButton
                   color="primary"
@@ -253,6 +260,7 @@ const ManageShips = () => {
                   <EditOutlined />
                 </IconButton>
               </Tooltip>
+
               <Tooltip title="Delete">
                 <IconButton
                   color="error"
@@ -348,7 +356,7 @@ const ManageShips = () => {
         {status === 'loading' || shipStatus === 'loading' || loading || lists?.length ? (
           <ReactTable
             {...{
-              data: lists.map((ship, idx) => ({ idx: idx + 1, ...ship })),
+              data: lists,
               columns,
               globalFilter,
               setGlobalFilter
@@ -361,14 +369,17 @@ const ManageShips = () => {
         {addEditModal && (
           <AddEditShipModal open={addEditModal} modalToggler={modalToggler} shipyard={shipyard} clients={clients} ship={selectedShip} />
         )}
-        {userModal && (
-          <AddSuperintendentModal
-            open={userModal}
+
+        {addDockModal && (
+          <DockingModal
+            open={addDockModal}
             modalToggler={() => {
-              setUserModal(false);
+              setAddDockModal(false);
             }}
             shipyard={shipyard}
-            ship={selectedShip}
+            dockingShip={selectedShip}
+            dockingPlaces={dockingPlaces}
+            removeUsedPlace={(placeId) => setDockingPlaces((preState) => preState.filter((p) => p.id !== placeId))}
           />
         )}
       </MainCard>

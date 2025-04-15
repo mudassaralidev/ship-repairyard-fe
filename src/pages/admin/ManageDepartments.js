@@ -46,7 +46,6 @@ import { DebouncedInput, RowSelection, TablePagination } from 'components/third-
 // assets
 import { DeleteOutlined, EditOutlined, PlusOutlined } from '@ant-design/icons';
 import { useDispatch, useSelector } from 'react-redux';
-import { fetchShipyard } from '../../redux/features/shipyard/actions';
 import { departmentColumns } from 'utils/constants';
 import useAuth from 'hooks/useAuth';
 import { deleteDepartment, getDepartments } from 'api/department';
@@ -186,9 +185,8 @@ const ManageDepartments = () => {
     if (!user) return;
     try {
       (async () => {
-        dispatch(fetchShipyard(user.shipyard_id));
         const departments = await getDepartments(user.shipyard_id);
-        setDepartments(departments.map((dept, idx) => ({ idx: idx + 1, ...dept })));
+        setDepartments(departments);
       })();
     } catch (error) {
       console.error('Error occurred while getting departments', error);
@@ -346,7 +344,7 @@ const ManageDepartments = () => {
             handleUpdateDepartmentsState={(department) => {
               if (!selectedDepartment) {
                 setDepartments((preState = []) => {
-                  return [department, ...preState].map((dept, idx) => ({ ...dept, idx: idx + 1 }));
+                  return [department, ...preState];
                 });
               } else {
                 setDepartments((preState) => preState.map((dept) => (dept.id === department.id ? department : dept)));

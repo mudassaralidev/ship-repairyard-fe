@@ -14,8 +14,3 @@ export const updateShipApi = async (id, data) => {
   const { data: response } = await axios.put(`v1/ships/${id}`, data);
   return response.ship;
 };
-
-export const createAndAssignSuperintendentApi = async (id, data) => {
-  const { data: response } = await axios.put(`v1/ships/${id}/superintendent/create-assign`, data);
-  return response.ship;
-};

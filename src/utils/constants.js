@@ -1,4 +1,5 @@
 import { useMemo } from 'react';
+import dayjs from 'dayjs';
 
 export const shipyardColumnsWithoutActions = [
   {
@@ -34,8 +35,9 @@ export const shipyardColumnsWithoutActions = [
 export const userTableColumns = (role) => {
   const commonColumns = [
     {
-      header: '#',
-      accessorKey: 'id'
+      header: 'No',
+      id: 'rowIndex',
+      cell: ({ row }) => row.index + 1
     },
     {
       header: 'First Name',
@@ -81,8 +83,9 @@ export const userTableColumns = (role) => {
 
 export const departmentColumns = [
   {
-    header: '#',
-    accessorKey: 'idx'
+    header: 'No',
+    id: 'rowIndex',
+    cell: ({ row }) => row.index + 1
   },
   {
     header: 'Name',
@@ -100,8 +103,9 @@ export const departmentColumns = [
 
 export const placeColumns = [
   {
-    header: '#',
-    accessorKey: 'idx'
+    header: 'No',
+    id: 'rowIndex',
+    cell: ({ row }) => row.index + 1
   },
   {
     header: 'Place Name',
@@ -119,8 +123,9 @@ export const placeColumns = [
 
 export const shipColumns = [
   {
-    header: '#',
-    accessorKey: 'idx'
+    header: 'No',
+    id: 'rowIndex',
+    cell: ({ row }) => row.index + 1
   },
   {
     header: 'Ship Name',
@@ -165,6 +170,34 @@ export const shipColumns = [
   {
     header: 'Company Name',
     accessorKey: 'client.name'
+  }
+];
+
+export const dockingColumns = [
+  {
+    header: 'No',
+    id: 'rowIndex',
+    cell: ({ row }) => row.index + 1
+  },
+  {
+    header: 'Ship Name',
+    accessorKey: 'ship.name'
+  },
+  { header: 'Superintendent', accessorKey: 'superintendent.name' },
+  {
+    header: 'Docked Place',
+    accessorKey: 'docking_place.place_name'
+  },
+
+  {
+    header: 'Start Date',
+    accessorKey: 'start_date',
+    cell: ({ row }) => dayjs(row.original.start_date).format('DD-MM-YYYY')
+  },
+  {
+    header: 'End Date',
+    accessorKey: 'end_date',
+    cell: ({ row }) => (row.original.end_date ? dayjs(row.original.end_date).format('DD-MM-YYYY') : '-')
   }
 ];
 

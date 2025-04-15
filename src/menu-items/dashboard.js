@@ -87,6 +87,12 @@ const dashboard = {
       title: <FormattedMessage id="Manage Ships" />,
       type: 'item',
       url: '/dashboard/ships'
+    },
+    {
+      id: 'Manage Dockings',
+      title: <FormattedMessage id="Manage Dockings" />,
+      type: 'item',
+      url: '/dashboard/dockings'
     }
   ]
 };

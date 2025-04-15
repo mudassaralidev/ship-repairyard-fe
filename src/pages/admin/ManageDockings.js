@@ -46,13 +46,15 @@ import { DebouncedInput, RowSelection, TablePagination } from 'components/third-
 // assets
 import { DeleteOutlined, EditOutlined, PlusOutlined } from '@ant-design/icons';
 import { useDispatch, useSelector } from 'react-redux';
-import { fetchShipyard } from '../../redux/features/shipyard/actions';
-import { placeColumns } from 'utils/constants';
+import { dockingColumns } from 'utils/constants';
+import _ from 'lodash';
 import useAuth from 'hooks/useAuth';
-import { deleteDockingPlace, getDockingPlaces } from 'api/dockingPlaces';
-import DockingPlaceModal from 'components/docking-places/DockingPlaceModal';
-
-const avatarImage = require.context('assets/images/users', true);
+import { fetchShips } from '../../redux/features/ships/actions';
+import { getAvailableDockingPlaces } from 'api/dockingPlaces';
+import Loader from 'components/Loader';
+import { fetchDockings } from '../../redux/features/dockings/actions';
+import DockingModal from 'components/docking/DokcingModal';
+import AddSuperintendentModal from 'components/docking/AddSuperIntendentModal';
 
 export const fuzzyFilter = (row, columnId, value, addMeta) => {
   const itemRank = rankItem(row.getValue(columnId), value);
@@ -161,21 +163,25 @@ function ReactTable({ data, columns, globalFilter, setGlobalFilter }) {
   );
 }
 
-const ManageDockingPlaces = () => {
+const ManageDeptUsers = () => {
   const theme = useTheme();
   const matchDownSM = useMediaQuery(theme.breakpoints.down('sm'));
+  const { user } = useAuth();
 
   const dispatch = useDispatch();
   const { shipyard } = useSelector((state) => state.shipyard);
-  const { user } = useAuth();
-  const [dockingPlaces, setDockingPlaces] = useState([]);
+  const { dockings: lists, status: fetchingDockings } = useSelector((state) => state.docking);
+  const { ships, status: fetchingShips } = useSelector((state) => state.ship);
+  const [selectedDocking, setSelectedDocking] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [dockingPlaces, setDockingPlaces] = useState([]);
+  const [dockingModal, setDockingModal] = useState(false);
+  const [addSuperintendentModal, setAddSuperintendentModal] = useState(false);
 
   const [open, setOpen] = useState(false);
   const [globalFilter, setGlobalFilter] = useState('');
 
-  const [addEditModal, setAddEditModal] = useState(false);
-  const [selectedDockingPlace, setSelectedDockingPlace] = useState(null);
+  const dockingColsWithoutActions = dockingColumns;
 
   const handleClose = () => {
     setOpen(!open);
@@ -185,19 +191,44 @@ const ManageDockingPlaces = () => {
     if (!user) return;
     try {
       (async () => {
-        const places = await getDockingPlaces(user.shipyard_id);
-        setDockingPlaces(places);
+        dispatch(fetchDockings(user?.shipyard_id));
+        dispatch(fetchShips(user?.shipyard_id));
+        const dockingData = await getAvailableDockingPlaces(user?.shipyard_id);
+        setDockingPlaces(dockingData);
+        setLoading(false);
       })();
     } catch (error) {
       console.error('Error occurred while getting departments', error);
-    } finally {
-      setLoading(false);
     }
   }, [user]);
 
+  useEffect(() => {
+    if (!user) return;
+  }, []);
+
   const columns = useMemo(
     () => [
-      ...placeColumns,
+      ...dockingColsWithoutActions,
+      {
+        header: 'Add Superintendent',
+        cell: ({ row }) => {
+          return (
+            !row?.original?.superintendent && (
+              <Button
+                variant="text"
+                size="small"
+                onClick={() => {
+                  setSelectedDocking(row.original);
+                  setAddSuperintendentModal(true);
+                }}
+              >
+                Assign
+              </Button>
+            )
+          );
+        }
+      },
+
       {
         header: 'Actions',
         meta: {
@@ -212,8 +243,8 @@ const ManageDockingPlaces = () => {
                   color="primary"
                   onClick={(e) => {
                     e.stopPropagation();
-                    setSelectedDockingPlace(row.original);
-                    setAddEditModal(true);
+                    setSelectedDocking(row.original);
+                    setDockingModal(true);
                   }}
                 >
                   <EditOutlined />
@@ -225,7 +256,7 @@ const ManageDockingPlaces = () => {
                   onClick={(e) => {
                     e.stopPropagation();
                     handleClose();
-                    setSelectedDockingPlace(row.original);
+                    setDeleteId(row.original.id);
                   }}
                 >
                   <DeleteOutlined />
@@ -240,12 +271,14 @@ const ManageDockingPlaces = () => {
   );
 
   const modalToggler = () => {
-    setAddEditModal(true);
-    setSelectedDockingPlace(null);
+    setDockingModal(!dockingModal);
+    setSelectedDocking(null);
   };
 
+  if (loading || [fetchingDockings, fetchingShips].includes('loading')) return <Loader />;
+
   return (
-    <Fragment>
+    <>
       <Typography
         variant="h2"
         sx={{
@@ -255,22 +288,26 @@ const ManageDockingPlaces = () => {
           }
         }}
       >
-        Manage Docking Places
+        Manage Departmental Users
       </Typography>
       {_.isEmpty(shipyard) ? (
         <></>
       ) : (
         <Grid container spacing={2} sx={{ marginTop: '16px', marginBottom: '8px' }}>
-          <Grid item xs={12} md={6} lg={2}>
-            <FormControl>
-              <InputLabel id="demo-simple-select-helper-label">Shipyard</InputLabel>
-              <Select labelId="demo-simple-select-helper-label" id="demo-simple-select-helper" value={shipyard?.id} label="Shipyard">
-                <MenuItem value={shipyard?.id}>{shipyard?.name}</MenuItem>
-              </Select>
-            </FormControl>
+          <Grid item xs={12}>
+            <Stack direction="row" spacing={2} alignItems="center">
+              {/* Shipyard Select */}
+              <FormControl sx={{ minWidth: 200 }}>
+                <InputLabel id="shipyard-select-label">Shipyard</InputLabel>
+                <Select labelId="shipyard-select-label" id="shipyard-select" value={shipyard?.id || ''} label="Shipyard">
+                  <MenuItem value={shipyard?.id}>{shipyard?.name}</MenuItem>
+                </Select>
+              </FormControl>
+            </Stack>
           </Grid>
         </Grid>
       )}
+
       <MainCard content={false}>
         <Stack
           direction={{ xs: 'column', sm: 'row' }}
@@ -282,59 +319,56 @@ const ManageDockingPlaces = () => {
           <DebouncedInput
             value={globalFilter ?? ''}
             onFilterChange={(value) => setGlobalFilter(String(value))}
-            placeholder={`Search ${dockingPlaces.length} records...`}
+            placeholder={`Search ${lists.length} records...`}
           />
 
           <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} alignItems="center" sx={{ width: { xs: '100%', sm: 'auto' } }}>
             <Stack direction="row" spacing={2} alignItems="center">
               <Button variant="contained" startIcon={<PlusOutlined />} onClick={modalToggler}>
-                Create Place
+                Create Docking
               </Button>
             </Stack>
           </Stack>
         </Stack>
 
-        {loading || !dockingPlaces.length ? (
-          <EmptyReactTable columns={placeColumns} />
-        ) : (
+        {lists?.length ? (
           <ReactTable
             {...{
-              data: dockingPlaces,
+              data: lists,
               columns,
               globalFilter,
               setGlobalFilter
             }}
           />
+        ) : (
+          <EmptyReactTable columns={dockingColsWithoutActions} />
         )}
-        {open && (
-          <AlertDeleteRecord
-            data={selectedDockingPlace}
-            open={open}
-            handleClose={handleClose}
-            handleDelete={async () => {
-              await deleteDockingPlace(selectedDockingPlace.id);
-            }}
+        {dockingModal && (
+          <DockingModal
+            open={dockingModal}
+            modalToggler={modalToggler}
+            shipyard={shipyard}
+            docking={selectedDocking}
+            ships={ships}
+            dockingPlaces={dockingPlaces}
+            removeUsedPlace={(placeId) => setDockingPlaces((preState) => preState.filter((p) => p.id !== placeId))}
           />
         )}
-        {addEditModal && (
-          <DockingPlaceModal
-            open={addEditModal}
-            modalToggler={() => setAddEditModal(false)}
-            place={selectedDockingPlace}
-            handleUpdatePlaceState={(place) => {
-              if (!selectedDockingPlace) {
-                setDockingPlaces((preState = []) => {
-                  return [place, ...preState];
-                });
-              } else {
-                setDockingPlaces((preState) => preState.map((plc) => (plc.id === place.id ? place : plc)));
-              }
+        {addSuperintendentModal && (
+          <AddSuperintendentModal
+            open={addSuperintendentModal}
+            modalToggler={() => {
+              setSelectedDocking(null);
+              setAddSuperintendentModal(!addSuperintendentModal);
             }}
+            dockID={selectedDocking?.id}
+            clientName={ships.find((s) => s.id === selectedDocking?.ship?.id)?.client?.name}
+            superintendents={ships.find((s) => s.id === selectedDocking?.ship?.id)?.client?.superintendents}
           />
         )}
       </MainCard>
-    </Fragment>
+    </>
   );
 };
 
-export default ManageDockingPlaces;
+export default ManageDeptUsers;

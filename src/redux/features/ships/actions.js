@@ -1,5 +1,5 @@
 import { requestStart, requestSuccess, requestFailure, create, update } from './slice';
-import { createAndAssignSuperintendentApi, createShipApi, fetchShipsApi, updateShipApi } from 'api/ship';
+import { createShipApi, fetchShipsApi, updateShipApi } from 'api/ship';
 import { toast } from 'react-toastify';
 
 const handleError = (dispatch, error, message) => {
@@ -41,15 +41,6 @@ export const createShip = (data) => async (dispatch) => {
 export const updateShip = (id, data) => async (dispatch) => {
   try {
     const res = await updateShipApi(id, data);
-    dispatch(update(res));
-  } catch (error) {
-    handleError(dispatch, error, 'Error while fetching ships');
-  }
-};
-
-export const createAndAssignSuperintendent = (id, data) => async (dispatch) => {
-  try {
-    const res = await createAndAssignSuperintendentApi(id, data);
     dispatch(update(res));
   } catch (error) {
     handleError(dispatch, error, 'Error while fetching ships');

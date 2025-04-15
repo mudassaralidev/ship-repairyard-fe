@@ -192,7 +192,6 @@ const ManageDeptUsers = () => {
     if (!user) return;
     try {
       (async () => {
-        dispatch(fetchShipyard(user.shipyard_id));
         if (user.role === 'FOREMAN') {
           const department = await getDepartment(user.department_id);
           setSelectedDepartment({ value: department.id, label: department.name });

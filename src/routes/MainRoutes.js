@@ -14,12 +14,14 @@ const SuperAdminUserManagement = Loadable(lazy(() => import('pages/super-admin/U
 const MaintenanceError = Loadable(lazy(() => import('pages/maintenance/404')));
 import { useDispatch } from 'react-redux';
 import { fetchRoles } from '../redux/features/roles/actions';
+import { fetchShipyard } from '../redux/features/shipyard/actions';
 const ManageAdministratorUsers = Loadable(lazy(() => import('pages/admin/ManageAdministratorUsers')));
 const ManageClientUser = Loadable(lazy(() => import('pages/admin/ManageClientUser')));
 const ManageDepartments = Loadable(lazy(() => import('pages/admin/ManageDepartments')));
 const ManageDeptUsers = Loadable(lazy(() => import('pages/admin/ManageDeptUsers')));
 const ManageDockingPlaces = Loadable(lazy(() => import('pages/docking-master/ManageDockingPlaces')));
 const ManageShips = Loadable(lazy(() => import('pages/admin/ManageShips')));
+const ManageDockings = Loadable(lazy(() => import('pages/admin/ManageDockings')));
 
 const MainRoutes = () => {
   const { user } = useAuth();
@@ -29,6 +31,7 @@ const MainRoutes = () => {
   useEffect(() => {
     if (user) {
       dispatch(fetchRoles());
+      user?.shipyard_id && dispatch(fetchShipyard(user.shipyard_id));
     }
   }, [user]);
 
@@ -42,7 +45,8 @@ const MainRoutes = () => {
       { path: 'departments', element: <ManageDepartments /> },
       { path: 'dept-users', element: <ManageDeptUsers /> },
       { path: 'docking-places', element: <ManageDockingPlaces /> },
-      { path: 'ships', element: <ManageShips /> }
+      { path: 'ships', element: <ManageShips /> },
+      { path: 'dockings', element: <ManageDockings /> }
     ];
 
     return [

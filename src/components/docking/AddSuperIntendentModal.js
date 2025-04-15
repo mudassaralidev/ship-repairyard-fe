@@ -6,7 +6,7 @@ import MainCard from 'components/MainCard';
 import SimpleBar from 'components/third-party/SimpleBar';
 import FormAddSuperintendent from './FormAddSuperintendent';
 
-const AddSuperintendentModal = ({ open, modalToggler, shipyard, ship }) => {
+const AddSuperintendentModal = ({ open, modalToggler, dockID, clientName, superintendents }) => {
   return (
     <>
       {open && (
@@ -35,7 +35,7 @@ const AddSuperintendentModal = ({ open, modalToggler, shipyard, ship }) => {
                 }
               }}
             >
-              <FormAddSuperintendent closeModal={modalToggler} shipyard={shipyard} ship={ship} />
+              <FormAddSuperintendent closeModal={modalToggler} dockID={dockID} clientName={clientName} superintendents={superintendents} />
             </SimpleBar>
           </MainCard>
         </Modal>

@@ -1,5 +1,17 @@
 import React, { useEffect } from 'react';
-import { Button, DialogActions, DialogContent, DialogTitle, Divider, Grid, Stack, TextField, MenuItem, Autocomplete } from '@mui/material';
+import {
+  Button,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  Divider,
+  Grid,
+  Stack,
+  TextField,
+  MenuItem,
+  Autocomplete,
+  Typography
+} from '@mui/material';
 import { useFormik, Form, FormikProvider } from 'formik';
 import * as Yup from 'yup';
 import { useDispatch, useSelector } from 'react-redux';
@@ -114,6 +126,7 @@ const FormAddEditShip = ({ shipyard, clients, ship, closeModal }) => {
                   getOptionLabel={(option) => option.name}
                   onChange={(_, value) => setFieldValue('client_user_id', value ? value.id : '')}
                   isOptionEqualToValue={(option, value) => option.id === value?.id}
+                  disabled={ship?.docking_count ? true : false}
                   renderOption={(props, option) => (
                     <li {...props} key={option.id}>
                       {option.name}
@@ -128,6 +141,11 @@ const FormAddEditShip = ({ shipyard, clients, ship, closeModal }) => {
                     />
                   )}
                 />
+                {ship?.docking_count && (
+                  <Typography sx={{ color: '#FF4D4F', fontSize: '12px', margin: '0px !important' }}>
+                    NOTE: Can not be changed due to active dockings on this company
+                  </Typography>
+                )}
               </Stack>
             </Grid>
 

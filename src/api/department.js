@@ -6,7 +6,7 @@ export const getDepartments = async (shipyardID) => {
 
     return data.departments || [];
   } catch (error) {
-    throw new Error(error);
+    throw error;
   }
 };
 
@@ -16,7 +16,7 @@ export const getDepartment = async (departmentID) => {
 
     return data.department || [];
   } catch (error) {
-    throw new Error(error);
+    throw error;
   }
 };
 
@@ -26,7 +26,7 @@ export const createDepartment = async (data) => {
 
     return response.department;
   } catch (error) {
-    throw new Error(error);
+    throw error;
   }
 };
 
@@ -34,7 +34,7 @@ export const deleteDepartment = async (departmentID) => {
   try {
     await axios.delete(`v1/departments/${departmentID}`);
   } catch (error) {
-    throw new Error(error);
+    throw error;
   }
 };
 
@@ -44,6 +44,6 @@ export const updateDepartment = async (departmentID, data) => {
 
     return updatedDepartment;
   } catch (error) {
-    throw new Error(error);
+    throw error;
   }
 };

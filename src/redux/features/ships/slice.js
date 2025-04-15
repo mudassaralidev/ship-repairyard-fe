@@ -25,14 +25,14 @@ const shipSlice = createSlice({
       state.error = action.payload;
     },
     create: (state, action) => {
-      const updatedShipsState = [action.payload, ...state.ships].map((ship, idx) => ({ idx: idx + 1, ...ship }));
+      const updatedShipsState = [action.payload, ...state.ships];
       state.ships = updatedShipsState;
       state.successMessage = 'Ship created successfully!';
     },
     update: (state, action) => {
       const index = state.ships.findIndex((item) => item.id === action.payload.id);
       if (index !== -1) {
-        state.ships[index] = { idx: index + 1, ...action.payload };
+        state.ships[index] = action.payload;
         state.successMessage = 'Shipyard updated successfully!';
       }
     },
