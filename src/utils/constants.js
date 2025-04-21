@@ -1,5 +1,6 @@
 import { useMemo } from 'react';
 import dayjs from 'dayjs';
+import { Tooltip, Typography } from '@mui/material';
 
 export const shipyardColumnsWithoutActions = [
   {
@@ -180,13 +181,20 @@ export const dockingColumns = [
     cell: ({ row }) => row.index + 1
   },
   {
+    header: 'Name',
+    accessorKey: 'name'
+  },
+  {
     header: 'Ship Name',
     accessorKey: 'ship.name'
   },
-  { header: 'Superintendent', accessorKey: 'superintendent.name' },
   {
     header: 'Docked Place',
     accessorKey: 'docking_place.place_name'
+  },
+  {
+    header: 'Total Cost',
+    accessorKey: 'total_cost'
   },
 
   {
@@ -198,6 +206,72 @@ export const dockingColumns = [
     header: 'End Date',
     accessorKey: 'end_date',
     cell: ({ row }) => (row.original.end_date ? dayjs(row.original.end_date).format('DD-MM-YYYY') : '-')
+  }
+];
+
+export const repairColumns = [
+  {
+    header: 'No',
+    id: 'rowIndex',
+    cell: ({ row }) => row.index + 1
+  },
+  {
+    header: 'Description',
+    cell: ({ row }) => (
+      <Tooltip
+        title={<Typography sx={{ fontSize: 14, p: 1, maxWidth: 300, whiteSpace: 'normal' }}>{row.original.description}</Typography>}
+        arrow
+        placement="top"
+        componentsProps={{
+          tooltip: {
+            sx: {
+              backgroundColor: '#333',
+              color: '#fff',
+              borderRadius: 1,
+              boxShadow: 3,
+              fontWeight: 400
+            }
+          }
+        }}
+      >
+        <Typography
+          noWrap
+          sx={{
+            maxWidth: '120px',
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+            whiteSpace: 'nowrap',
+            display: 'inline-block'
+          }}
+        >
+          {row.original.description}
+        </Typography>
+      </Tooltip>
+    )
+  },
+  {
+    header: 'Docking',
+    accessorKey: 'docking.name'
+  },
+  {
+    header: 'Start Date',
+    accessorKey: 'start_date',
+    cell: ({ row }) => (row.original.start_date ? dayjs(row.original.start_date).format('DD-MM-YYYY') : '-')
+  },
+  {
+    header: 'End Date',
+    accessorKey: 'end_date',
+    cell: ({ row }) => (row.original.end_date ? dayjs(row.original.end_date).format('DD-MM-YYYY') : '-')
+  },
+  {
+    header: 'Estimated Cost',
+    accessorKey: 'estimated_cost',
+    cell: ({ row }) => `$${parseFloat(row.original.estimated_cost).toFixed(2)}`
+  },
+  {
+    header: 'Total Cost',
+    accessorKey: 'total_cost',
+    cell: ({ row }) => (row.original.total_cost ? `$${parseFloat(row.original.total_cost).toFixed(2)}` : '-')
   }
 ];
 

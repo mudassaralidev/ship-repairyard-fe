@@ -5,6 +5,7 @@ import { alpha, useTheme } from '@mui/material/styles';
 import {
   Box,
   Button,
+  Chip,
   Divider,
   FormControl,
   Grid,
@@ -44,17 +45,34 @@ import EmptyReactTable from 'components/react-table/empty';
 import { DebouncedInput, RowSelection, TablePagination } from 'components/third-party/react-table';
 
 // assets
-import { DeleteOutlined, EditOutlined, PlusOutlined } from '@ant-design/icons';
+import { DeleteOutlined, EditOutlined, EyeOutlined, PlusOutlined } from '@ant-design/icons';
 import { useDispatch, useSelector } from 'react-redux';
-import { dockingColumns } from 'utils/constants';
+import { repairColumns } from 'utils/constants';
 import _ from 'lodash';
 import useAuth from 'hooks/useAuth';
-import { fetchShips } from '../../redux/features/ships/actions';
-import { getAvailableDockingPlaces } from 'api/dockingPlaces';
 import Loader from 'components/Loader';
-import { fetchDockings } from '../../redux/features/dockings/actions';
-import DockingModal from 'components/docking/DokcingModal';
-import AddSuperintendentModal from 'components/docking/AddSuperIntendentModal';
+import { fetchRepairs } from '../../redux/features/repair/actions';
+import RepairModal from 'components/repair/RepairModal';
+import { getDockingNamesForRepair } from 'api/docking';
+import UpdateStatusModal from 'components/repair/UpdateStatusModal';
+import ExpandingRepairHistory from 'components/repair/RepairHistory';
+
+const getStatusChipProps = (status) => {
+  const normalized = status?.toUpperCase?.() ?? '';
+
+  const statusMap = {
+    INITIATED: { color: 'secondary', label: 'INITIATED' },
+    APPROVED: { color: 'info', label: 'APPROVED' },
+    BLOCKED: { color: 'error', label: 'BLOCKED' },
+    COMPLETED: { color: 'success', label: 'COMPLETED' }
+  };
+
+  return {
+    ...(statusMap[normalized] || { color: 'default', label: normalized }),
+    size: 'medium',
+    variant: 'dark'
+  };
+};
 
 export const fuzzyFilter = (row, columnId, value, addMeta) => {
   const itemRank = rankItem(row.getValue(columnId), value);
@@ -64,7 +82,7 @@ export const fuzzyFilter = (row, columnId, value, addMeta) => {
   return itemRank.passed;
 };
 
-function ReactTable({ data, columns, globalFilter, setGlobalFilter }) {
+function ReactTable({ data, columns, globalFilter, setGlobalFilter, repairId }) {
   const theme = useTheme();
 
   const [rowSelection, setRowSelection] = useState({});
@@ -85,8 +103,7 @@ function ReactTable({ data, columns, globalFilter, setGlobalFilter }) {
     getCoreRowModel: getCoreRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
     getExpandedRowModel: getExpandedRowModel(),
-    globalFilterFn: fuzzyFilter,
-    debugTable: true
+    globalFilterFn: fuzzyFilter
   });
 
   const backColor = alpha(theme.palette.primary.lighter, 0.1);
@@ -136,7 +153,7 @@ function ReactTable({ data, columns, globalFilter, setGlobalFilter }) {
                     <TableRow sx={{ bgcolor: backColor, '&:hover': { bgcolor: `${backColor} !important` } }}>
                       <TableCell colSpan={row.getVisibleCells().length}>
                         {/* <ExpandingUserDetail data={row.original} /> */}
-                        <>Expanding Detail</>
+                        <ExpandingRepairHistory repairId={row.original.id} />
                       </TableCell>
                     </TableRow>
                   )}
@@ -163,25 +180,23 @@ function ReactTable({ data, columns, globalFilter, setGlobalFilter }) {
   );
 }
 
-const ManageDockings = () => {
+const ManageRepairs = () => {
   const theme = useTheme();
   const matchDownSM = useMediaQuery(theme.breakpoints.down('sm'));
   const { user } = useAuth();
 
   const dispatch = useDispatch();
   const { shipyard } = useSelector((state) => state.shipyard);
-  const { dockings: lists, status: fetchingDockings } = useSelector((state) => state.docking);
-  const { ships, status: fetchingShips } = useSelector((state) => state.ship);
-  const [selectedDocking, setSelectedDocking] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [dockingPlaces, setDockingPlaces] = useState([]);
-  const [dockingModal, setDockingModal] = useState(false);
-  const [addSuperintendentModal, setAddSuperintendentModal] = useState(false);
+  const { repairs: lists, status: fetchingRepairs } = useSelector((state) => state.repair);
+  const [selectedRepair, setSelectedRepair] = useState(null);
+  const [repairModal, setRepairModal] = useState(false);
+  const [dockingNames, setDockingNames] = useState([]);
+  const [updateStatusModal, setUpdateStatusModal] = useState(false);
 
   const [open, setOpen] = useState(false);
   const [globalFilter, setGlobalFilter] = useState('');
 
-  const dockingColsWithoutActions = dockingColumns;
+  const repairColsWithoutActions = repairColumns;
 
   const handleClose = () => {
     setOpen(!open);
@@ -191,42 +206,62 @@ const ManageDockings = () => {
     if (!user) return;
     try {
       (async () => {
-        dispatch(fetchDockings(user?.shipyard_id));
-        dispatch(fetchShips(user?.shipyard_id));
-        const dockingData = await getAvailableDockingPlaces(user?.shipyard_id);
-        setDockingPlaces(dockingData);
-        setLoading(false);
+        dispatch(fetchRepairs(user?.shipyard_id));
+        const data = await getDockingNamesForRepair(user?.shipyard_id);
+        setDockingNames(data);
       })();
     } catch (error) {
-      console.error('Error occurred while getting departments', error);
+      console.error('Error occurred while getting repairs', error);
     }
   }, [user]);
 
-  useEffect(() => {
-    if (!user) return;
-  }, []);
-
   const columns = useMemo(
     () => [
-      ...dockingColsWithoutActions,
+      ...repairColsWithoutActions,
       {
-        header: 'Superintendent',
+        header: 'Order Type',
+        id: 'order_type',
         cell: ({ row }) => {
-          return !row?.original?.superintendent ? (
+          const { requires_work_order, requires_subcontractor, status } = row.original;
+          if (requires_work_order && status !== 'APPROVED')
+            return (
+              <Stack direction="row" gap={1}>
+                <Typography>Work Order</Typography>
+                <Button
+                  sx={{ padding: '0px', justifyContent: 'end', minWidth: '30px' }}
+                  variant="outlined"
+                  startIcon={<PlusOutlined />}
+                  onClick={modalToggler}
+                ></Button>
+              </Stack>
+            );
+          if (requires_work_order) return 'Work Order';
+          if (requires_subcontractor) return 'Subcontractor Order';
+          return '-';
+        }
+      },
+
+      {
+        header: 'Status',
+        cell: ({ row }) => (
+          <Tooltip title="Update Status" arrow>
             <Button
               variant="text"
               size="small"
+              sx={{
+                textTransform: 'capitalize', // Makes ENUM values like "APPROVED" more readable
+                cursor: 'pointer',
+                minWidth: '100px'
+              }}
               onClick={() => {
-                setSelectedDocking(row.original);
-                setAddSuperintendentModal(true);
+                setSelectedRepair(row.original);
+                setUpdateStatusModal(true);
               }}
             >
-              Assign
+              <Chip {...getStatusChipProps(row.original.status)} />
             </Button>
-          ) : (
-            row?.original?.superintendent?.name
-          );
-        }
+          </Tooltip>
+        )
       },
 
       {
@@ -236,15 +271,26 @@ const ManageDockings = () => {
         },
         disableSortBy: true,
         cell: ({ row }) => {
+          const collapseIcon =
+            row.getCanExpand() && row.getIsExpanded() ? (
+              <PlusOutlined style={{ color: 'rgb(255, 77, 79)', transform: 'rotate(45deg)' }} />
+            ) : (
+              <EyeOutlined />
+            );
           return (
             <Stack direction="row" alignItems="center" justifyContent="center" spacing={0}>
+              <Tooltip title="Repair History">
+                <IconButton color="secondary" onClick={row.getToggleExpandedHandler()}>
+                  {collapseIcon}
+                </IconButton>
+              </Tooltip>
               <Tooltip title="Edit">
                 <IconButton
                   color="primary"
                   onClick={(e) => {
                     e.stopPropagation();
-                    setSelectedDocking(row.original);
-                    setDockingModal(true);
+                    setSelectedRepair(row.original);
+                    setRepairModal(true);
                   }}
                 >
                   <EditOutlined />
@@ -271,11 +317,11 @@ const ManageDockings = () => {
   );
 
   const modalToggler = () => {
-    setDockingModal(!dockingModal);
-    setSelectedDocking(null);
+    setRepairModal(!repairModal);
+    setSelectedRepair(null);
   };
 
-  if (loading || [fetchingDockings, fetchingShips].includes('loading')) return <Loader />;
+  if ([fetchingRepairs].includes('loading')) return <Loader />;
 
   return (
     <>
@@ -288,7 +334,7 @@ const ManageDockings = () => {
           }
         }}
       >
-        Manage Dockings
+        Manage Repairs
       </Typography>
       {_.isEmpty(shipyard) ? (
         <></>
@@ -325,7 +371,7 @@ const ManageDockings = () => {
           <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} alignItems="center" sx={{ width: { xs: '100%', sm: 'auto' } }}>
             <Stack direction="row" spacing={2} alignItems="center">
               <Button variant="contained" startIcon={<PlusOutlined />} onClick={modalToggler}>
-                Create Docking
+                Create Repair
               </Button>
             </Stack>
           </Stack>
@@ -337,33 +383,31 @@ const ManageDockings = () => {
               data: lists,
               columns,
               globalFilter,
-              setGlobalFilter
+              setGlobalFilter,
+              repairId: selectedRepair?.id
             }}
           />
         ) : (
-          <EmptyReactTable columns={dockingColsWithoutActions} />
+          <EmptyReactTable columns={repairColsWithoutActions} />
         )}
-        {dockingModal && (
-          <DockingModal
-            open={dockingModal}
+
+        {repairModal && (
+          <RepairModal
+            open={repairModal}
             modalToggler={modalToggler}
             shipyard={shipyard}
-            docking={selectedDocking}
-            ships={ships}
-            dockingPlaces={dockingPlaces}
-            removeUsedPlace={(placeId) => setDockingPlaces((preState) => preState.filter((p) => p.id !== placeId))}
+            repair={selectedRepair}
+            dockingNames={dockingNames}
           />
         )}
-        {addSuperintendentModal && (
-          <AddSuperintendentModal
-            open={addSuperintendentModal}
+        {updateStatusModal && (
+          <UpdateStatusModal
+            open={updateStatusModal}
             modalToggler={() => {
-              setSelectedDocking(null);
-              setAddSuperintendentModal(!addSuperintendentModal);
+              setSelectedRepair(null);
+              setUpdateStatusModal(!updateStatusModal);
             }}
-            dockID={selectedDocking?.id}
-            clientName={ships.find((s) => s.id === selectedDocking?.ship?.id)?.client?.name}
-            superintendents={ships.find((s) => s.id === selectedDocking?.ship?.id)?.client?.superintendents}
+            repair={selectedRepair}
           />
         )}
       </MainCard>
@@ -371,4 +415,4 @@ const ManageDockings = () => {
   );
 };
 
-export default ManageDockings;
+export default ManageRepairs;

@@ -52,13 +52,14 @@ const FormAddEditDocking = ({ shipyard, docking, dockingShip, ships, dockingPlac
       total_cost: docking?.total_cost || '',
       docking_place_id: docking?.docking_place?.id || '',
       ship_id: docking?.ship?.id || dockingShip?.id || '',
-      superintendent_id: docking?.superintendent?.id || null
+      superintendent_id: docking?.superintendent?.id || null,
+      name: docking?.name || ''
     },
     validationSchema: validationSchema,
     onSubmit: async (values, { setSubmitting }) => {
       try {
+        if (ship?.name && place?.place_name) values.name = `${ship.name} (${place.place_name})`;
         values.created_by = user.id;
-        console.log(values);
         if (docking) {
           dispatch(updateDocking(docking.id, values));
         } else {
@@ -85,7 +86,6 @@ const FormAddEditDocking = ({ shipyard, docking, dockingShip, ships, dockingPlac
   }, [successMessage]);
 
   const { handleSubmit, getFieldProps, touched, errors, isSubmitting, values, setFieldValue } = formik;
-  console.log(dockingShip);
 
   return (
     <LocalizationProvider dateAdapter={AdapterDayjs}>
@@ -291,7 +291,7 @@ const FormAddEditDocking = ({ shipyard, docking, dockingShip, ships, dockingPlac
             <Button color="error" onClick={closeModal}>
               Cancel
             </Button>
-            <Button type="submit" variant="contained" disabled={isSubmitting || !dockingPlaces?.length}>
+            <Button type="submit" variant="contained" disabled={isSubmitting || (!docking && !dockingPlaces?.length)}>
               {docking ? 'Update' : 'Add'}
             </Button>
           </DialogActions>

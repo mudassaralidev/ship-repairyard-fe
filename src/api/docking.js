@@ -28,3 +28,12 @@ export const updateDockingApi = async (id, data) => {
     throw error;
   }
 };
+
+export const getDockingNamesForRepair = async (shipyardID) => {
+  try {
+    const { data } = await axios.get(`v1/dockings/names?shipyard_id=${shipyardID}`);
+    return data.dockings;
+  } catch (error) {
+    throw error;
+  }
+};
