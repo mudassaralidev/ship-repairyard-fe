@@ -35,3 +35,12 @@ export const getRepairHistory = async (id) => {
     throw error;
   }
 };
+
+export const createInventoryOrder = async (repairID, data) => {
+  try {
+    const { data: res } = await axios.post(`v1/repairs/${repairID}/inventory-order`, data);
+    return res.invOrder;
+  } catch (error) {
+    throw error;
+  }
+};

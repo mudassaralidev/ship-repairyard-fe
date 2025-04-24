@@ -1,7 +1,7 @@
 // src/features/shipyard/shipyardActions.js
+import { toast } from 'react-toastify';
 import { requestStart, requestSuccess, requestFailure, create, update, deleteUser } from './slice';
 import { fetchUsersAPI, createUserAPI, updateUserAPI, deleteUserAPI } from 'api/user';
-import { openSnackbar } from 'api/snackbar';
 
 const handleError = (dispatch, error, message) => {
   dispatch(requestFailure(error.message));

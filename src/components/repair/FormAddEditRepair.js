@@ -294,7 +294,13 @@ const FormAddEditRepair = ({ shipyard, repair, closeModal, dockingNames = [] }) 
               {repair && (
                 <Grid item xs={12} sm={6}>
                   <Stack spacing={1}>
-                    <TextField select label="Request Change" {...getFieldProps('change_request')}>
+                    <TextField
+                      select
+                      label="Request Change"
+                      {...getFieldProps('change_request')}
+                      error={Boolean(touched.change_request && errors.change_request)}
+                      helperText={touched.change_request && errors.change_request}
+                    >
                       {['Self (manager or administrator user)', 'Superintendent', 'Other'].map((changeReason) => (
                         <MenuItem value={changeReason}>{changeReason}</MenuItem>
                       ))}
@@ -306,7 +312,14 @@ const FormAddEditRepair = ({ shipyard, repair, closeModal, dockingNames = [] }) 
               {repair && (
                 <Grid item xs={12} sm={6}>
                   <Stack spacing={1}>
-                    <TextField label="Why this repair is being updated" multiline minRows={1} {...getFieldProps('updated_reason')} />
+                    <TextField
+                      label="Why this repair is being updated"
+                      multiline
+                      minRows={1}
+                      {...getFieldProps('updated_reason')}
+                      error={Boolean(touched.updated_reason && errors.updated_reason)}
+                      helperText={touched.updated_reason && errors.updated_reason}
+                    />
                   </Stack>
                 </Grid>
               )}

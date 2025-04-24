@@ -56,6 +56,10 @@ import RepairModal from 'components/repair/RepairModal';
 import { getDockingNamesForRepair } from 'api/docking';
 import UpdateStatusModal from 'components/repair/UpdateStatusModal';
 import ExpandingRepairHistory from 'components/repair/RepairHistory';
+import { getDepartments } from 'api/department';
+import WorkOrderModal from 'components/work-order/WorkOrderModal';
+import dataApi from 'utils/dataApi';
+import { toast } from 'react-toastify';
 
 const getStatusChipProps = (status) => {
   const normalized = status?.toUpperCase?.() ?? '';
@@ -192,6 +196,9 @@ const ManageRepairs = () => {
   const [repairModal, setRepairModal] = useState(false);
   const [dockingNames, setDockingNames] = useState([]);
   const [updateStatusModal, setUpdateStatusModal] = useState(false);
+  const [workOrderModal, setWOModal] = useState(false);
+  const [departments, setDepartments] = useState([]);
+  const [inventories, setInventories] = useState([]);
 
   const [open, setOpen] = useState(false);
   const [globalFilter, setGlobalFilter] = useState('');
@@ -204,15 +211,23 @@ const ManageRepairs = () => {
 
   useEffect(() => {
     if (!user) return;
-    try {
-      (async () => {
+
+    (async () => {
+      try {
         dispatch(fetchRepairs(user?.shipyard_id));
-        const data = await getDockingNamesForRepair(user?.shipyard_id);
+        const [data, { data: departsData }, { data: inventoryData }] = await Promise.all([
+          getDockingNamesForRepair(user?.shipyard_id),
+          dataApi.get('/v1/departments?include_foreman=true'),
+          dataApi.get(`/v1/shipyards/${user?.shipyard_id}/inventories`)
+        ]);
+        setDepartments(departsData.departments);
         setDockingNames(data);
-      })();
-    } catch (error) {
-      console.error('Error occurred while getting repairs', error);
-    }
+        setInventories(inventoryData.inventories);
+      } catch (error) {
+        console.error('Error occurred while getting repairs', error);
+        toast.error(error?.response?.data?.message || 'Some error occurred while getting data for repair');
+      }
+    })();
   }, [user]);
 
   const columns = useMemo(
@@ -223,7 +238,7 @@ const ManageRepairs = () => {
         id: 'order_type',
         cell: ({ row }) => {
           const { requires_work_order, requires_subcontractor, status } = row.original;
-          if (requires_work_order && status !== 'APPROVED')
+          if (requires_work_order && status === 'APPROVED')
             return (
               <Stack direction="row" gap={1}>
                 <Typography>Work Order</Typography>
@@ -231,7 +246,10 @@ const ManageRepairs = () => {
                   sx={{ padding: '0px', justifyContent: 'end', minWidth: '30px' }}
                   variant="outlined"
                   startIcon={<PlusOutlined />}
-                  onClick={modalToggler}
+                  onClick={() => {
+                    setWOModal(true);
+                    setSelectedRepair(row.original);
+                  }}
                 ></Button>
               </Stack>
             );
@@ -408,6 +426,19 @@ const ManageRepairs = () => {
               setUpdateStatusModal(!updateStatusModal);
             }}
             repair={selectedRepair}
+          />
+        )}
+
+        {workOrderModal && (
+          <WorkOrderModal
+            open={workOrderModal}
+            modalToggler={() => {
+              setSelectedRepair(null);
+              setWOModal(false);
+            }}
+            repair={selectedRepair}
+            departments={departments}
+            inventories={inventories}
           />
         )}
       </MainCard>

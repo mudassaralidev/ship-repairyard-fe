@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Stack, Typography, Divider, Paper, Box, CircularProgress } from '@mui/material';
+import { Stack, Typography, Paper, Box, CircularProgress, Grid } from '@mui/material';
 import { ArrowUpOutlined, InfoCircleOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs';
 import { getRepairHistory } from 'api/repair';
@@ -52,7 +52,7 @@ const ExpandingRepairHistory = ({ repairId }) => {
       {history.map((item, index) => {
         const data = JSON.parse(item.data);
         const InfoLine = ({ label, value }) => (
-          <Typography variant="subtitle2">
+          <Typography variant="h6">
             <Box component="span" fontWeight={600} color="#1a237e">
               {label}:
             </Box>{' '}
@@ -79,33 +79,41 @@ const ExpandingRepairHistory = ({ repairId }) => {
                 p: 2,
                 bgcolor: '#f9f9f9',
                 borderLeft: '4px solid #1890ff',
+                borderRight: '4px solid #1890ff',
                 width: '100%'
               }}
             >
-              <Stack spacing={0.5} mb={1}>
-                <InfoLine label="Updated At" value={dayjs(item.createdAt).format('DD MMM YYYY, hh:mm A')} />
+              <Grid container spacing={2}>
+                {/* LEFT SIDE - InfoLines */}
+                <Grid item xs={12} md={6}>
+                  <Stack spacing={1}>
+                    <InfoLine label="Updated At" value={dayjs(item.createdAt).format('DD MMM YYYY, hh:mm A')} />
 
-                {data.change_request && <InfoLine label="Change Request From" value={data.change_request} />}
+                    {data.change_request && <InfoLine label="Change Request From" value={data.change_request} />}
 
-                {data.updated_reason && <InfoLine label="Updated Reason" value={data.updated_reason} />}
-              </Stack>
+                    {data.updated_reason && <InfoLine label="Updated Reason" value={data.updated_reason} />}
+                  </Stack>
+                </Grid>
 
-              <Divider sx={{ my: 1 }} />
+                {/* RIGHT SIDE - Additional Info */}
+                <Grid item xs={12} md={6}>
+                  <Typography variant="h6">
+                    <strong style={{ color: '#1a237e' }}>Previous Description:</strong> {data.description}
+                  </Typography>
 
-              <Typography variant="body2">
-                <strong>Description:</strong> {data.description}
-              </Typography>
+                  <Typography variant="h6">
+                    <strong style={{ color: '#1a237e' }}>Previous Estimated Cost:</strong> ${data.estimated_cost}
+                  </Typography>
 
-              <Typography variant="body2">
-                <strong>Estimated Cost:</strong> ${data.estimated_cost}
-              </Typography>
+                  <Typography variant="h6">
+                    <strong style={{ color: '#1a237e' }}>Previous Start Date:</strong> {dayjs(data.start_date).format('DD MMM YYYY')}
+                  </Typography>
 
-              <Typography variant="body2">
-                <strong>Start Date:</strong> {dayjs(data.start_date).format('DD MMM YYYY')}
-              </Typography>
-              <Typography variant="body2">
-                <strong>End Date:</strong> {dayjs(data.end_date).format('DD MMM YYYY')}
-              </Typography>
+                  <Typography variant="h6">
+                    <strong style={{ color: '#1a237e' }}>Previous End Date:</strong> {dayjs(data.end_date).format('DD MMM YYYY')}
+                  </Typography>
+                </Grid>
+              </Grid>
             </Paper>
           </Stack>
         );
