@@ -275,6 +275,30 @@ export const repairColumns = [
   }
 ];
 
+export const inventoryColumns = [
+  {
+    header: 'No',
+    id: 'rowIndex',
+    cell: ({ row }) => row.index + 1
+  },
+  {
+    header: 'Name',
+    accessorKey: 'name'
+  },
+  {
+    header: 'Total Quantity',
+    accessorKey: 'total_quantity'
+  },
+  {
+    header: 'Remaining Quantity',
+    accessorKey: 'remaining_quantity'
+  },
+  {
+    header: 'Creator',
+    accessorKey: 'creator'
+  }
+];
+
 export const getFieldsByRole = ({ role, roles = [], shipyard_id, shipyards = [], departments = [] }) => {
   if (!shipyard_id) return [{ key: 'shipyard_id', label: 'Shipyard', type: 'select', options: shipyards, colVal: 6 }];
 

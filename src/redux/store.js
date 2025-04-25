@@ -6,6 +6,7 @@ import shipyardReducer from './features/ships/slice';
 import dockingReducer from './features/dockings/slice';
 import repairReducer from './features/repair/slice';
 import workOrderReducer from './features/work-order/slice';
+import inventoryReducer from './features/inventory/slice';
 
 const store = configureStore({
   reducer: {
@@ -15,7 +16,8 @@ const store = configureStore({
     ship: shipyardReducer,
     docking: dockingReducer,
     repair: repairReducer,
-    workOrder: workOrderReducer
+    workOrder: workOrderReducer,
+    inventory: inventoryReducer
   }
 });
 

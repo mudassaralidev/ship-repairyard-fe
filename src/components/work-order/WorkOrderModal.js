@@ -44,7 +44,7 @@ const WorkOrderModal = ({ open, modalToggler, repair, departments, inventories }
                 <Grid item xs={12} sm={6}>
                   <Stack spacing={1}>
                     <TextField value={selectedOrder} select fullWidth label="Order Type" onChange={(e) => setSelectedOrder(e.target.value)}>
-                      {['Work Order', 'Material Order'].map((statusOption) => (
+                      {['Work Order', 'Inventory Order'].map((statusOption) => (
                         <MenuItem key={statusOption} value={statusOption}>
                           <strong>{statusOption}</strong>
                         </MenuItem>
@@ -58,7 +58,7 @@ const WorkOrderModal = ({ open, modalToggler, repair, departments, inventories }
               {selectedOrder === 'Work Order' && (
                 <FormAddEditWorkOrder closeModal={modalToggler} repair={repair} departments={departments} />
               )}
-              {selectedOrder === 'Material Order' && (
+              {selectedOrder === 'Inventory Order' && (
                 <FormAddEditInventoryOrder closeModal={modalToggler} repair={repair} departments={departments} inventories={inventories} />
               )}
             </SimpleBar>

@@ -33,6 +33,59 @@ export const shipyardSpecificUsersAPI = async ({ shipyard_id, query_params }) =>
 };
 
 export const createSYUserApi = async ({ shipyard_id, data }) => {
-  const { data: responseData } = await axios.post(`v1/shipyards/${shipyard_id}/user`, data);
-  return responseData.user;
+  try {
+    const { data: responseData } = await axios.post(`v1/shipyards/${shipyard_id}/user`, data);
+    return responseData.user;
+  } catch (error) {
+    console.log('Error while creating user on shipyard', error.message);
+    throw error;
+  }
+};
+
+export const fetchInventoriesApi = async (id) => {
+  try {
+    const { data } = await axios.get(`v1/shipyards/${id}/inventory`);
+    return data.inventories;
+  } catch (error) {
+    console.log('Error while fetching inventories on shipyard', error.message);
+    throw error;
+  }
+};
+
+export const createInventoryApi = async (id, data) => {
+  try {
+    const { data: responseData } = await axios.post(`v1/shipyards/${id}/inventory`, data);
+    return responseData.inventory;
+  } catch (error) {
+    console.log('Error while creating inventory on shipyard', error.message);
+    throw error;
+  }
+};
+
+export const updateInventoryApi = async (id, inventoryID, data) => {
+  try {
+    const { data: responseData } = await axios.put(`v1/shipyards/${id}/inventory/${inventoryID}`, data);
+    return responseData.inventory;
+  } catch (error) {
+    console.log('Error while updating inventory on shipyard', error.message);
+    throw error;
+  }
+};
+
+export const deleteInventoryApi = async () => {
+  try {
+    return {};
+  } catch (error) {
+    console.log('Error while creating user on shipyard', error.message);
+    throw error;
+  }
+};
+
+export const fetchInventoryApi = async () => {
+  try {
+    return {};
+  } catch (error) {
+    console.log('Error while creating user on shipyard', error.message);
+    throw error;
+  }
 };

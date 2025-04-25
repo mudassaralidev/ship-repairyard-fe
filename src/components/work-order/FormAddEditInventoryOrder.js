@@ -7,7 +7,6 @@ import {
   Grid,
   Stack,
   TextField,
-  MenuItem,
   Button,
   Autocomplete,
   Typography

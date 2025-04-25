@@ -23,6 +23,7 @@ const ManageDockingPlaces = Loadable(lazy(() => import('pages/docking-master/Man
 const ManageShips = Loadable(lazy(() => import('pages/admin/ManageShips')));
 const ManageDockings = Loadable(lazy(() => import('pages/admin/ManageDockings')));
 const ManageRepairs = Loadable(lazy(() => import('pages/admin/ManageRepairs')));
+const ManageInventory = Loadable(lazy(() => import('pages/admin/ManageInventory')));
 
 const MainRoutes = () => {
   const { user } = useAuth();
@@ -48,7 +49,8 @@ const MainRoutes = () => {
       { path: 'docking-places', element: <ManageDockingPlaces /> },
       { path: 'ships', element: <ManageShips /> },
       { path: 'dockings', element: <ManageDockings /> },
-      { path: 'repairs', element: <ManageRepairs /> }
+      { path: 'repairs', element: <ManageRepairs /> },
+      { path: 'inventories', element: <ManageInventory /> }
     ];
 
     return [

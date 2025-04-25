@@ -5,7 +5,6 @@ import { alpha, useTheme } from '@mui/material/styles';
 import {
   Box,
   Button,
-  Chip,
   Divider,
   FormControl,
   Grid,
@@ -45,38 +44,14 @@ import EmptyReactTable from 'components/react-table/empty';
 import { DebouncedInput, RowSelection, TablePagination } from 'components/third-party/react-table';
 
 // assets
-import { DeleteOutlined, EditOutlined, EyeOutlined, PlusOutlined } from '@ant-design/icons';
+import { DeleteOutlined, EditOutlined, PlusOutlined } from '@ant-design/icons';
 import { useDispatch, useSelector } from 'react-redux';
-import { repairColumns } from 'utils/constants';
+import { inventoryColumns } from 'utils/constants';
 import _ from 'lodash';
 import useAuth from 'hooks/useAuth';
 import Loader from 'components/Loader';
-import { fetchRepairs } from '../../redux/features/repair/actions';
-import RepairModal from 'components/repair/RepairModal';
-import { getDockingNamesForRepair } from 'api/docking';
-import UpdateStatusModal from 'components/repair/UpdateStatusModal';
-import ExpandingRepairHistory from 'components/repair/RepairHistory';
-import WorkOrderModal from 'components/work-order/WorkOrderModal';
-import dataApi from 'utils/dataApi';
-import { toast } from 'react-toastify';
-import { fetchInventoriesApi } from 'api/shipyard';
-
-const getStatusChipProps = (status) => {
-  const normalized = status?.toUpperCase?.() ?? '';
-
-  const statusMap = {
-    INITIATED: { color: 'secondary', label: 'INITIATED' },
-    APPROVED: { color: 'info', label: 'APPROVED' },
-    BLOCKED: { color: 'error', label: 'BLOCKED' },
-    COMPLETED: { color: 'success', label: 'COMPLETED' }
-  };
-
-  return {
-    ...(statusMap[normalized] || { color: 'default', label: normalized }),
-    size: 'medium',
-    variant: 'dark'
-  };
-};
+import { fetchInventories } from '../../redux/features/inventory/actions';
+import InventoryModal from 'components/inventory/InventoryModal';
 
 export const fuzzyFilter = (row, columnId, value, addMeta) => {
   const itemRank = rankItem(row.getValue(columnId), value);
@@ -86,7 +61,7 @@ export const fuzzyFilter = (row, columnId, value, addMeta) => {
   return itemRank.passed;
 };
 
-function ReactTable({ data, columns, globalFilter, setGlobalFilter, repairId }) {
+function ReactTable({ data, columns, globalFilter, setGlobalFilter }) {
   const theme = useTheme();
 
   const [rowSelection, setRowSelection] = useState({});
@@ -155,10 +130,7 @@ function ReactTable({ data, columns, globalFilter, setGlobalFilter, repairId }) 
                   </TableRow>
                   {row.getIsExpanded() && (
                     <TableRow sx={{ bgcolor: backColor, '&:hover': { bgcolor: `${backColor} !important` } }}>
-                      <TableCell colSpan={row.getVisibleCells().length}>
-                        {/* <ExpandingUserDetail data={row.original} /> */}
-                        <ExpandingRepairHistory repairId={row.original.id} />
-                      </TableCell>
+                      <TableCell colSpan={row.getVisibleCells().length}></TableCell>
                     </TableRow>
                   )}
                 </Fragment>
@@ -184,26 +156,21 @@ function ReactTable({ data, columns, globalFilter, setGlobalFilter, repairId }) 
   );
 }
 
-const ManageRepairs = () => {
+const ManageInventory = () => {
   const theme = useTheme();
   const matchDownSM = useMediaQuery(theme.breakpoints.down('sm'));
   const { user } = useAuth();
 
   const dispatch = useDispatch();
   const { shipyard } = useSelector((state) => state.shipyard);
-  const { repairs: lists, status: fetchingRepairs } = useSelector((state) => state.repair);
-  const [selectedRepair, setSelectedRepair] = useState(null);
-  const [repairModal, setRepairModal] = useState(false);
-  const [dockingNames, setDockingNames] = useState([]);
-  const [updateStatusModal, setUpdateStatusModal] = useState(false);
-  const [workOrderModal, setWOModal] = useState(false);
-  const [departments, setDepartments] = useState([]);
-  const [inventories, setInventories] = useState([]);
+  const { inventories: lists, status } = useSelector((state) => state.inventory);
+  const [selectedInventory, setSelectedInventory] = useState(null);
+  const [inventoryModal, setInventoryModal] = useState(false);
 
   const [open, setOpen] = useState(false);
   const [globalFilter, setGlobalFilter] = useState('');
 
-  const repairColsWithoutActions = repairColumns;
+  const colsWithoutActions = inventoryColumns;
 
   const handleClose = () => {
     setOpen(!open);
@@ -212,78 +179,12 @@ const ManageRepairs = () => {
   useEffect(() => {
     if (!user) return;
 
-    (async () => {
-      try {
-        const { shipyard_id } = user;
-
-        dispatch(fetchRepairs(shipyard_id));
-        const [data, { data: departsData }, inventories] = await Promise.all([
-          getDockingNamesForRepair(shipyard_id),
-          dataApi.get('/v1/departments?include_foreman=true'),
-          fetchInventoriesApi(shipyard_id)
-        ]);
-        setDepartments(departsData.departments);
-        setDockingNames(data);
-        setInventories(inventories);
-      } catch (error) {
-        console.error('Error occurred while getting repairs', error);
-        toast.error(error?.response?.data?.message || 'Some error occurred while getting data for repair');
-      }
-    })();
+    dispatch(fetchInventories(user.shipyard_id));
   }, [user]);
 
   const columns = useMemo(
     () => [
-      ...repairColsWithoutActions,
-      {
-        header: 'Order Type',
-        id: 'order_type',
-        cell: ({ row }) => {
-          const { requires_work_order, requires_subcontractor, status } = row.original;
-          if (requires_work_order && status === 'APPROVED')
-            return (
-              <Stack direction="row" gap={1}>
-                <Typography>Work Order</Typography>
-                <Button
-                  sx={{ padding: '0px', justifyContent: 'end', minWidth: '30px' }}
-                  variant="outlined"
-                  startIcon={<PlusOutlined />}
-                  onClick={() => {
-                    setWOModal(true);
-                    setSelectedRepair(row.original);
-                  }}
-                ></Button>
-              </Stack>
-            );
-          if (requires_work_order) return 'Work Order';
-          if (requires_subcontractor) return 'Subcontractor Order';
-          return '-';
-        }
-      },
-
-      {
-        header: 'Status',
-        cell: ({ row }) => (
-          <Tooltip title="Update Status" arrow>
-            <Button
-              variant="text"
-              size="small"
-              sx={{
-                textTransform: 'capitalize', // Makes ENUM values like "APPROVED" more readable
-                cursor: 'pointer',
-                minWidth: '100px'
-              }}
-              onClick={() => {
-                setSelectedRepair(row.original);
-                setUpdateStatusModal(true);
-              }}
-            >
-              <Chip {...getStatusChipProps(row.original.status)} />
-            </Button>
-          </Tooltip>
-        )
-      },
-
+      ...colsWithoutActions,
       {
         header: 'Actions',
         meta: {
@@ -291,26 +192,15 @@ const ManageRepairs = () => {
         },
         disableSortBy: true,
         cell: ({ row }) => {
-          const collapseIcon =
-            row.getCanExpand() && row.getIsExpanded() ? (
-              <PlusOutlined style={{ color: 'rgb(255, 77, 79)', transform: 'rotate(45deg)' }} />
-            ) : (
-              <EyeOutlined />
-            );
           return (
             <Stack direction="row" alignItems="center" justifyContent="center" spacing={0}>
-              <Tooltip title="Repair History">
-                <IconButton color="secondary" onClick={row.getToggleExpandedHandler()}>
-                  {collapseIcon}
-                </IconButton>
-              </Tooltip>
               <Tooltip title="Edit">
                 <IconButton
                   color="primary"
                   onClick={(e) => {
                     e.stopPropagation();
-                    setSelectedRepair(row.original);
-                    setRepairModal(true);
+                    setSelectedInventory(row.original);
+                    setInventoryModal(true);
                   }}
                 >
                   <EditOutlined />
@@ -337,11 +227,11 @@ const ManageRepairs = () => {
   );
 
   const modalToggler = () => {
-    setRepairModal(!repairModal);
-    setSelectedRepair(null);
+    setInventoryModal(!inventoryModal);
+    setSelectedInventory(null);
   };
 
-  if ([fetchingRepairs].includes('loading')) return <Loader />;
+  if ([status].includes('loading')) return <Loader />;
 
   return (
     <>
@@ -354,7 +244,7 @@ const ManageRepairs = () => {
           }
         }}
       >
-        Manage Repairs
+        Manage Inventory
       </Typography>
       {_.isEmpty(shipyard) ? (
         <></>
@@ -385,13 +275,13 @@ const ManageRepairs = () => {
           <DebouncedInput
             value={globalFilter ?? ''}
             onFilterChange={(value) => setGlobalFilter(String(value))}
-            placeholder={`Search ${lists.length} records...`}
+            placeholder={`Search ${lists?.length} records...`}
           />
 
           <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} alignItems="center" sx={{ width: { xs: '100%', sm: 'auto' } }}>
             <Stack direction="row" spacing={2} alignItems="center">
               <Button variant="contained" startIcon={<PlusOutlined />} onClick={modalToggler}>
-                Create Repair
+                Create Inventory
               </Button>
             </Stack>
           </Stack>
@@ -403,49 +293,19 @@ const ManageRepairs = () => {
               data: lists,
               columns,
               globalFilter,
-              setGlobalFilter,
-              repairId: selectedRepair?.id
+              setGlobalFilter
             }}
           />
         ) : (
-          <EmptyReactTable columns={repairColsWithoutActions} />
+          <EmptyReactTable columns={colsWithoutActions} />
         )}
 
-        {repairModal && (
-          <RepairModal
-            open={repairModal}
-            modalToggler={modalToggler}
-            shipyard={shipyard}
-            repair={selectedRepair}
-            dockingNames={dockingNames}
-          />
-        )}
-        {updateStatusModal && (
-          <UpdateStatusModal
-            open={updateStatusModal}
-            modalToggler={() => {
-              setSelectedRepair(null);
-              setUpdateStatusModal(!updateStatusModal);
-            }}
-            repair={selectedRepair}
-          />
-        )}
-
-        {workOrderModal && (
-          <WorkOrderModal
-            open={workOrderModal}
-            modalToggler={() => {
-              setSelectedRepair(null);
-              setWOModal(false);
-            }}
-            repair={selectedRepair}
-            departments={departments}
-            inventories={inventories}
-          />
+        {inventoryModal && (
+          <InventoryModal open={inventoryModal} modalToggler={modalToggler} shipyard={shipyard} inventory={selectedInventory} />
         )}
       </MainCard>
     </>
   );
 };
 
-export default ManageRepairs;
+export default ManageInventory;

@@ -83,6 +83,12 @@ const dashboard = {
       url: '/dashboard/docking-places'
     },
     {
+      id: 'Manage Inventory',
+      title: <FormattedMessage id="Manage Inventory" />,
+      type: 'item',
+      url: '/dashboard/inventories'
+    },
+    {
       id: 'Manage Ships',
       title: <FormattedMessage id="Manage Ships" />,
       type: 'item',
