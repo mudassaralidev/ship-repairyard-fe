@@ -1,9 +1,8 @@
-import { Fragment, useEffect, useMemo, useState } from 'react';
+import { Fragment, useMemo, useState } from 'react';
 
 // material-ui
 import { alpha, useTheme } from '@mui/material/styles';
 import {
-  Autocomplete,
   Box,
   Button,
   Divider,
@@ -19,7 +18,6 @@ import {
   TableContainer,
   TableHead,
   TableRow,
-  TextField,
   Tooltip,
   Typography,
   useMediaQuery
@@ -46,18 +44,11 @@ import EmptyReactTable from 'components/react-table/empty';
 import { DebouncedInput, RowSelection, TablePagination } from 'components/third-party/react-table';
 
 // assets
-import { DeleteOutlined, EditOutlined, EyeOutlined, PlusOutlined } from '@ant-design/icons';
+import { DeleteOutlined, EditOutlined, PlusOutlined } from '@ant-design/icons';
 import { useDispatch, useSelector } from 'react-redux';
-import { shipColumns } from 'utils/constants';
-import AlertUserDelete from 'components/users/AlertDelete';
+import { workOrderColumns } from 'utils/constants';
 import _ from 'lodash';
-import useAuth from 'hooks/useAuth';
-import { fetchShips } from '../../redux/features/ships/actions';
-import { fetchClients } from 'api/client';
-import { toast } from 'react-toastify';
-import AddEditShipModal from 'components/ships/AddEditShipModal';
-import DockingModal from 'components/docking/DokcingModal';
-import { getAvailableDockingPlaces } from 'api/dockingPlaces';
+import Loader from 'components/Loader';
 
 export const fuzzyFilter = (row, columnId, value, addMeta) => {
   const itemRank = rankItem(row.getValue(columnId), value);
@@ -88,8 +79,7 @@ function ReactTable({ data, columns, globalFilter, setGlobalFilter, showPaginati
     getCoreRowModel: getCoreRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
     getExpandedRowModel: getExpandedRowModel(),
-    globalFilterFn: fuzzyFilter,
-    debugTable: true
+    globalFilterFn: fuzzyFilter
   });
 
   const backColor = alpha(theme.palette.primary.lighter, 0.1);
@@ -137,10 +127,7 @@ function ReactTable({ data, columns, globalFilter, setGlobalFilter, showPaginati
                   </TableRow>
                   {row.getIsExpanded() && (
                     <TableRow sx={{ bgcolor: backColor, '&:hover': { bgcolor: `${backColor} !important` } }}>
-                      <TableCell colSpan={row.getVisibleCells().length}>
-                        {/* <ExpandingUserDetail data={row.original} /> */}
-                        <>Expanding Detail</>
-                      </TableCell>
+                      <TableCell colSpan={row.getVisibleCells().length}></TableCell>
                     </TableRow>
                   )}
                 </Fragment>
@@ -148,7 +135,7 @@ function ReactTable({ data, columns, globalFilter, setGlobalFilter, showPaginati
             </TableBody>
           </Table>
         </TableContainer>
-        {showPagination ? (
+        {showPagination && (
           <>
             <Divider />
             <Box sx={{ p: 2 }}>
@@ -162,79 +149,33 @@ function ReactTable({ data, columns, globalFilter, setGlobalFilter, showPaginati
               />
             </Box>
           </>
-        ) : (
-          <></>
         )}
       </Stack>
     </ScrollX>
   );
 }
 
-const ManageShips = ({ showCreateBtn = true, shipData, dockedPlaces = [] }) => {
+const WorkOrderTable = ({ lists = [], hideSYName = false, showTitle = true, showPagination = true }) => {
   const theme = useTheme();
   const matchDownSM = useMediaQuery(theme.breakpoints.down('sm'));
-  const { user } = useAuth();
 
   const dispatch = useDispatch();
-  const {
-    shipyard: { shipyard, status },
-    ship: { ships: lists = [], status: shipStatus } = {}
-  } = useSelector((state) => state);
-  const [selectedShip, setSelectedShip] = useState({});
-  const [clients, setClients] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const { shipyard } = useSelector((state) => state.shipyard);
+  const [selectedWorkOrder, setSelectedWorkOrder] = useState(null);
+  const [workOrderModal, setWorkOrderModal] = useState(false);
 
   const [open, setOpen] = useState(false);
   const [globalFilter, setGlobalFilter] = useState('');
 
-  const [addEditModal, setAddEditModal] = useState(false);
-  const [addDockModal, setAddDockModal] = useState(false);
-  const [deleteId, setDeleteId] = useState('');
-  const [dockingPlaces, setDockingPlaces] = useState(dockedPlaces);
+  const colsWithoutActions = workOrderColumns;
 
   const handleClose = () => {
     setOpen(!open);
   };
 
-  useEffect(() => {
-    if (!user || shipData) return;
-    try {
-      (async () => {
-        dispatch(fetchShips(user.shipyard_id));
-        const [clientsData, dockingData] = await Promise.all([
-          fetchClients(user.shipyard_id),
-          getAvailableDockingPlaces(user?.shipyard_id)
-        ]);
-        setClients(clientsData);
-        setDockingPlaces(dockingData);
-
-        setLoading(false);
-      })();
-    } catch (error) {
-      console.error('Error occurred while getting departments', error);
-      toast.error('Some error occurred, please try again later');
-    }
-  }, [user]);
-
-  useEffect(() => {
-    if (!shipData) return;
-    try {
-      (async () => {
-        const clientsData = fetchClients(user.shipyard_id);
-        setClients(clientsData);
-
-        setLoading(false);
-      })();
-    } catch (error) {
-      console.error('Error occurred while getting dockings', error);
-      toast.error('Some error occurred, please try again later');
-    }
-  }, [shipData?.id]);
-
   const columns = useMemo(
     () => [
-      ...shipColumns,
-
+      ...colsWithoutActions,
       {
         header: 'Actions',
         meta: {
@@ -244,42 +185,25 @@ const ManageShips = ({ showCreateBtn = true, shipData, dockedPlaces = [] }) => {
         cell: ({ row }) => {
           return (
             <Stack direction="row" alignItems="center" justifyContent="center" spacing={0}>
-              {row.original?.dockings ? (
-                !row.original?.dockings?.length
-              ) : row.original.docking_count < 1 ? (
-                <Button
-                  variant="text"
-                  size="small"
-                  onClick={() => {
-                    setSelectedShip(row.original);
-                    setAddDockModal(true);
-                  }}
-                >
-                  Dock
-                </Button>
-              ) : (
-                <></>
-              )}
               <Tooltip title="Edit">
                 <IconButton
                   color="primary"
                   onClick={(e) => {
                     e.stopPropagation();
-                    setSelectedShip(row.original);
-                    setAddEditModal(true);
+                    setSelectedWorkOrder(row.original);
+                    setWorkOrderModal(true);
                   }}
                 >
                   <EditOutlined />
                 </IconButton>
               </Tooltip>
-
               <Tooltip title="Delete">
                 <IconButton
                   color="error"
                   onClick={(e) => {
                     e.stopPropagation();
                     handleClose();
-                    setSelectedShip(row.original);
+                    setDeleteId(row.original.id);
                   }}
                 >
                   <DeleteOutlined />
@@ -294,14 +218,49 @@ const ManageShips = ({ showCreateBtn = true, shipData, dockedPlaces = [] }) => {
   );
 
   const modalToggler = () => {
-    setAddEditModal(!addEditModal);
-    setSelectedShip(null);
+    setWorkOrderModal(!inventoryModal);
+    setSelectedWorkOrder(null);
   };
+
+  if (false) return <Loader />;
 
   return (
     <>
+      {showTitle ? (
+        <Typography
+          variant="h2"
+          sx={{
+            fontSize: {
+              xs: 'h5.fontSize',
+              md: 'h2.fontSize'
+            }
+          }}
+        >
+          Manage WorkOrder
+        </Typography>
+      ) : (
+        <></>
+      )}
+      {_.isEmpty(shipyard) || hideSYName ? (
+        <></>
+      ) : (
+        <Grid container spacing={2} sx={{ marginTop: '16px', marginBottom: '8px' }}>
+          <Grid item xs={12}>
+            <Stack direction="row" spacing={2} alignItems="center">
+              {/* Shipyard Select */}
+              <FormControl sx={{ minWidth: 200 }}>
+                <InputLabel id="shipyard-select-label">Shipyard</InputLabel>
+                <Select labelId="shipyard-select-label" id="shipyard-select" value={shipyard?.id || ''} label="Shipyard">
+                  <MenuItem value={shipyard?.id}>{shipyard?.name}</MenuItem>
+                </Select>
+              </FormControl>
+            </Stack>
+          </Grid>
+        </Grid>
+      )}
+
       <MainCard content={false}>
-        {showCreateBtn && (
+        {lists.length > 1 && (
           <Stack
             direction={{ xs: 'column', sm: 'row' }}
             spacing={2}
@@ -312,51 +271,39 @@ const ManageShips = ({ showCreateBtn = true, shipData, dockedPlaces = [] }) => {
             <DebouncedInput
               value={globalFilter ?? ''}
               onFilterChange={(value) => setGlobalFilter(String(value))}
-              placeholder={`Search ${lists.length} records...`}
+              placeholder={`Search ${lists?.length} records...`}
             />
+
             <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} alignItems="center" sx={{ width: { xs: '100%', sm: 'auto' } }}>
               <Stack direction="row" spacing={2} alignItems="center">
                 <Button variant="contained" startIcon={<PlusOutlined />} onClick={modalToggler}>
-                  Create Ship
+                  Create Work Order
                 </Button>
               </Stack>
             </Stack>
           </Stack>
         )}
 
-        {status === 'loading' || shipStatus === 'loading' || loading ? (
-          <EmptyReactTable columns={shipColumns} />
-        ) : (
+        {lists?.length ? (
           <ReactTable
             {...{
-              data: shipData ? [shipData] : lists,
+              data: lists,
               columns,
               globalFilter,
               setGlobalFilter,
-              showPagination: !shipData
+              showPagination
             }}
           />
-        )}
-        {open && <AlertUserDelete id={deleteId} title={deleteId} open={open} handleClose={handleClose} />}
-        {addEditModal && (
-          <AddEditShipModal open={addEditModal} modalToggler={modalToggler} shipyard={shipyard} clients={clients} ship={selectedShip} />
+        ) : (
+          <EmptyReactTable columns={colsWithoutActions} />
         )}
 
-        {addDockModal && (
-          <DockingModal
-            open={addDockModal}
-            modalToggler={() => {
-              setAddDockModal(false);
-            }}
-            shipyard={shipyard}
-            dockingShip={selectedShip}
-            dockingPlaces={dockingPlaces}
-            removeUsedPlace={(placeId) => setDockingPlaces((preState) => preState.filter((p) => p.id !== placeId))}
-          />
-        )}
+        {/* {inventoryModal && (
+          <InventoryModal open={inventoryModal} modalToggler={modalToggler} shipyard={shipyard} inventory={selectedInventory} />
+        )} */}
       </MainCard>
     </>
   );
 };
 
-export default ManageShips;
+export default WorkOrderTable;

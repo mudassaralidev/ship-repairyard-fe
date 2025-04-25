@@ -5,6 +5,11 @@ export const fetchShipsApi = async (shipyardID) => {
   return data.ships;
 };
 
+export const fetchShipApi = async (shipID) => {
+  const { data } = await axios.get(`v1/ships/${shipID}`);
+  return data.ship;
+};
+
 export const createShipApi = async (data) => {
   const { data: response } = await axios.post('v1/ships', data);
   return response.ship;

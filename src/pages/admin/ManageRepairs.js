@@ -86,7 +86,7 @@ export const fuzzyFilter = (row, columnId, value, addMeta) => {
   return itemRank.passed;
 };
 
-function ReactTable({ data, columns, globalFilter, setGlobalFilter, repairId }) {
+function ReactTable({ data, columns, globalFilter, setGlobalFilter, showPagination }) {
   const theme = useTheme();
 
   const [rowSelection, setRowSelection] = useState({});
@@ -166,25 +166,29 @@ function ReactTable({ data, columns, globalFilter, setGlobalFilter, repairId }) 
             </TableBody>
           </Table>
         </TableContainer>
-        <>
-          <Divider />
-          <Box sx={{ p: 2 }}>
-            <TablePagination
-              {...{
-                setPageSize: table.setPageSize,
-                setPageIndex: table.setPageIndex,
-                getState: table.getState,
-                getPageCount: table.getPageCount
-              }}
-            />
-          </Box>
-        </>
+        {showPagination ? (
+          <>
+            <Divider />
+            <Box sx={{ p: 2 }}>
+              <TablePagination
+                {...{
+                  setPageSize: table.setPageSize,
+                  setPageIndex: table.setPageIndex,
+                  getState: table.getState,
+                  getPageCount: table.getPageCount
+                }}
+              />
+            </Box>
+          </>
+        ) : (
+          <></>
+        )}
       </Stack>
     </ScrollX>
   );
 }
 
-const ManageRepairs = () => {
+const ManageRepairs = ({ repairData, departsData = [], inventoryData = [], dockedName }) => {
   const theme = useTheme();
   const matchDownSM = useMediaQuery(theme.breakpoints.down('sm'));
   const { user } = useAuth();
@@ -194,11 +198,11 @@ const ManageRepairs = () => {
   const { repairs: lists, status: fetchingRepairs } = useSelector((state) => state.repair);
   const [selectedRepair, setSelectedRepair] = useState(null);
   const [repairModal, setRepairModal] = useState(false);
-  const [dockingNames, setDockingNames] = useState([]);
+  const [dockingNames, setDockingNames] = useState(dockedName ? [dockedName] : []);
   const [updateStatusModal, setUpdateStatusModal] = useState(false);
   const [workOrderModal, setWOModal] = useState(false);
-  const [departments, setDepartments] = useState([]);
-  const [inventories, setInventories] = useState([]);
+  const [departments, setDepartments] = useState(departsData);
+  const [inventories, setInventories] = useState(inventoryData);
 
   const [open, setOpen] = useState(false);
   const [globalFilter, setGlobalFilter] = useState('');
@@ -210,7 +214,7 @@ const ManageRepairs = () => {
   };
 
   useEffect(() => {
-    if (!user) return;
+    if (!user || repairData) return;
 
     (async () => {
       try {
@@ -345,18 +349,21 @@ const ManageRepairs = () => {
 
   return (
     <>
-      <Typography
-        variant="h2"
-        sx={{
-          fontSize: {
-            xs: 'h5.fontSize',
-            md: 'h2.fontSize'
-          }
-        }}
-      >
-        Manage Repairs
-      </Typography>
-      {_.isEmpty(shipyard) ? (
+      {!repairData && (
+        <Typography
+          variant="h2"
+          sx={{
+            fontSize: {
+              xs: 'h5.fontSize',
+              md: 'h2.fontSize'
+            }
+          }}
+        >
+          Manage Repairs
+        </Typography>
+      )}
+
+      {_.isEmpty(shipyard) || repairData ? (
         <></>
       ) : (
         <Grid container spacing={2} sx={{ marginTop: '16px', marginBottom: '8px' }}>
@@ -375,36 +382,39 @@ const ManageRepairs = () => {
       )}
 
       <MainCard content={false}>
-        <Stack
-          direction={{ xs: 'column', sm: 'row' }}
-          spacing={2}
-          alignItems="center"
-          justifyContent="space-between"
-          sx={{ padding: 2, ...(matchDownSM && { '& .MuiOutlinedInput-root, & .MuiFormControl-root': { width: '100%' } }) }}
-        >
-          <DebouncedInput
-            value={globalFilter ?? ''}
-            onFilterChange={(value) => setGlobalFilter(String(value))}
-            placeholder={`Search ${lists.length} records...`}
-          />
+        {!repairData && (
+          <Stack
+            direction={{ xs: 'column', sm: 'row' }}
+            spacing={2}
+            alignItems="center"
+            justifyContent="space-between"
+            sx={{ padding: 2, ...(matchDownSM && { '& .MuiOutlinedInput-root, & .MuiFormControl-root': { width: '100%' } }) }}
+          >
+            <DebouncedInput
+              value={globalFilter ?? ''}
+              onFilterChange={(value) => setGlobalFilter(String(value))}
+              placeholder={`Search ${lists.length} records...`}
+            />
 
-          <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} alignItems="center" sx={{ width: { xs: '100%', sm: 'auto' } }}>
-            <Stack direction="row" spacing={2} alignItems="center">
-              <Button variant="contained" startIcon={<PlusOutlined />} onClick={modalToggler}>
-                Create Repair
-              </Button>
+            <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} alignItems="center" sx={{ width: { xs: '100%', sm: 'auto' } }}>
+              <Stack direction="row" spacing={2} alignItems="center">
+                <Button variant="contained" startIcon={<PlusOutlined />} onClick={modalToggler}>
+                  Create Repair
+                </Button>
+              </Stack>
             </Stack>
           </Stack>
-        </Stack>
+        )}
 
-        {lists?.length ? (
+        {lists?.length || repairData ? (
           <ReactTable
             {...{
-              data: lists,
+              data: repairData ? [repairData] : lists,
               columns,
               globalFilter,
               setGlobalFilter,
-              repairId: selectedRepair?.id
+              repairId: selectedRepair?.id,
+              showPagination: !repairData
             }}
           />
         ) : (

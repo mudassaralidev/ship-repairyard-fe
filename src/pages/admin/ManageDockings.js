@@ -64,7 +64,7 @@ export const fuzzyFilter = (row, columnId, value, addMeta) => {
   return itemRank.passed;
 };
 
-function ReactTable({ data, columns, globalFilter, setGlobalFilter }) {
+function ReactTable({ data, columns, globalFilter, setGlobalFilter, showPagination }) {
   const theme = useTheme();
 
   const [rowSelection, setRowSelection] = useState({});
@@ -145,25 +145,29 @@ function ReactTable({ data, columns, globalFilter, setGlobalFilter }) {
             </TableBody>
           </Table>
         </TableContainer>
-        <>
-          <Divider />
-          <Box sx={{ p: 2 }}>
-            <TablePagination
-              {...{
-                setPageSize: table.setPageSize,
-                setPageIndex: table.setPageIndex,
-                getState: table.getState,
-                getPageCount: table.getPageCount
-              }}
-            />
-          </Box>
-        </>
+        {showPagination ? (
+          <>
+            <Divider />
+            <Box sx={{ p: 2 }}>
+              <TablePagination
+                {...{
+                  setPageSize: table.setPageSize,
+                  setPageIndex: table.setPageIndex,
+                  getState: table.getState,
+                  getPageCount: table.getPageCount
+                }}
+              />
+            </Box>
+          </>
+        ) : (
+          <></>
+        )}
       </Stack>
     </ScrollX>
   );
 }
 
-const ManageDockings = () => {
+const ManageDockings = ({ ship, shipDocking, dockedPlaces }) => {
   const theme = useTheme();
   const matchDownSM = useMediaQuery(theme.breakpoints.down('sm'));
   const { user } = useAuth();
@@ -174,7 +178,7 @@ const ManageDockings = () => {
   const { ships, status: fetchingShips } = useSelector((state) => state.ship);
   const [selectedDocking, setSelectedDocking] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [dockingPlaces, setDockingPlaces] = useState([]);
+  const [dockingPlaces, setDockingPlaces] = useState(dockedPlaces);
   const [dockingModal, setDockingModal] = useState(false);
   const [addSuperintendentModal, setAddSuperintendentModal] = useState(false);
 
@@ -188,23 +192,20 @@ const ManageDockings = () => {
   };
 
   useEffect(() => {
-    if (!user) return;
     try {
+      if (!user || ship) return;
       (async () => {
         dispatch(fetchDockings(user?.shipyard_id));
         dispatch(fetchShips(user?.shipyard_id));
         const dockingData = await getAvailableDockingPlaces(user?.shipyard_id);
         setDockingPlaces(dockingData);
-        setLoading(false);
       })();
     } catch (error) {
       console.error('Error occurred while getting departments', error);
+    } finally {
+      setLoading(false);
     }
   }, [user]);
-
-  useEffect(() => {
-    if (!user) return;
-  }, []);
 
   const columns = useMemo(
     () => [
@@ -279,18 +280,20 @@ const ManageDockings = () => {
 
   return (
     <>
-      <Typography
-        variant="h2"
-        sx={{
-          fontSize: {
-            xs: 'h5.fontSize',
-            md: 'h2.fontSize'
-          }
-        }}
-      >
-        Manage Dockings
-      </Typography>
-      {_.isEmpty(shipyard) ? (
+      {!shipDocking && (
+        <Typography
+          variant="h2"
+          sx={{
+            fontSize: {
+              xs: 'h5.fontSize',
+              md: 'h2.fontSize'
+            }
+          }}
+        >
+          Manage Dockings
+        </Typography>
+      )}
+      {_.isEmpty(shipyard) || shipDocking ? (
         <></>
       ) : (
         <Grid container spacing={2} sx={{ marginTop: '16px', marginBottom: '8px' }}>
@@ -309,35 +312,38 @@ const ManageDockings = () => {
       )}
 
       <MainCard content={false}>
-        <Stack
-          direction={{ xs: 'column', sm: 'row' }}
-          spacing={2}
-          alignItems="center"
-          justifyContent="space-between"
-          sx={{ padding: 2, ...(matchDownSM && { '& .MuiOutlinedInput-root, & .MuiFormControl-root': { width: '100%' } }) }}
-        >
-          <DebouncedInput
-            value={globalFilter ?? ''}
-            onFilterChange={(value) => setGlobalFilter(String(value))}
-            placeholder={`Search ${lists.length} records...`}
-          />
+        {!shipDocking && (
+          <Stack
+            direction={{ xs: 'column', sm: 'row' }}
+            spacing={2}
+            alignItems="center"
+            justifyContent="space-between"
+            sx={{ padding: 2, ...(matchDownSM && { '& .MuiOutlinedInput-root, & .MuiFormControl-root': { width: '100%' } }) }}
+          >
+            <DebouncedInput
+              value={globalFilter ?? ''}
+              onFilterChange={(value) => setGlobalFilter(String(value))}
+              placeholder={`Search ${lists.length} records...`}
+            />
 
-          <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} alignItems="center" sx={{ width: { xs: '100%', sm: 'auto' } }}>
-            <Stack direction="row" spacing={2} alignItems="center">
-              <Button variant="contained" startIcon={<PlusOutlined />} onClick={modalToggler}>
-                Create Docking
-              </Button>
+            <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} alignItems="center" sx={{ width: { xs: '100%', sm: 'auto' } }}>
+              <Stack direction="row" spacing={2} alignItems="center">
+                <Button variant="contained" startIcon={<PlusOutlined />} onClick={modalToggler}>
+                  Create Docking
+                </Button>
+              </Stack>
             </Stack>
           </Stack>
-        </Stack>
+        )}
 
-        {lists?.length ? (
+        {lists?.length || shipDocking ? (
           <ReactTable
             {...{
-              data: lists,
+              data: shipDocking ? [shipDocking] : lists,
               columns,
               globalFilter,
-              setGlobalFilter
+              setGlobalFilter,
+              showPagination: !shipDocking
             }}
           />
         ) : (
@@ -348,8 +354,8 @@ const ManageDockings = () => {
             open={dockingModal}
             modalToggler={modalToggler}
             shipyard={shipyard}
-            docking={selectedDocking}
-            ships={ships}
+            docking={shipDocking ? shipDocking : selectedDocking}
+            ships={ship ? ship : ships}
             dockingPlaces={dockingPlaces}
             removeUsedPlace={(placeId) => setDockingPlaces((preState) => preState.filter((p) => p.id !== placeId))}
           />

@@ -299,6 +299,65 @@ export const inventoryColumns = [
   }
 ];
 
+export const workOrderColumns = [
+  {
+    header: 'No',
+    id: 'rowIndex',
+    cell: ({ row }) => row.index + 1
+  },
+  {
+    header: 'Description',
+    accessorKey: 'description'
+  },
+  {
+    header: 'Start Date',
+    accessorKey: 'start_date',
+    cell: ({ row }) => (row.original.start_date ? dayjs(row.original.start_date).format('DD-MM-YYYY') : '-')
+  },
+  {
+    header: 'End Date',
+    accessorKey: 'end_date',
+    cell: ({ row }) => (row.original.end_date ? dayjs(row.original.end_date).format('DD-MM-YYYY') : '-')
+  },
+  {
+    header: 'Total Hours',
+    accessorKey: 'total_hours'
+  },
+  {
+    header: 'Per Hour Cost',
+    accessorKey: 'per_hour_cost'
+  },
+  {
+    header: 'Updated Reason',
+    accessorKey: 'updated_reason'
+  },
+  {
+    header: 'Foreman',
+    accessorKey: 'foreman.name'
+  }
+];
+
+export const inventoryOrderColumns = [
+  {
+    header: 'No',
+    id: 'rowIndex',
+    cell: ({ row }) => row.index + 1
+  },
+  {
+    header: 'Inventory Used',
+    accessorKey: 'inventory.name'
+  },
+  {
+    header: 'Quantity',
+    accessorKey: 'quantity'
+  },
+  {
+    header: 'Cost',
+    accessorKey: 'cost',
+    cell: ({ row }) => (row.original.cost ? `$${parseFloat(row.original.cost).toFixed(2)}` : '-')
+  }
+];
+
 export const getFieldsByRole = ({ role, roles = [], shipyard_id, shipyards = [], departments = [] }) => {
   if (!shipyard_id) return [{ key: 'shipyard_id', label: 'Shipyard', type: 'select', options: shipyards, colVal: 6 }];
 

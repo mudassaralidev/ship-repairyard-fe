@@ -15,6 +15,7 @@ const MaintenanceError = Loadable(lazy(() => import('pages/maintenance/404')));
 import { useDispatch } from 'react-redux';
 import { fetchRoles } from '../redux/features/roles/actions';
 import { fetchShipyard } from '../redux/features/shipyard/actions';
+import ShipDetails from 'pages/admin/ManageShipDetails';
 const ManageAdministratorUsers = Loadable(lazy(() => import('pages/admin/ManageAdministratorUsers')));
 const ManageClientUser = Loadable(lazy(() => import('pages/admin/ManageClientUser')));
 const ManageDepartments = Loadable(lazy(() => import('pages/admin/ManageDepartments')));
@@ -48,6 +49,7 @@ const MainRoutes = () => {
       { path: 'dept-users', element: <ManageDeptUsers /> },
       { path: 'docking-places', element: <ManageDockingPlaces /> },
       { path: 'ships', element: <ManageShips /> },
+      { path: 'ships/:id', element: <ShipDetails /> },
       { path: 'dockings', element: <ManageDockings /> },
       { path: 'repairs', element: <ManageRepairs /> },
       { path: 'inventories', element: <ManageInventory /> }
