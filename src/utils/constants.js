@@ -1,6 +1,7 @@
 import { useMemo } from 'react';
 import dayjs from 'dayjs';
 import { Tooltip, Typography } from '@mui/material';
+import { Link } from 'react-router-dom';
 
 export const shipyardColumnsWithoutActions = [
   {
@@ -126,7 +127,7 @@ export const shipColumns = [
   {
     header: 'No',
     id: 'rowIndex',
-    cell: ({ row }) => row.index + 1
+    cell: ({ row }) => <Link to={`/dashboard/ships/${row.original.id}`}>{row.index + 1}</Link>
   },
   {
     header: 'Ship Name',

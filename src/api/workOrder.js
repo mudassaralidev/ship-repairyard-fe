@@ -11,7 +11,7 @@ export const fetchWorkOrdersApi = async (shipyardID) => {
 export const createWorkOrderApi = async (data) => {
   try {
     const { data: response } = await axios.post(`v1/work-orders`, data);
-    return response.repair;
+    return response.work_order;
   } catch (error) {
     throw error;
   }
@@ -19,7 +19,17 @@ export const createWorkOrderApi = async (data) => {
 
 export const updateWorkOrderApi = async (id, data) => {
   try {
-    return {};
+    const { data: response } = await axios.put(`v1/work-orders/${id}`, data);
+    return response.work_order;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const AssignWorkOrderEmployeesApi = async (id, data) => {
+  try {
+    const { data: response } = await axios.put(`v1/work-orders/${id}/assign-employees`, data);
+    return response.message;
   } catch (error) {
     throw error;
   }

@@ -1,23 +1,20 @@
 import { toast } from 'react-toastify';
-import { requestStart, requestSuccess, requestFailure, create, update } from './slice';
+import { requestStart, requestSuccess, requestFailure, create, update, assignEmployees } from './slice';
 
-import { createWorkOrderApi, fetchWorkOrdersApi, updateWorkOrderApi } from 'api/workOrder';
+import { AssignWorkOrderEmployeesApi, createWorkOrderApi, fetchWorkOrdersApi, updateWorkOrderApi } from 'api/workOrder';
 
-const handleError = (dispatch, error) => {
+const handleError = (dispatch, error, hardCodedError) => {
   dispatch(requestFailure(error.message));
-  toast.error(
-    error?.response?.data?.message || error?.response?.data?.error?.message || 'Some error occurred while making action on shipyard',
-    {
-      position: 'top-right',
-      autoClose: 5000,
-      hideProgressBar: false,
-      closeOnClick: false,
-      pauseOnHover: true,
-      draggable: true,
-      progress: undefined,
-      theme: 'light'
-    }
-  );
+  toast.error(error?.response?.data?.message || error?.response?.data?.error?.message || hardCodedError, {
+    position: 'top-right',
+    autoClose: 5000,
+    hideProgressBar: false,
+    closeOnClick: false,
+    pauseOnHover: true,
+    draggable: true,
+    progress: undefined,
+    theme: 'light'
+  });
 };
 
 export const fetchWorkOrders = (shipyardID) => async (dispatch) => {
@@ -45,5 +42,14 @@ export const updateWorkOrder = (id, data) => async (dispatch) => {
     dispatch(update(res));
   } catch (error) {
     handleError(dispatch, error, 'Error while updating work order');
+  }
+};
+
+export const assignWorkOrderEmployees = (id, data) => async (dispatch) => {
+  try {
+    const res = await AssignWorkOrderEmployeesApi(id, data);
+    dispatch(assignEmployees(res));
+  } catch (error) {
+    handleError(dispatch, error, 'Error while assigning/updating employees to work order');
   }
 };

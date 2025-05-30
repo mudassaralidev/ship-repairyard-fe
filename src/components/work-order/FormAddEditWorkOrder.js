@@ -22,17 +22,30 @@ import { toast } from 'react-toastify';
 import { useDispatch, useSelector } from 'react-redux';
 import useAuth from 'hooks/useAuth';
 import { clearSuccessMessage } from '../../redux/features/work-order/slice';
-import { createWorkOrder } from '../../redux/features/work-order/actions';
+import { createWorkOrder, updateWorkOrder } from '../../redux/features/work-order/actions';
 
 const validationSchema = (workOrder) =>
   Yup.object().shape({
     description: Yup.string().nullable(),
     start_date: Yup.date().nullable(),
+    total_hours: Yup.number()
+      .nullable()
+      .max(16, 'Work order can not be exceeded 16 hours.')
+      .when('status', {
+        is: 'COMPLETED',
+        then: (schema) => schema.required('Total hours are required when status is COMPLETED')
+      }),
     end_date: Yup.date().nullable().min(Yup.ref('start_date'), 'End date must be after start date'),
     total_cost: Yup.number().nullable(),
     repair_id: Yup.number().required('Repair is required'),
     foreman_id: Yup.number().required('Foreman or department is required'),
     status: Yup.string().nullable(),
+    per_hour_cost: Yup.number()
+      .nullable()
+      .when('status', {
+        is: 'COMPLETED',
+        then: (schema) => schema.required('Per hour cost is required when status is COMPLETED')
+      }),
     ...(workOrder
       ? {
           updated_reason: Yup.string().required('Enter the reason of change/update')
@@ -53,7 +66,9 @@ const FormAddEditWorkOrder = ({ repair, closeModal, workOrder, departments }) =>
   const { user } = useAuth();
   const { successMessage } = useSelector((state) => state.workOrder);
   const [foreman, setForeman] = useState(workOrder?.foreman ? workOrder?.foreman : {});
-  const [selectedDepartment, setSelectedDepartment] = useState(null);
+  const [selectedDepartment, setSelectedDepartment] = useState(
+    workOrder?.foreman ? departments.find((d) => d.foreman.id === workOrder?.foreman.id) : null
+  );
 
   const formik = useFormik({
     initialValues: {
@@ -75,7 +90,7 @@ const FormAddEditWorkOrder = ({ repair, closeModal, workOrder, departments }) =>
         }
 
         if (workOrder) {
-          //   dispatch(updateRepair(repair.id, values));
+          dispatch(updateWorkOrder(workOrder.id, values));
         } else {
           values.created_by = user.id;
           dispatch(createWorkOrder(values));

@@ -32,7 +32,12 @@ const workOrderSlice = createSlice({
       if (index !== -1) {
         state.workOrders[index] = action.payload;
         state.successMessage = 'Work order updated successfully!';
+      } else {
+        state.successMessage = 'Work order updated successfully!';
       }
+    },
+    assignEmployees: (state, action) => {
+      state.successMessage = action.payload || 'Employees are assigned successfully!';
     },
     deleteWorkOrder: (state, action) => {
       state.workOrders = state.workOrders.filter((item) => item.id !== action.payload.id);
@@ -45,7 +50,7 @@ const workOrderSlice = createSlice({
   }
 });
 
-export const { requestStart, requestSuccess, requestFailure, create, update, deleteWorkOrder, clearSuccessMessage } =
+export const { requestStart, requestSuccess, requestFailure, create, update, deleteWorkOrder, assignEmployees, clearSuccessMessage } =
   workOrderSlice.actions;
 
 export default workOrderSlice.reducer;

@@ -20,7 +20,8 @@ import {
   TableRow,
   Tooltip,
   Typography,
-  useMediaQuery
+  useMediaQuery,
+  Chip
 } from '@mui/material';
 
 // third-party
@@ -49,6 +50,26 @@ import { useDispatch, useSelector } from 'react-redux';
 import { workOrderColumns } from 'utils/constants';
 import _ from 'lodash';
 import Loader from 'components/Loader';
+import WorkOrderModal from './WorkOrderModal';
+import UpdateStatusModal from './UpdateStatusModal';
+import AssignUpdateEmployeesModal from './AssignEmployeesModal';
+
+const getStatusChipProps = (status) => {
+  const normalized = status?.toUpperCase?.() ?? '';
+
+  const statusMap = {
+    UPDATE: { color: 'primary', label: 'Update' },
+    STARTED: { color: 'info', label: 'STARTED' },
+    BLOCKED: { color: 'error', label: 'BLOCKED' },
+    COMPLETED: { color: 'success', label: 'COMPLETED' }
+  };
+
+  return {
+    ...(statusMap[normalized] || { color: 'default', label: normalized }),
+    size: 'medium',
+    variant: 'dark'
+  };
+};
 
 export const fuzzyFilter = (row, columnId, value, addMeta) => {
   const itemRank = rankItem(row.getValue(columnId), value);
@@ -155,7 +176,7 @@ function ReactTable({ data, columns, globalFilter, setGlobalFilter, showPaginati
   );
 }
 
-const WorkOrderTable = ({ lists = [], hideSYName = false, showTitle = true, showPagination = true }) => {
+const WorkOrderTable = ({ lists = [], repair = {}, departments = [], hideSYName = false, showTitle = true, showPagination = true }) => {
   const theme = useTheme();
   const matchDownSM = useMediaQuery(theme.breakpoints.down('sm'));
 
@@ -166,6 +187,8 @@ const WorkOrderTable = ({ lists = [], hideSYName = false, showTitle = true, show
 
   const [open, setOpen] = useState(false);
   const [globalFilter, setGlobalFilter] = useState('');
+  const [updateStatusModal, setUpdateStatusModal] = useState(false);
+  const [assignEmpModal, setAssignEmpModal] = useState(false);
 
   const colsWithoutActions = workOrderColumns;
 
@@ -176,6 +199,28 @@ const WorkOrderTable = ({ lists = [], hideSYName = false, showTitle = true, show
   const columns = useMemo(
     () => [
       ...colsWithoutActions,
+      {
+        header: 'Status',
+        cell: ({ row }) => (
+          <Tooltip title="Update Status" arrow>
+            <Button
+              variant="text"
+              size="small"
+              sx={{
+                textTransform: 'capitalize',
+                cursor: 'pointer',
+                minWidth: '100px'
+              }}
+              onClick={() => {
+                setSelectedWorkOrder(row.original);
+                setUpdateStatusModal(true);
+              }}
+            >
+              <Chip {...getStatusChipProps(row.original.status || 'Update')} />
+            </Button>
+          </Tooltip>
+        )
+      },
       {
         header: 'Actions',
         meta: {
@@ -209,6 +254,14 @@ const WorkOrderTable = ({ lists = [], hideSYName = false, showTitle = true, show
                   <DeleteOutlined />
                 </IconButton>
               </Tooltip>
+              <Button
+                onClick={() => {
+                  setSelectedWorkOrder(row.original);
+                  setAssignEmpModal(true);
+                }}
+              >
+                Assign
+              </Button>
             </Stack>
           );
         }
@@ -296,6 +349,41 @@ const WorkOrderTable = ({ lists = [], hideSYName = false, showTitle = true, show
           />
         ) : (
           <EmptyReactTable columns={colsWithoutActions} />
+        )}
+
+        {workOrderModal && (
+          <WorkOrderModal
+            open={workOrderModal}
+            modalToggler={() => {
+              setSelectedWorkOrder(null);
+              setWorkOrderModal(false);
+            }}
+            repair={repair}
+            departments={departments}
+            workOrder={selectedWorkOrder}
+          />
+        )}
+
+        {updateStatusModal && (
+          <UpdateStatusModal
+            open={updateStatusModal}
+            modalToggler={() => {
+              setSelectedWorkOrder(null);
+              setUpdateStatusModal(!updateStatusModal);
+            }}
+            workOrder={selectedWorkOrder}
+          />
+        )}
+
+        {assignEmpModal && (
+          <AssignUpdateEmployeesModal
+            open={assignEmpModal}
+            modalToggler={() => {
+              setSelectedWorkOrder(null);
+              setAssignEmpModal(!assignEmpModal);
+            }}
+            workOrder={{ ...selectedWorkOrder }}
+          />
         )}
 
         {/* {inventoryModal && (

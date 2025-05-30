@@ -8,7 +8,7 @@ import FormAddEditWorkOrder from './FormAddEditWorkOrder';
 import { useState } from 'react';
 import FormAddEditInventoryOrder from './FormAddEditInventoryOrder';
 
-const WorkOrderModal = ({ open, modalToggler, repair, departments, inventories }) => {
+const WorkOrderModal = ({ open, modalToggler, repair, workOrder, departments, inventories }) => {
   const [selectedOrder, setSelectedOrder] = useState('Work Order');
   return (
     <>
@@ -56,7 +56,7 @@ const WorkOrderModal = ({ open, modalToggler, repair, departments, inventories }
               </Grid>
 
               {selectedOrder === 'Work Order' && (
-                <FormAddEditWorkOrder closeModal={modalToggler} repair={repair} departments={departments} />
+                <FormAddEditWorkOrder closeModal={modalToggler} workOrder={workOrder} repair={repair} departments={departments} />
               )}
               {selectedOrder === 'Inventory Order' && (
                 <FormAddEditInventoryOrder closeModal={modalToggler} repair={repair} departments={departments} inventories={inventories} />
