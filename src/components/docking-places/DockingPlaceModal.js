@@ -46,6 +46,7 @@ const DockingPlaceModal = ({ open, modalToggler, place, handleUpdatePlaceState }
       closeModal();
     } catch (error) {
       console.error(error);
+      toast.error(error?.response?.data?.message || 'Some Error Occurred while creating docking');
     }
   };
 

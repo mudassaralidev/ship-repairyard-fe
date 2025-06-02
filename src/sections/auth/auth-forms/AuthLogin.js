@@ -31,6 +31,7 @@ import { fetcher } from 'utils/axios';
 
 // assets
 import { EyeOutlined, EyeInvisibleOutlined } from '@ant-design/icons';
+import { toast } from 'react-toastify';
 
 // ============================|| JWT - LOGIN ||============================ //
 
@@ -69,7 +70,7 @@ const AuthLogin = ({ isDemo = false }) => {
               setSubmitting(false);
             }
           } catch (err) {
-            console.error(err.error.message);
+            toast.error(err?.response?.data?.error?.message || 'Some error occurred while logging in the user');
             if (scriptedRef.current) {
               setStatus({ success: false });
               setErrors({ submit: err.error.message });

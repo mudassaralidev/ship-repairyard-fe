@@ -1,8 +1,8 @@
 import axios from 'utils/dataApi';
 
-export const fetchDockingsApi = async (shipyardID) => {
+export const fetchDockingsApi = async ({ shipyardID, queryParams = '' }) => {
   try {
-    const { data } = await axios.get(`v1/dockings?shipyard_id=${shipyardID}`);
+    const { data } = await axios.get(`v1/dockings?shipyard_id=${shipyardID}&${queryParams}`);
     return data.dockings;
   } catch (error) {
     throw error;

@@ -178,7 +178,8 @@ const ManageShips = ({ showCreateBtn = true, shipData, dockedPlaces = [] }) => {
   const dispatch = useDispatch();
   const {
     shipyard: { shipyard, status },
-    ship: { ships: lists = [], status: shipStatus } = {}
+    ship: { ships: lists = [], status: shipStatus } = {},
+    docking: { successMessage } = {}
   } = useSelector((state) => state);
   const [selectedShip, setSelectedShip] = useState({});
   const [clients, setClients] = useState([]);
@@ -198,8 +199,8 @@ const ManageShips = ({ showCreateBtn = true, shipData, dockedPlaces = [] }) => {
 
   useEffect(() => {
     if (!user || shipData) return;
-    try {
-      (async () => {
+    (async () => {
+      try {
         dispatch(fetchShips(user.shipyard_id));
         const [clientsData, dockingData] = await Promise.all([
           fetchClients(user.shipyard_id),
@@ -209,12 +210,18 @@ const ManageShips = ({ showCreateBtn = true, shipData, dockedPlaces = [] }) => {
         setDockingPlaces(dockingData);
 
         setLoading(false);
-      })();
-    } catch (error) {
-      console.error('Error occurred while getting departments', error);
-      toast.error('Some error occurred, please try again later');
-    }
+      } catch (error) {
+        toast.error(error.response.data.error.message || error.response.data.message || 'Some error occurred, please try again later');
+        console.error('Error occurred while getting departments', error);
+      }
+    })();
   }, [user]);
+
+  useEffect(() => {
+    if (!successMessage) return;
+
+    dispatch(fetchShips(user.shipyard_id));
+  }, [successMessage]);
 
   useEffect(() => {
     if (!shipData) return;

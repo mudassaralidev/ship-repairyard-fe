@@ -17,6 +17,7 @@ const shipyardSlice = createSlice({
     requestStart: (state) => {
       state.status = 'loading';
       state.error = null;
+      state.shipyardUsers = [];
     },
     requestSuccess: (state, action) => {
       state.status = 'succeeded';

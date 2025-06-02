@@ -2,7 +2,7 @@ import { useEffect, useLayoutEffect, useState } from 'react';
 
 // material-ui
 import { useTheme } from '@mui/material/styles';
-import { Box, Divider, List, Typography, useMediaQuery } from '@mui/material';
+import { Box, Divider, List, useMediaQuery } from '@mui/material';
 
 // project import
 import NavItem from './NavItem';
@@ -14,8 +14,6 @@ import { HORIZONTAL_MAX_ITEM } from 'config';
 import { useGetMenuMaster } from 'api/menu';
 import { MenuOrientation } from 'config';
 import useAuth from 'hooks/useAuth';
-import { FormattedMessage } from 'react-intl';
-import { BranchesOutlined } from '@ant-design/icons';
 // ==============================|| DRAWER CONTENT - NAVIGATION ||============================== //
 
 const Navigation = () => {
@@ -48,7 +46,13 @@ const Navigation = () => {
       menuItem.items.splice(0, 1, dashboardMenu);
       setMenuItems({ items: [...menuItem.items] });
     } else {
-      setMenuItems({ items: [...menuItem.items] });
+      const items = menuItem.items.map((item) => {
+        return {
+          ...item,
+          children: item[user?.role] || []
+        };
+      });
+      setMenuItems({ items: [...items] });
     }
     // eslint-disable-next-line
   }, [menuLoading]);

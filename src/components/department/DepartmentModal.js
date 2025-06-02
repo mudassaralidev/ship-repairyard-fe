@@ -7,6 +7,7 @@ import SimpleBar from 'components/third-party/SimpleBar';
 import { useState } from 'react';
 import { createDepartment, updateDepartment } from 'api/department';
 import useAuth from 'hooks/useAuth';
+import { toast } from 'react-toastify';
 
 const DepartmentModal = ({ open, modalToggler, department, handleUpdateDepartmentsState }) => {
   const closeModal = () => modalToggler(false);

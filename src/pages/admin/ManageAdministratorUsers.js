@@ -193,43 +193,47 @@ const ManageAdministratorUsers = () => {
   const columns = useMemo(
     () => [
       ...userColsWithoutActions,
-      {
-        header: 'Actions',
-        meta: {
-          className: 'cell-center'
-        },
-        disableSortBy: true,
-        cell: ({ row }) => {
-          return (
-            <Stack direction="row" alignItems="center" justifyContent="center" spacing={0}>
-              <Tooltip title="Edit">
-                <IconButton
-                  color="primary"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setSelectedUser(row.original);
-                    setUserModal(true);
-                  }}
-                >
-                  <EditOutlined />
-                </IconButton>
-              </Tooltip>
-              <Tooltip title="Delete">
-                <IconButton
-                  color="error"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleClose();
-                    setDeleteId(row.original.id);
-                  }}
-                >
-                  <DeleteOutlined />
-                </IconButton>
-              </Tooltip>
-            </Stack>
-          );
-        }
-      }
+      ...(user?.role === 'ADMIN'
+        ? [
+            {
+              header: 'Actions',
+              meta: {
+                className: 'cell-center'
+              },
+              disableSortBy: true,
+              cell: ({ row }) => {
+                return (
+                  <Stack direction="row" alignItems="center" justifyContent="center" spacing={0}>
+                    <Tooltip title="Edit">
+                      <IconButton
+                        color="primary"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setSelectedUser(row.original);
+                          setUserModal(true);
+                        }}
+                      >
+                        <EditOutlined />
+                      </IconButton>
+                    </Tooltip>
+                    <Tooltip title="Delete">
+                      <IconButton
+                        color="error"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleClose();
+                          setDeleteId(row.original.id);
+                        }}
+                      >
+                        <DeleteOutlined />
+                      </IconButton>
+                    </Tooltip>
+                  </Stack>
+                );
+              }
+            }
+          ]
+        : [])
     ],
     [theme]
   );
@@ -273,13 +277,15 @@ const ManageAdministratorUsers = () => {
             placeholder={`Search ${lists.length} records...`}
           />
 
-          <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} alignItems="center" sx={{ width: { xs: '100%', sm: 'auto' } }}>
-            <Stack direction="row" spacing={2} alignItems="center">
-              <Button variant="contained" startIcon={<PlusOutlined />} onClick={modalToggler}>
-                Create User
-              </Button>
+          {user?.role === 'ADMIN' && (
+            <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} alignItems="center" sx={{ width: { xs: '100%', sm: 'auto' } }}>
+              <Stack direction="row" spacing={2} alignItems="center">
+                <Button variant="contained" startIcon={<PlusOutlined />} onClick={modalToggler}>
+                  Create User
+                </Button>
+              </Stack>
             </Stack>
-          </Stack>
+          )}
         </Stack>
 
         {status !== 'loading' || lists?.length ? (

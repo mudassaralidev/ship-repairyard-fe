@@ -34,7 +34,8 @@ const getInitialValues = (user) => {
     phone: '',
     client_user_id: '',
     department_id: '',
-    foreman_id: ''
+    foreman_id: '',
+    address: ''
   };
 
   return user ? { ...baseValues, ...user } : baseValues;
@@ -79,6 +80,15 @@ const validationSchemas = (user) => ({
     last_name: Yup.string(),
     phone: Yup.string().required('Contact is required'),
     department_id: Yup.string().required('Department is required')
+  }),
+  TECHNICAL_PURCHASER: Yup.object().shape({
+    shipyard_id: Yup.string().required('Shipyard is required'),
+    role_id: Yup.string().required('Role is required'),
+    first_name: Yup.string().required('First name is required'),
+    last_name: Yup.string(),
+    email: Yup.string().email('Invalid email').required('Email is required'),
+    ...(!user ? { password: Yup.string().required('Password is required') } : {}),
+    phone: Yup.string().required('Contact is required')
   })
 });
 
@@ -221,7 +231,7 @@ const FormAddUser = ({ user, closeModal, shipyard, roleMap, department }) => {
               getFieldsByRole({
                 shipyards: [shipyard],
                 role: roles.filter(({ id }) => id === role_id)[0]?.name ?? selectedRole,
-                roles: user?.role?.id
+                roles: user?.role?.id //edit the user detail but not to change its role
                   ? roles.filter(({ id }) => id === user?.role?.id).map(({ id, name }) => ({ label: name, value: id }))
                   : roles
                       .filter(({ name }) => roleBasedUserCreation(roleMap ? roleMap : currentUser.role).includes(name))
@@ -234,7 +244,7 @@ const FormAddUser = ({ user, closeModal, shipyard, roleMap, department }) => {
         </DialogContent>
         <Divider />
         <DialogActions sx={{ p: 2.5 }}>
-          <Button color="error" onClick={closeModal}>
+          <Button color="error" onClick={() => closeModal()}>
             Cancel
           </Button>
           <Button type="submit" variant="contained" disabled={isSubmitting}>

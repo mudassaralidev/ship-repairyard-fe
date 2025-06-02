@@ -17,15 +17,17 @@ const handleError = (dispatch, error, message) => {
   });
 };
 
-export const fetchDockings = (shipyardID) => async (dispatch) => {
-  dispatch(requestStart());
-  try {
-    const res = await fetchDockingsApi(shipyardID);
-    dispatch(requestSuccess(res));
-  } catch (error) {
-    handleError(dispatch, error, 'Error while fetching dockings');
-  }
-};
+export const fetchDockings =
+  ({ shipyardID, queryParams = '' }) =>
+  async (dispatch) => {
+    dispatch(requestStart());
+    try {
+      const res = await fetchDockingsApi({ shipyardID, queryParams });
+      dispatch(requestSuccess(res));
+    } catch (error) {
+      handleError(dispatch, error, 'Error while fetching dockings');
+    }
+  };
 
 export const createDocking = (data) => async (dispatch) => {
   try {

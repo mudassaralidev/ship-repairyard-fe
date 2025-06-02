@@ -30,7 +30,7 @@ const ClientAssignmentModal = ({ open, modalToggler, shipyard_id, user }) => {
         setClients(data.clients || []);
 
         if (user.client?.id) {
-          const defaultClient = data.find((client) => client.id === user?.client?.id) || null;
+          const defaultClient = data.clients.find((client) => client.id === user?.client?.id) || null;
           setSelectedClient(defaultClient);
         }
         setLoading(false);
@@ -43,7 +43,7 @@ const ClientAssignmentModal = ({ open, modalToggler, shipyard_id, user }) => {
 
   const handleSubmit = async () => {
     try {
-      const { data } = await axios.put(`v1/users/${user.id}/assign-client`, { client_user_id: selectedClient });
+      const { data } = await axios.put(`v1/users/${user.id}/assign-client`, { client_user_id: selectedClient?.id });
       dispatch(updateSYUser(data));
       openSnackbar({
         open: true,
@@ -75,7 +75,6 @@ const ClientAssignmentModal = ({ open, modalToggler, shipyard_id, user }) => {
       {open && (
         <Modal
           open={open}
-          onClose={closeModal}
           aria-labelledby="modal-user-add-label"
           aria-describedby="modal-user-add-description"
           sx={{
@@ -105,7 +104,7 @@ const ClientAssignmentModal = ({ open, modalToggler, shipyard_id, user }) => {
               ) : (
                 <>
                   <DialogTitle>
-                    {user?.client?.id ? 'Update Assigned Client to Superintendent ' : 'Assign Client to Superintendent'} "{user?.name}"
+                    {user?.client?.id ? 'Update Assigned Company to Superintendent ' : 'Assign Company to Superintendent'} "{user?.name}"
                   </DialogTitle>
                   <Divider />
                   <DialogContent sx={{ p: 2.5 }}>
@@ -113,13 +112,13 @@ const ClientAssignmentModal = ({ open, modalToggler, shipyard_id, user }) => {
                       value={selectedClient}
                       options={clients}
                       getOptionLabel={(option) => option.name}
-                      onChange={(e, value) => setSelectedClient(value?.id)}
+                      onChange={(e, value) => setSelectedClient(value)}
                       renderOption={(props, option) => (
                         <li {...props} key={option.id}>
                           {option.name}
                         </li>
                       )}
-                      renderInput={(params) => <TextField {...params} label="Select Client" />}
+                      renderInput={(params) => <TextField {...params} label="Select Company" />}
                     />
                   </DialogContent>
                   <Divider />

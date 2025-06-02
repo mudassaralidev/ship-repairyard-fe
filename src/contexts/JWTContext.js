@@ -12,6 +12,7 @@ import authReducer from 'contexts/auth-reducer/auth';
 // project import
 import Loader from 'components/Loader';
 import axios from 'utils/dataApi';
+import { useDispatch as useReduxDispatch } from 'react-redux';
 
 const chance = new Chance();
 
@@ -49,6 +50,7 @@ const JWTContext = createContext(null);
 
 export const JWTProvider = ({ children }) => {
   const [state, dispatch] = useReducer(authReducer, initialState);
+  const reduxDispatch = useReduxDispatch();
 
   useEffect(() => {
     const init = async () => {
@@ -125,6 +127,7 @@ export const JWTProvider = ({ children }) => {
   const logout = () => {
     setSession(null);
     dispatch({ type: LOGOUT });
+    reduxDispatch({ type: 'RESET_STORE' });
   };
 
   const resetPassword = async () => {};

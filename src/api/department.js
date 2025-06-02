@@ -40,9 +40,9 @@ export const deleteDepartment = async (departmentID) => {
 
 export const updateDepartment = async (departmentID, data) => {
   try {
-    const updatedDepartment = await axios.put(`v1/departments/${departmentID}`, data);
+    const { data: response } = await axios.put(`v1/departments/${departmentID}`, data);
 
-    return updatedDepartment;
+    return response.department;
   } catch (error) {
     throw error;
   }

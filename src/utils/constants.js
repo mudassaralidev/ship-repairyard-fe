@@ -49,19 +49,34 @@ export const userTableColumns = (role) => {
       header: 'Last Name',
       accessorKey: 'last_name'
     },
+
     {
       header: 'Role',
       accessorKey: 'role.name'
-    },
-    {
-      header: 'Shipyard',
-      accessorKey: 'shipyard.name'
     }
+    // {
+    //   header: 'Shipyard',
+    //   accessorKey: 'shipyard.name'
+    // }
   ];
   const columnsMapToRoles = {
-    administratorUsers: [...commonColumns],
+    administratorUsers: [
+      ...commonColumns,
+      {
+        header: 'Email',
+        accessorKey: 'email'
+      }
+    ],
     clientUsers: [
       ...commonColumns,
+      {
+        header: 'Email',
+        accessorKey: 'email'
+      },
+      {
+        header: 'Contact No',
+        accessorKey: 'phone'
+      },
       {
         header: 'Company Name',
         accessorKey: 'client.name'
@@ -69,6 +84,10 @@ export const userTableColumns = (role) => {
     ],
     deptUsers: [
       ...commonColumns,
+      {
+        header: 'Email',
+        accessorKey: 'email'
+      },
       {
         header: 'Department Name',
         accessorKey: 'department.name'
@@ -193,6 +212,11 @@ export const dockingColumns = [
     header: 'Docked Place',
     accessorKey: 'docking_place.place_name'
   },
+  {
+    header: 'Estimated Cost',
+    accessorKey: 'estimated_cost'
+  },
+
   {
     header: 'Total Cost',
     accessorKey: 'total_cost'
@@ -390,9 +414,15 @@ export const getFieldsByRole = ({ role, roles = [], shipyard_id, shipyards = [],
       { key: 'email', label: 'Email', type: 'text', colVal: 6 },
       { key: 'password', label: 'Password', type: 'text', colVal: 6 }
     ],
-    SUPERINTENDENT: [],
+    SUPERINTENDENT: [
+      { key: 'email', label: 'Email', type: 'text', colVal: 6 },
+      { key: 'address', label: 'Address', type: 'text', colVal: 6 }
+    ],
     EMPLOYEE: [],
-    CLIENT: []
+    CLIENT: [
+      { key: 'email', label: 'Email', type: 'text', colVal: 6 },
+      { key: 'address', label: 'Address', type: 'text', colVal: 6 }
+    ]
   };
 
   return role
@@ -408,9 +438,9 @@ export const getFieldsByRole = ({ role, roles = [], shipyard_id, shipyards = [],
 export const roleBasedUserCreation = (currentUserRole) => {
   return useMemo(() => {
     const roleUserCreationMap = {
-      ADMIN: ['CALCULATOR_ENGINEER', 'DOCKING_MASTER', 'PROJECT_MANAGER'],
+      ADMIN: ['CALCULATOR_ENGINEER', 'DOCKING_MASTER', 'PROJECT_MANAGER', 'TECHNICAL_PURCHASER'],
       ADMIN_CLIENT: ['CLIENT', 'SUPERINTENDENT'],
-      CALC_CLINET: ['SUPERINTENDENT'],
+      CALC_CLINET: ['CLIENT'],
       ADMIN_FOREMAN: ['FOREMAN'],
       ADMIN_EMP: ['EMPLOYEE'],
       SUPER_ADMIN: ['ADMIN', 'CALCULATOR_ENGINEER', 'DOCKING_MASTER', 'PROJECT_MANAGER']

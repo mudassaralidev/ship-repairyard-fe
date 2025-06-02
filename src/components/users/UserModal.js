@@ -12,7 +12,7 @@ const UserModal = ({ open, modalToggler, user, shipyard, roleMap, department }) 
       {open && (
         <Modal
           open={open}
-          onClose={modalToggler}
+          // onClose={() => modalToggler()}
           aria-labelledby="modal-user-add-label"
           aria-describedby="modal-user-add-description"
           sx={{

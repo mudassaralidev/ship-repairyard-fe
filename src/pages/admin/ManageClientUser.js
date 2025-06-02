@@ -206,63 +206,67 @@ const ManageClientUser = () => {
   const columns = useMemo(
     () => [
       ...userColsWithoutActions,
-      {
-        header: 'Assign Client',
-        disableSortBy: true,
-        cell: ({ row }) => {
-          return row.original?.role?.name === 'SUPERINTENDENT' ? (
-            <Button
-              variant="text"
-              size="small"
-              onClick={() => {
-                setAssignClientModal(true);
-                setSelectedUser(row.original);
-              }}
-            >
-              {!row.original.client?.name ? 'Assign' : 'Update'}
-            </Button>
-          ) : (
-            <></>
-          );
-        }
-      },
-      {
-        header: 'Actions',
-        meta: {
-          className: 'cell-center'
-        },
-        disableSortBy: true,
-        cell: ({ row }) => {
-          return (
-            <Stack direction="row" alignItems="center" justifyContent="center" spacing={0}>
-              <Tooltip title="Edit">
-                <IconButton
-                  color="primary"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setSelectedUser(row.original);
-                    setUserModal(true);
-                  }}
-                >
-                  <EditOutlined />
-                </IconButton>
-              </Tooltip>
-              <Tooltip title="Delete">
-                <IconButton
-                  color="error"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleClose();
-                    setDeleteId(row.original.id);
-                  }}
-                >
-                  <DeleteOutlined />
-                </IconButton>
-              </Tooltip>
-            </Stack>
-          );
-        }
-      }
+      ...(user?.role === 'ADMIN'
+        ? [
+            {
+              header: 'Assign Company',
+              disableSortBy: true,
+              cell: ({ row }) => {
+                return row.original?.role?.name === 'SUPERINTENDENT' ? (
+                  <Button
+                    variant="text"
+                    size="small"
+                    onClick={() => {
+                      setAssignClientModal(true);
+                      setSelectedUser(row.original);
+                    }}
+                  >
+                    {!row.original.client?.name ? 'Assign' : 'Update'}
+                  </Button>
+                ) : (
+                  <></>
+                );
+              }
+            },
+            {
+              header: 'Actions',
+              meta: {
+                className: 'cell-center'
+              },
+              disableSortBy: true,
+              cell: ({ row }) => {
+                return (
+                  <Stack direction="row" alignItems="center" justifyContent="center" spacing={0}>
+                    <Tooltip title="Edit">
+                      <IconButton
+                        color="primary"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setSelectedUser(row.original);
+                          setUserModal(true);
+                        }}
+                      >
+                        <EditOutlined />
+                      </IconButton>
+                    </Tooltip>
+                    <Tooltip title="Delete">
+                      <IconButton
+                        color="error"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleClose();
+                          setDeleteId(row.original.id);
+                        }}
+                      >
+                        <DeleteOutlined />
+                      </IconButton>
+                    </Tooltip>
+                  </Stack>
+                );
+              }
+            }
+          ]
+        : [])
     ],
     [theme]
   );
@@ -297,7 +301,7 @@ const ManageClientUser = () => {
               </Select>
             </FormControl>
           </Grid>
-          {user.role === 'ADMIN' && (
+          {user?.role === 'ADMIN' && (
             <Grid item xs={12} md={6}>
               <Stack direction="row" gap={2}>
                 <Button
@@ -348,13 +352,15 @@ const ManageClientUser = () => {
             placeholder={`Search ${lists.length} records...`}
           />
 
-          <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} alignItems="center" sx={{ width: { xs: '100%', sm: 'auto' } }}>
-            <Stack direction="row" spacing={2} alignItems="center">
-              <Button variant="contained" startIcon={<PlusOutlined />} onClick={modalToggler}>
-                Create User
-              </Button>
+          {user?.role === 'ADMIN' && (
+            <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} alignItems="center" sx={{ width: { xs: '100%', sm: 'auto' } }}>
+              <Stack direction="row" spacing={2} alignItems="center">
+                <Button variant="contained" startIcon={<PlusOutlined />} onClick={modalToggler}>
+                  Create User
+                </Button>
+              </Stack>
             </Stack>
-          </Stack>
+          )}
         </Stack>
 
         {status !== 'loading' || lists?.length ? (

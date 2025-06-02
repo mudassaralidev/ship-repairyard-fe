@@ -28,12 +28,10 @@ const validationSchema = Yup.object().shape({
   shipyard_id: Yup.string().required('Shipyard is required'),
   start_date: Yup.date().required('Start date is required'),
   end_date: Yup.date().min(Yup.ref('start_date'), 'End date must be after start date').required('End date is required'),
-  total_cost: Yup.number()
-    .typeError('Total cost must be a number') // Ensures non-numeric input is caught
-    .positive('Total cost must be a positive number')
-    .required('Total cost is required'),
+  total_cost: Yup.number().typeError('Total cost must be a number'),
   docking_place_id: Yup.string().required('Docking place is required'),
-  ship_id: Yup.string().required('Ship is required')
+  ship_id: Yup.string().required('Ship is required'),
+  estimated_cost: Yup.number().typeError('Estimated cost must be a number')
 });
 
 const FormAddEditDocking = ({ shipyard, docking, dockingShip, ships, dockingPlaces, closeModal, removeUsedPlace = () => {} }) => {
@@ -49,11 +47,12 @@ const FormAddEditDocking = ({ shipyard, docking, dockingShip, ships, dockingPlac
       shipyard_id: shipyard?.id || '',
       start_date: docking?.start_date || '',
       end_date: docking?.end_date || '',
-      total_cost: docking?.total_cost || '',
+      total_cost: docking?.total_cost || 0,
       docking_place_id: docking?.docking_place?.id || '',
       ship_id: docking?.ship?.id || dockingShip?.id || '',
       superintendent_id: docking?.superintendent?.id || null,
-      name: docking?.name || ''
+      name: docking?.name || '',
+      estimated_cost: docking?.estimated_cost || 0
     },
     validationSchema: validationSchema,
     onSubmit: async (values, { setSubmitting }) => {
@@ -267,6 +266,19 @@ const FormAddEditDocking = ({ shipyard, docking, dockingShip, ships, dockingPlac
                       }
                     }}
                     renderInput={(params) => <TextField {...params} />}
+                  />
+                </Stack>
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <Stack spacing={1}>
+                  <TextField
+                    label="Estimated Cost"
+                    id="estimated_cost"
+                    placeholder="Enter Estimated Cost"
+                    type="number"
+                    {...getFieldProps('estimated_cost')}
+                    error={touched.estimated_cost && Boolean(errors.estimated_cost)}
+                    helperText={touched.estimated_cost && errors.estimated_cost}
                   />
                 </Stack>
               </Grid>

@@ -22,16 +22,16 @@ const App = () => {
       <RTLLayout>
         <Locales>
           <ScrollTop>
-            <AuthProvider>
-              <Provider store={store}>
+            <Provider store={store}>
+              <AuthProvider>
                 <>
                   <Notistack>
                     <RouterProvider router={router} />
                     <Snackbar />
                   </Notistack>
                 </>
-              </Provider>
-            </AuthProvider>
+              </AuthProvider>
+            </Provider>
           </ScrollTop>
         </Locales>
       </RTLLayout>

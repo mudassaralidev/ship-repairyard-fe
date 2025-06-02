@@ -195,7 +195,7 @@ const ManageDockings = ({ ship, shipDocking, dockedPlaces }) => {
     try {
       if (!user || ship) return;
       (async () => {
-        dispatch(fetchDockings(user?.shipyard_id));
+        dispatch(fetchDockings({ shipyardID: user?.shipyard_id }));
         dispatch(fetchShips(user?.shipyard_id));
         const dockingData = await getAvailableDockingPlaces(user?.shipyard_id);
         setDockingPlaces(dockingData);
