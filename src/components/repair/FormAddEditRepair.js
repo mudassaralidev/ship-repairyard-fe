@@ -48,11 +48,10 @@ const getStatusOptions = (userRole, isCreate) => {
   }
 };
 
-const FormAddEditRepair = ({ shipyard, repair, closeModal, dockingNames = [] }) => {
+const FormAddEditRepair = ({ shipyard, repair, closeModal, docking }) => {
   const dispatch = useDispatch();
   const { user } = useAuth();
   const { successMessage } = useSelector((state) => state.repair);
-  const [repairDocking, setRepairDocking] = useState(dockingNames.find((d) => d.id === repair?.docking?.id) || null);
 
   const formik = useFormik({
     initialValues: {
@@ -64,7 +63,7 @@ const FormAddEditRepair = ({ shipyard, repair, closeModal, dockingNames = [] }) 
       requires_subcontractor:
         repair?.requires_subcontractor?.toString() === 'true' ? true : repair?.requires_subcontractor?.toString() === 'false' ? false : '',
       updated_reason: '',
-      docking_id: repairDocking?.id || '',
+      docking_id: docking?.id || '',
       shipyard_id: shipyard?.id || '',
       status: repair?.status || 'INITIATED',
       change_request: ''
@@ -126,44 +125,18 @@ const FormAddEditRepair = ({ shipyard, repair, closeModal, dockingNames = [] }) 
 
               <Grid item xs={12} sm={6}>
                 <Stack spacing={1}>
-                  {repair?.work_order_count ? (
-                    <TextField
-                      select
-                      label="Docking"
-                      id="docking_id"
-                      {...getFieldProps('docking_id')}
-                      error={Boolean(touched.docking_id && errors.docking_id)}
-                      helperText={touched.docking_id && errors.docking_id}
-                    >
-                      <MenuItem key={repairDocking?.id} value={repairDocking?.id}>
-                        {repairDocking?.name}
-                      </MenuItem>
-                    </TextField>
-                  ) : (
-                    <Autocomplete
-                      value={repairDocking}
-                      options={dockingNames}
-                      getOptionLabel={(option) => option.name}
-                      onChange={(e, value) => {
-                        setRepairDocking(value);
-                        setFieldValue('docking_id', value?.id || null);
-                      }}
-                      isOptionEqualToValue={(option, value) => option.id === value?.id}
-                      renderOption={(props, option) => (
-                        <li {...props} key={option.id}>
-                          {option.name}
-                        </li>
-                      )}
-                      renderInput={(params) => (
-                        <TextField
-                          {...params}
-                          label="Docking"
-                          error={touched.docking_id && Boolean(errors.docking_id)}
-                          helperText={touched.docking_id && errors.docking_id}
-                        />
-                      )}
-                    />
-                  )}
+                  <TextField
+                    select
+                    label="Docking"
+                    id="docking_id"
+                    {...getFieldProps('docking_id')}
+                    error={Boolean(touched.docking_id && errors.docking_id)}
+                    helperText={touched.docking_id && errors.docking_id}
+                  >
+                    <MenuItem key={docking?.id} value={docking?.id}>
+                      {docking?.name}
+                    </MenuItem>
+                  </TextField>
                 </Stack>
               </Grid>
 

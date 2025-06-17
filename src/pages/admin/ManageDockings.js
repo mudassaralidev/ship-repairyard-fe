@@ -3,6 +3,7 @@ import { Fragment, useEffect, useMemo, useState } from 'react';
 // material-ui
 import { alpha, useTheme } from '@mui/material/styles';
 import {
+  Autocomplete,
   Box,
   Button,
   Divider,
@@ -18,6 +19,7 @@ import {
   TableContainer,
   TableHead,
   TableRow,
+  TextField,
   Tooltip,
   Typography,
   useMediaQuery
@@ -181,6 +183,7 @@ const ManageDockings = ({ ship, shipDocking, dockedPlaces }) => {
   const [dockingPlaces, setDockingPlaces] = useState(dockedPlaces);
   const [dockingModal, setDockingModal] = useState(false);
   const [addSuperintendentModal, setAddSuperintendentModal] = useState(false);
+  const [selectedShip, setSelectedShip] = useState(null);
 
   const [open, setOpen] = useState(false);
   const [globalFilter, setGlobalFilter] = useState('');
@@ -194,18 +197,23 @@ const ManageDockings = ({ ship, shipDocking, dockedPlaces }) => {
   useEffect(() => {
     try {
       if (!user || ship) return;
-      (async () => {
-        dispatch(fetchDockings({ shipyardID: user?.shipyard_id }));
-        dispatch(fetchShips(user?.shipyard_id));
-        const dockingData = await getAvailableDockingPlaces(user?.shipyard_id);
-        setDockingPlaces(dockingData);
-      })();
+
+      dispatch(fetchShips({ shipyardID: user?.shipyard_id }));
     } catch (error) {
       console.error('Error occurred while getting departments', error);
     } finally {
       setLoading(false);
     }
   }, [user]);
+
+  useEffect(() => {
+    if (!selectedShip || ship) return;
+    (async () => {
+      dispatch(fetchDockings({ shipyardID: user?.shipyard_id, queryParams: `ship_id=${selectedShip.id}` }));
+      const dockingData = await getAvailableDockingPlaces(user?.shipyard_id);
+      setDockingPlaces(dockingData);
+    })();
+  }, [selectedShip]);
 
   const columns = useMemo(
     () => [
@@ -297,16 +305,36 @@ const ManageDockings = ({ ship, shipDocking, dockedPlaces }) => {
         <></>
       ) : (
         <Grid container spacing={2} sx={{ marginTop: '16px', marginBottom: '8px' }}>
-          <Grid item xs={12}>
-            <Stack direction="row" spacing={2} alignItems="center">
-              {/* Shipyard Select */}
-              <FormControl sx={{ minWidth: 200 }}>
-                <InputLabel id="shipyard-select-label">Shipyard</InputLabel>
-                <Select labelId="shipyard-select-label" id="shipyard-select" value={shipyard?.id || ''} label="Shipyard">
-                  <MenuItem value={shipyard?.id}>{shipyard?.name}</MenuItem>
-                </Select>
-              </FormControl>
-            </Stack>
+          <Grid container spacing={2} sx={{ marginTop: '16px', marginBottom: '8px' }}>
+            <Grid item xs={12}>
+              <Stack direction="row" spacing={2} alignItems="center">
+                {/* Shipyard Select */}
+                <FormControl sx={{ minWidth: 200 }}>
+                  <InputLabel id="shipyard-select-label">Shipyard</InputLabel>
+                  <Select labelId="shipyard-select-label" id="shipyard-select" value={shipyard?.id || ''} label="Shipyard">
+                    <MenuItem value={shipyard?.id}>{shipyard?.name}</MenuItem>
+                  </Select>
+                </FormControl>
+                {/* Select Ship */}
+                <FormControl sx={{ minWidth: 200 }}>
+                  <Autocomplete
+                    value={selectedShip}
+                    options={ships}
+                    getOptionLabel={(option) => option.name}
+                    onChange={(e, value) => {
+                      setSelectedShip(value);
+                    }}
+                    isOptionEqualToValue={(option, value) => option.id === value?.id}
+                    renderOption={(props, option) => (
+                      <li {...props} key={option.id}>
+                        {option.name}
+                      </li>
+                    )}
+                    renderInput={(params) => <TextField {...params} label="Ship" />}
+                  />
+                </FormControl>
+              </Stack>
+            </Grid>
           </Grid>
         </Grid>
       )}
@@ -325,7 +353,6 @@ const ManageDockings = ({ ship, shipDocking, dockedPlaces }) => {
               onFilterChange={(value) => setGlobalFilter(String(value))}
               placeholder={`Search ${lists.length} records...`}
             />
-
             <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} alignItems="center" sx={{ width: { xs: '100%', sm: 'auto' } }}>
               <Stack direction="row" spacing={2} alignItems="center">
                 <Button variant="contained" startIcon={<PlusOutlined />} onClick={modalToggler}>
@@ -335,8 +362,7 @@ const ManageDockings = ({ ship, shipDocking, dockedPlaces }) => {
             </Stack>
           </Stack>
         )}
-
-        {lists?.length || shipDocking ? (
+        {(selectedShip && lists?.length) || shipDocking ? (
           <ReactTable
             {...{
               data: shipDocking ? [shipDocking] : lists,
@@ -355,7 +381,7 @@ const ManageDockings = ({ ship, shipDocking, dockedPlaces }) => {
             modalToggler={modalToggler}
             shipyard={shipyard}
             docking={shipDocking ? shipDocking : selectedDocking}
-            ships={ship ? ship : ships}
+            ship={selectedShip}
             dockingPlaces={dockingPlaces}
             removeUsedPlace={(placeId) => setDockingPlaces((preState) => preState.filter((p) => p.id !== placeId))}
           />

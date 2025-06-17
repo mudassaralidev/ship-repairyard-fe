@@ -201,7 +201,7 @@ const ManageShips = ({ showCreateBtn = true, shipData, dockedPlaces = [] }) => {
     if (!user || shipData) return;
     (async () => {
       try {
-        dispatch(fetchShips(user.shipyard_id));
+        dispatch(fetchShips({ shipyardID: user.shipyard_id }));
         const [clientsData, dockingData] = await Promise.all([
           fetchClients(user.shipyard_id),
           getAvailableDockingPlaces(user?.shipyard_id)
@@ -220,7 +220,7 @@ const ManageShips = ({ showCreateBtn = true, shipData, dockedPlaces = [] }) => {
   useEffect(() => {
     if (!successMessage) return;
 
-    dispatch(fetchShips(user.shipyard_id));
+    dispatch(fetchShips({ shipyardID: user.shipyard_id }));
   }, [successMessage]);
 
   useEffect(() => {
@@ -356,7 +356,7 @@ const ManageShips = ({ showCreateBtn = true, shipData, dockedPlaces = [] }) => {
               setAddDockModal(false);
             }}
             shipyard={shipyard}
-            dockingShip={selectedShip}
+            ship={selectedShip}
             dockingPlaces={dockingPlaces}
             removeUsedPlace={(placeId) => setDockingPlaces((preState) => preState.filter((p) => p.id !== placeId))}
           />

@@ -1,7 +1,7 @@
 import axios from 'utils/dataApi';
 
-export const fetchShipsApi = async (shipyardID) => {
-  const { data } = await axios.get(`v1/ships?shipyard_id=${shipyardID}`);
+export const fetchShipsApi = async ({ shipyardID, queryParams = '' }) => {
+  const { data } = await axios.get(`v1/ships?shipyard_id=${shipyardID}&${queryParams}`);
   return data.ships;
 };
 

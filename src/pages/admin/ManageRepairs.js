@@ -3,6 +3,7 @@ import { Fragment, useEffect, useMemo, useState } from 'react';
 // material-ui
 import { alpha, useTheme } from '@mui/material/styles';
 import {
+  Autocomplete,
   Box,
   Button,
   Chip,
@@ -19,6 +20,7 @@ import {
   TableContainer,
   TableHead,
   TableRow,
+  TextField,
   Tooltip,
   Typography,
   useMediaQuery
@@ -199,6 +201,7 @@ const ManageRepairs = ({ repairData, departsData = [], inventoryData = [], docke
   const [selectedRepair, setSelectedRepair] = useState(null);
   const [repairModal, setRepairModal] = useState(false);
   const [dockingNames, setDockingNames] = useState(dockedName ? [dockedName] : []);
+  const [selectedDocking, setSelectedDocking] = useState(null);
   const [updateStatusModal, setUpdateStatusModal] = useState(false);
   const [workOrderModal, setWOModal] = useState(false);
   const [departments, setDepartments] = useState(departsData);
@@ -213,28 +216,38 @@ const ManageRepairs = ({ repairData, departsData = [], inventoryData = [], docke
     setOpen(!open);
   };
 
+  const { shipyard_id } = user;
+
   useEffect(() => {
-    if (!user || repairData) return;
+    if (!user | repairData) return;
 
-    (async () => {
-      try {
-        const { shipyard_id } = user;
-
-        dispatch(fetchRepairs(shipyard_id));
+    try {
+      (async () => {
         const [data, { data: departsData }, inventories] = await Promise.all([
           getDockingNamesForRepair(shipyard_id),
           dataApi.get('/v1/departments?include_foreman=true'),
           fetchInventoriesApi(shipyard_id)
         ]);
-        setDepartments(departsData.departments);
         setDockingNames(data);
+        setDepartments(departsData.departments);
         setInventories(inventories);
-      } catch (error) {
-        console.error('Error occurred while getting repairs', error);
-        toast.error(error?.response?.data?.message || 'Some error occurred while getting data for repair');
-      }
-    })();
+      })();
+    } catch (error) {
+      console.error('Error occurred while getting repairs', error);
+      toast.error(error?.response?.data?.message || 'Some error occurred while getting data for repair');
+    }
   }, [user]);
+
+  useEffect(() => {
+    if (!selectedDocking || repairData) return;
+
+    try {
+      dispatch(fetchRepairs(selectedDocking.id));
+    } catch (error) {
+      console.error('Error occurred while getting repairs', error);
+      toast.error(error?.response?.data?.message || 'Some error occurred while getting data for repair');
+    }
+  }, [selectedDocking]);
 
   const columns = useMemo(
     () => [
@@ -376,6 +389,24 @@ const ManageRepairs = ({ repairData, departsData = [], inventoryData = [], docke
                   <MenuItem value={shipyard?.id}>{shipyard?.name}</MenuItem>
                 </Select>
               </FormControl>
+              {/* Select Docking */}
+              <FormControl sx={{ minWidth: 200 }}>
+                <Autocomplete
+                  value={selectedDocking}
+                  options={dockingNames}
+                  getOptionLabel={(option) => option.name}
+                  onChange={(e, value) => {
+                    setSelectedDocking(value);
+                  }}
+                  isOptionEqualToValue={(option, value) => option.id === value?.id}
+                  renderOption={(props, option) => (
+                    <li {...props} key={option.id}>
+                      {option.name}
+                    </li>
+                  )}
+                  renderInput={(params) => <TextField {...params} label="Docking" />}
+                />
+              </FormControl>
             </Stack>
           </Grid>
         </Grid>
@@ -406,7 +437,7 @@ const ManageRepairs = ({ repairData, departsData = [], inventoryData = [], docke
           </Stack>
         )}
 
-        {lists?.length || repairData ? (
+        {(selectedDocking && lists?.length) || repairData ? (
           <ReactTable
             {...{
               data: repairData ? [repairData] : lists,
@@ -427,7 +458,7 @@ const ManageRepairs = ({ repairData, departsData = [], inventoryData = [], docke
             modalToggler={modalToggler}
             shipyard={shipyard}
             repair={selectedRepair}
-            dockingNames={dockingNames}
+            docking={selectedDocking}
           />
         )}
         {updateStatusModal && (

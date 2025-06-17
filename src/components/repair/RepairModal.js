@@ -6,7 +6,7 @@ import MainCard from 'components/MainCard';
 import SimpleBar from 'components/third-party/SimpleBar';
 import FormAddEditRepair from './FormAddEditRepair';
 
-const RepairModal = ({ open, modalToggler, shipyard, repair, dockingNames }) => {
+const RepairModal = ({ open, modalToggler, shipyard, repair, docking }) => {
   return (
     <>
       {open && (
@@ -35,7 +35,7 @@ const RepairModal = ({ open, modalToggler, shipyard, repair, dockingNames }) => 
                 }
               }}
             >
-              <FormAddEditRepair shipyard={shipyard} closeModal={modalToggler} repair={repair} dockingNames={dockingNames} />
+              <FormAddEditRepair shipyard={shipyard} closeModal={modalToggler} repair={repair} docking={docking} />
             </SimpleBar>
           </MainCard>
         </Modal>

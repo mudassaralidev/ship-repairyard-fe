@@ -6,7 +6,7 @@ import MainCard from 'components/MainCard';
 import SimpleBar from 'components/third-party/SimpleBar';
 import FormAddEditDocking from './FormAddEditDocking';
 
-const DockingModal = ({ open, modalToggler, shipyard, docking, dockingShip, ships, dockingPlaces, removeUsedPlace }) => {
+const DockingModal = ({ open, modalToggler, shipyard, docking, ship, dockingPlaces, removeUsedPlace }) => {
   return (
     <>
       {open && (
@@ -39,9 +39,8 @@ const DockingModal = ({ open, modalToggler, shipyard, docking, dockingShip, ship
                 closeModal={modalToggler}
                 shipyard={shipyard}
                 docking={docking}
-                ships={ships}
                 dockingPlaces={dockingPlaces}
-                dockingShip={dockingShip}
+                ship={ship}
                 removeUsedPlace={removeUsedPlace}
               />
             </SimpleBar>

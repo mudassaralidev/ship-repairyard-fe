@@ -10,6 +10,8 @@ const ManageDockingPlaces = Loadable(lazy(() => import('pages/docking-master/Man
 const ManageInventory = Loadable(lazy(() => import('pages/admin/ManageInventory')));
 const ManageShips = Loadable(lazy(() => import('pages/admin/ManageShips')));
 const ManageDockings = Loadable(lazy(() => import('pages/admin/ManageDockings')));
+const ManageRepairs = Loadable(lazy(() => import('pages/admin/ManageRepairs')));
+const ManageWorkOrders = Loadable(lazy(() => import('pages/admin/ManageWorkOrders')));
 
 export const ROLE_BASED_ROUTES = {
   SUPER_ADMIN: [
@@ -24,7 +26,9 @@ export const ROLE_BASED_ROUTES = {
     { path: 'docking-places', element: <ManageDockingPlaces /> },
     { path: 'inventories', element: <ManageInventory /> },
     { path: 'ships', element: <ManageShips /> },
-    { path: 'dockings', element: <ManageDockings /> }
+    { path: 'dockings', element: <ManageDockings /> },
+    { path: 'repairs', element: <ManageRepairs /> },
+    { path: 'work-orders', element: <ManageWorkOrders /> }
   ],
   CALCULATOR_ENGINEER: [
     { path: 'administrator-users', element: <ManageAdministratorUsers /> },
@@ -36,11 +40,14 @@ export const ROLE_BASED_ROUTES = {
     { path: 'departments', element: <ManageDepartments /> },
     { path: 'dept-users', element: <ManageDeptUsers /> },
     { path: 'ships', element: <ManageShips /> },
-    { path: 'dockings', element: <ManageDockings /> }
+    { path: 'dockings', element: <ManageDockings /> },
+    { path: 'repairs', element: <ManageRepairs /> },
+    { path: 'work-orders', element: <ManageWorkOrders /> }
   ],
   DOCKING_MASTER: [
     { path: 'docking-places', element: <ManageDockingPlaces /> },
     { path: 'dockings', element: <ManageDockings /> }
   ],
-  TECHNICAL_PURCHASER: [{ path: 'inventories', element: <ManageInventory /> }]
+  TECHNICAL_PURCHASER: [{ path: 'inventories', element: <ManageInventory /> }],
+  FOREMAN: [{ path: 'work-orders', element: <ManageWorkOrders /> }]
 };

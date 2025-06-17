@@ -1,5 +1,5 @@
 import { requestStart, requestSuccess, requestFailure, create, update } from './slice';
-import { createRepairApi, fetchRepairsApi, updateRepairApi } from 'api/repair';
+import { createRepairApi, fetchRepairsApi, updateRepairApi, updateRepairStatus } from 'api/repair';
 import { toast } from 'react-toastify';
 
 const handleError = (dispatch, error, message) => {
@@ -17,10 +17,10 @@ const handleError = (dispatch, error, message) => {
   });
 };
 
-export const fetchRepairs = (shipyardID) => async (dispatch) => {
+export const fetchRepairs = (dockingID) => async (dispatch) => {
   dispatch(requestStart());
   try {
-    const res = await fetchRepairsApi(shipyardID);
+    const res = await fetchRepairsApi(dockingID);
     dispatch(requestSuccess(res));
   } catch (error) {
     handleError(dispatch, error, 'Error while fetching repairs');
@@ -42,5 +42,14 @@ export const updateRepair = (id, data) => async (dispatch) => {
     dispatch(update(res));
   } catch (error) {
     handleError(dispatch, error, 'Error while updating repair');
+  }
+};
+
+export const updateStatus = (id, data) => async (dispatch) => {
+  try {
+    const res = await updateRepairStatus(id, data);
+    dispatch(update(res));
+  } catch (error) {
+    handleError(dispatch, error, 'Error while updating repair status');
   }
 };

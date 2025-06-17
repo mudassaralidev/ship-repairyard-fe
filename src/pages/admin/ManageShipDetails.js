@@ -202,19 +202,14 @@ const ShipDetails = () => {
             setDockingModal(!dockingModal);
           }}
           shipyard={shipyard}
-          ships={[ship]}
+          ship={ship}
           dockingPlaces={dockingPlaces}
           removeUsedPlace={(placeId) => setDockingPlaces((preState) => preState.filter((p) => p.id !== placeId))}
         />
       )}
 
       {repairModal && (
-        <RepairModal
-          open={repairModal}
-          modalToggler={() => setRepairModal(!repairModal)}
-          shipyard={shipyard}
-          dockingName={selectedDocking}
-        />
+        <RepairModal open={repairModal} modalToggler={() => setRepairModal(!repairModal)} shipyard={shipyard} docking={selectedDocking} />
       )}
     </MainCard>
   );

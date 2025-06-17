@@ -19,15 +19,17 @@ const handleError = (dispatch, error, message) => {
   );
 };
 
-export const fetchShips = (shipyardID) => async (dispatch) => {
-  dispatch(requestStart());
-  try {
-    const res = await fetchShipsApi(shipyardID);
-    dispatch(requestSuccess(res));
-  } catch (error) {
-    handleError(dispatch, error, 'Error while fetching ships');
-  }
-};
+export const fetchShips =
+  ({ shipyardID, queryParams = '' }) =>
+  async (dispatch) => {
+    dispatch(requestStart());
+    try {
+      const res = await fetchShipsApi({ shipyardID, queryParams });
+      dispatch(requestSuccess(res));
+    } catch (error) {
+      handleError(dispatch, error, 'Error while fetching ships');
+    }
+  };
 
 export const fetchShip = (shipID) => async (dispatch) => {
   try {

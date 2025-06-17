@@ -1,8 +1,8 @@
 import axios from 'utils/dataApi';
 
-export const fetchRepairsApi = async (shipyardID) => {
+export const fetchRepairsApi = async (dockingID) => {
   try {
-    const { data } = await axios.get(`v1/repairs?shipyard_id=${shipyardID}`);
+    const { data } = await axios.get(`v1/repairs?docking_id=${dockingID}`);
     return data.repairs;
   } catch (error) {
     throw error;
@@ -21,6 +21,15 @@ export const createRepairApi = async (data) => {
 export const updateRepairApi = async (id, data) => {
   try {
     const { data: response } = await axios.put(`v1/repairs/` + id, data);
+    return response.repair;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const updateRepairStatus = async (id, data) => {
+  try {
+    const { data: response } = await axios.put(`v1/repairs/${id}/status`, data);
     return response.repair;
   } catch (error) {
     throw error;

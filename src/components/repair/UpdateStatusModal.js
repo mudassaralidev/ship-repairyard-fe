@@ -20,7 +20,7 @@ import SimpleBar from 'components/third-party/SimpleBar';
 import useAuth from 'hooks/useAuth';
 import { useDispatch, useSelector } from 'react-redux';
 import { clearSuccessMessage } from '../../redux/features/repair/slice';
-import { updateRepair } from '../../redux/features/repair/actions';
+import { updateStatus } from '../../redux/features/repair/actions';
 import { toast } from 'react-toastify';
 
 const UpdateStatusModal = ({ open, modalToggler, repair }) => {
@@ -100,7 +100,7 @@ const UpdateStatusModal = ({ open, modalToggler, repair }) => {
                         return;
                       }
 
-                      dispatch(updateRepair(repair.id, { status }));
+                      dispatch(updateStatus(repair.id, { status }));
                     }}
                     variant="contained"
                   >

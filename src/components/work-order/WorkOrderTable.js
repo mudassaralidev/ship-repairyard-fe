@@ -176,7 +176,7 @@ function ReactTable({ data, columns, globalFilter, setGlobalFilter, showPaginati
   );
 }
 
-const WorkOrderTable = ({ lists = [], repair = {}, departments = [], hideSYName = false, showTitle = true, showPagination = true }) => {
+const WorkOrderTable = ({ lists = [], repair = {}, departments = [], showPagination = true }) => {
   const theme = useTheme();
   const matchDownSM = useMediaQuery(theme.breakpoints.down('sm'));
 
@@ -279,39 +279,6 @@ const WorkOrderTable = ({ lists = [], repair = {}, departments = [], hideSYName 
 
   return (
     <>
-      {showTitle ? (
-        <Typography
-          variant="h2"
-          sx={{
-            fontSize: {
-              xs: 'h5.fontSize',
-              md: 'h2.fontSize'
-            }
-          }}
-        >
-          Manage WorkOrder
-        </Typography>
-      ) : (
-        <></>
-      )}
-      {_.isEmpty(shipyard) || hideSYName ? (
-        <></>
-      ) : (
-        <Grid container spacing={2} sx={{ marginTop: '16px', marginBottom: '8px' }}>
-          <Grid item xs={12}>
-            <Stack direction="row" spacing={2} alignItems="center">
-              {/* Shipyard Select */}
-              <FormControl sx={{ minWidth: 200 }}>
-                <InputLabel id="shipyard-select-label">Shipyard</InputLabel>
-                <Select labelId="shipyard-select-label" id="shipyard-select" value={shipyard?.id || ''} label="Shipyard">
-                  <MenuItem value={shipyard?.id}>{shipyard?.name}</MenuItem>
-                </Select>
-              </FormControl>
-            </Stack>
-          </Grid>
-        </Grid>
-      )}
-
       <MainCard content={false}>
         {lists.length > 1 && (
           <Stack
@@ -385,10 +352,6 @@ const WorkOrderTable = ({ lists = [], repair = {}, departments = [], hideSYName 
             workOrder={{ ...selectedWorkOrder }}
           />
         )}
-
-        {/* {inventoryModal && (
-          <InventoryModal open={inventoryModal} modalToggler={modalToggler} shipyard={shipyard} inventory={selectedInventory} />
-        )} */}
       </MainCard>
     </>
   );

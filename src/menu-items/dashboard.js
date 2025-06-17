@@ -106,6 +106,18 @@ const dashboard = {
       title: <FormattedMessage id="Manage Dockings" />,
       type: 'item',
       url: '/dashboard/dockings'
+    },
+    {
+      id: 'Manage Repairs',
+      title: <FormattedMessage id="Manage Repairs" />,
+      type: 'item',
+      url: '/dashboard/repairs'
+    },
+    {
+      id: 'Manage Work Orders',
+      title: <FormattedMessage id="Manage Work Orders" />,
+      type: 'item',
+      url: '/dashboard/work-orders'
     }
   ],
   PROJECT_MANAGER: [
@@ -146,6 +158,18 @@ const dashboard = {
       title: <FormattedMessage id="Manage Dockings" />,
       type: 'item',
       url: '/dashboard/dockings'
+    },
+    {
+      id: 'Manage Repairs',
+      title: <FormattedMessage id="Manage Repairs" />,
+      type: 'item',
+      url: '/dashboard/repairs'
+    },
+    {
+      id: 'Manage Work Orders',
+      title: <FormattedMessage id="Manage Work Orders" />,
+      type: 'item',
+      url: '/dashboard/work-orders'
     }
   ],
 
@@ -222,12 +246,12 @@ const dashboard = {
       url: '/dashboard/inventories'
     }
   ],
-  others: [
+  FOREMAN: [
     {
-      id: 'Manage Repairs',
-      title: <FormattedMessage id="Manage Repairs" />,
+      id: 'Manage Work Orders',
+      title: <FormattedMessage id="Manage Work Orders" />,
       type: 'item',
-      url: '/dashboard/repairs'
+      url: '/dashboard/work-orders'
     }
   ]
 };

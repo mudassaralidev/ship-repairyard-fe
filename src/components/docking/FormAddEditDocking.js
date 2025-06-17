@@ -34,10 +34,9 @@ const validationSchema = Yup.object().shape({
   estimated_cost: Yup.number().typeError('Estimated cost must be a number')
 });
 
-const FormAddEditDocking = ({ shipyard, docking, dockingShip, ships, dockingPlaces, closeModal, removeUsedPlace = () => {} }) => {
+const FormAddEditDocking = ({ shipyard, docking, ship, dockingPlaces, closeModal, removeUsedPlace = () => {} }) => {
   const { user } = useAuth();
   const [place, setPlace] = useState(docking?.docking_place ? docking.docking_place : null);
-  const [ship, setShip] = useState(dockingShip ? dockingShip : docking?.ship ? ships.filter((s) => s.id === docking?.ship?.id)[0] : null);
   const { successMessage } = useSelector((state) => state.docking);
 
   const dispatch = useDispatch();
@@ -49,7 +48,7 @@ const FormAddEditDocking = ({ shipyard, docking, dockingShip, ships, dockingPlac
       end_date: docking?.end_date || '',
       total_cost: docking?.total_cost || 0,
       docking_place_id: docking?.docking_place?.id || '',
-      ship_id: docking?.ship?.id || dockingShip?.id || '',
+      ship_id: docking?.ship?.id || ship?.id || '',
       superintendent_id: docking?.superintendent?.id || null,
       name: docking?.name || '',
       estimated_cost: docking?.estimated_cost || 0
@@ -117,44 +116,18 @@ const FormAddEditDocking = ({ shipyard, docking, dockingShip, ships, dockingPlac
               {/* Ship Select */}
               <Grid item xs={12} sm={6}>
                 <Stack spacing={1}>
-                  {docking?.repair_count || dockingShip ? (
-                    <TextField
-                      select
-                      label="Ship"
-                      id="ship_id"
-                      {...getFieldProps('ship_id')}
-                      error={Boolean(touched.ship_id && errors.ship_id)}
-                      helperText={touched.ship_id && errors.ship_id}
-                    >
-                      <MenuItem key={ship?.id} value={ship?.id}>
-                        {ship?.name}
-                      </MenuItem>
-                    </TextField>
-                  ) : (
-                    <Autocomplete
-                      value={ship}
-                      options={ships}
-                      getOptionLabel={(option) => option.name}
-                      onChange={(e, value) => {
-                        setShip(value);
-                        setFieldValue('ship_id', value?.id || null);
-                      }}
-                      isOptionEqualToValue={(option, value) => option.id === value?.id}
-                      renderOption={(props, option) => (
-                        <li {...props} key={option.id}>
-                          {option.name}
-                        </li>
-                      )}
-                      renderInput={(params) => (
-                        <TextField
-                          {...params}
-                          label="Ship"
-                          error={touched.ship_id && Boolean(errors.ship_id)}
-                          helperText={touched.ship_id && errors.ship_id}
-                        />
-                      )}
-                    />
-                  )}
+                  <TextField
+                    select
+                    label="Ship"
+                    id="ship_id"
+                    {...getFieldProps('ship_id')}
+                    error={Boolean(touched.ship_id && errors.ship_id)}
+                    helperText={touched.ship_id && errors.ship_id}
+                  >
+                    <MenuItem key={ship?.id} value={ship?.id}>
+                      {ship?.name}
+                    </MenuItem>
+                  </TextField>
                 </Stack>
               </Grid>
 
