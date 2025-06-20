@@ -45,17 +45,12 @@ const validationSchema = (workOrder) =>
       .when('status', {
         is: 'COMPLETED',
         then: (schema) => schema.required('Per hour cost is required when status is COMPLETED')
-      }),
-    ...(workOrder
-      ? {
-          updated_reason: Yup.string().required('Enter the reason of change/update')
-        }
-      : {})
+      })
   });
 
-const getStatusOptions = (userRole) => {
-  if (['ADMIN', 'FOREMAN'].includes(userRole)) {
-    return ['STARTED', 'BLOCKED', 'COMPLETED'];
+const getStatusOptions = (userRole, workOrder) => {
+  if (['ADMIN', 'FOREMAN', 'PROJECT_MANAGER'].includes(userRole)) {
+    return workOrder ? ['STARTED', 'BLOCKED', 'COMPLETED'] : ['STARTED'];
   } else {
     return [];
   }
@@ -77,7 +72,6 @@ const FormAddEditWorkOrder = ({ repair, closeModal, workOrder, departments }) =>
       end_date: workOrder?.end_date || '',
       total_hours: workOrder?.total_hours || '',
       per_hour_cost: workOrder?.per_hour_cost || '',
-      updated_reason: '',
       repair_id: repair?.id || '',
       status: workOrder?.status || '',
       foreman_id: foreman?.id || ''
@@ -183,7 +177,7 @@ const FormAddEditWorkOrder = ({ repair, closeModal, workOrder, departments }) =>
                     error={Boolean(touched.status && errors.status)}
                     helperText={touched.status && errors.status}
                   >
-                    {getStatusOptions(user?.role, !repair).map((statusOption) => (
+                    {getStatusOptions(user?.role, workOrder).map((statusOption) => (
                       <MenuItem key={statusOption} value={statusOption}>
                         {statusOption.charAt(0) + statusOption.slice(1).toLowerCase()}
                       </MenuItem>
@@ -260,14 +254,6 @@ const FormAddEditWorkOrder = ({ repair, closeModal, workOrder, departments }) =>
                       error={Boolean(touched.total_hours && errors.total_hours)}
                       helperText={touched.total_hours && errors.total_hours}
                     />
-                  </Stack>
-                </Grid>
-              )}
-
-              {workOrder && (
-                <Grid item xs={12} sm={6}>
-                  <Stack spacing={1}>
-                    <TextField label="Why this repair is being updated" multiline minRows={1} {...getFieldProps('updated_reason')} />
                   </Stack>
                 </Grid>
               )}

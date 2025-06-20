@@ -41,12 +41,11 @@ import { rankItem } from '@tanstack/match-sorter-utils';
 import ScrollX from 'components/ScrollX';
 import MainCard from 'components/MainCard';
 import IconButton from 'components/@extended/IconButton';
-import EmptyReactTable from 'components/react-table/empty';
 
 import { DebouncedInput, RowSelection, TablePagination } from 'components/third-party/react-table';
 
 // assets
-import { DeleteOutlined, EditOutlined, EyeOutlined, PlusOutlined } from '@ant-design/icons';
+import { DeleteOutlined, EditOutlined, PlusOutlined } from '@ant-design/icons';
 import { useDispatch, useSelector } from 'react-redux';
 import { shipColumns } from 'utils/constants';
 import AlertUserDelete from 'components/users/AlertDelete';
@@ -58,6 +57,7 @@ import { toast } from 'react-toastify';
 import AddEditShipModal from 'components/ships/AddEditShipModal';
 import DockingModal from 'components/docking/DokcingModal';
 import { getAvailableDockingPlaces } from 'api/dockingPlaces';
+import NoDataMessage from 'components/@extended/NoDataMessage';
 
 export const fuzzyFilter = (row, columnId, value, addMeta) => {
   const itemRank = rankItem(row.getValue(columnId), value);
@@ -307,6 +307,34 @@ const ManageShips = ({ showCreateBtn = true, shipData, dockedPlaces = [] }) => {
 
   return (
     <>
+      <Typography
+        variant="h2"
+        sx={{
+          fontSize: {
+            xs: 'h5.fontSize',
+            md: 'h2.fontSize'
+          }
+        }}
+      >
+        Manage Ships
+      </Typography>
+      {_.isEmpty(shipyard) ? (
+        <></>
+      ) : (
+        <Grid container spacing={2} sx={{ marginTop: '16px', marginBottom: '8px' }}>
+          <Grid item xs={12}>
+            <Stack direction="row" spacing={2} alignItems="center">
+              {/* Shipyard Select */}
+              <FormControl sx={{ minWidth: 200 }}>
+                <InputLabel id="shipyard-select-label">Shipyard</InputLabel>
+                <Select labelId="shipyard-select-label" id="shipyard-select" value={shipyard?.id || ''} label="Shipyard">
+                  <MenuItem value={shipyard?.id}>{shipyard?.name}</MenuItem>
+                </Select>
+              </FormControl>
+            </Stack>
+          </Grid>
+        </Grid>
+      )}
       <MainCard content={false}>
         {showCreateBtn && (
           <Stack
@@ -332,7 +360,7 @@ const ManageShips = ({ showCreateBtn = true, shipData, dockedPlaces = [] }) => {
         )}
 
         {status === 'loading' || shipStatus === 'loading' || loading ? (
-          <EmptyReactTable columns={shipColumns} />
+          <NoDataMessage message="There is no SHIP data available. You can create new one from above button" />
         ) : (
           <ReactTable
             {...{

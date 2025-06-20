@@ -1,5 +1,6 @@
 import { requestStart, requestSuccess, requestFailure, create, update } from './slice';
-import { createRepairApi, fetchRepairsApi, updateRepairApi, updateRepairStatus } from 'api/repair';
+import { requestSuccess as workOrderState, setInventoryOrders } from '../work-order/slice';
+import { createRepairApi, fetchRepairsApi, getRepairOrdersAPI, updateRepairApi, updateRepairStatus } from 'api/repair';
 import { toast } from 'react-toastify';
 
 const handleError = (dispatch, error, message) => {
@@ -51,5 +52,15 @@ export const updateStatus = (id, data) => async (dispatch) => {
     dispatch(update(res));
   } catch (error) {
     handleError(dispatch, error, 'Error while updating repair status');
+  }
+};
+
+export const repairOrders = (id) => async (dispatch) => {
+  try {
+    const res = await getRepairOrdersAPI(id);
+    dispatch(workOrderState(res?.work_orders || []));
+    dispatch(setInventoryOrders(res?.inventory_orders || []));
+  } catch (error) {
+    handleError(dispatch, error, 'Error while getting repair orders');
   }
 };

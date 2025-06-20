@@ -48,7 +48,25 @@ export const getRepairHistory = async (id) => {
 export const createInventoryOrder = async (repairID, data) => {
   try {
     const { data: res } = await axios.post(`v1/repairs/${repairID}/inventory-order`, data);
-    return res.invOrder;
+    return res;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const updateInventoryOrderApi = async (repairID, orderID, data) => {
+  try {
+    const { data: res } = await axios.put(`v1/repairs/${repairID}/inventory-order/${orderID}`, data);
+    return res;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const getRepairOrdersAPI = async (repairID) => {
+  try {
+    const { data } = await axios.get(`v1/repairs/${repairID}/orders`);
+    return data.orders;
   } catch (error) {
     throw error;
   }

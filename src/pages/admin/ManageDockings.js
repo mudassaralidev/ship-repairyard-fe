@@ -41,7 +41,6 @@ import { rankItem } from '@tanstack/match-sorter-utils';
 import ScrollX from 'components/ScrollX';
 import MainCard from 'components/MainCard';
 import IconButton from 'components/@extended/IconButton';
-import EmptyReactTable from 'components/react-table/empty';
 
 import { DebouncedInput, RowSelection, TablePagination } from 'components/third-party/react-table';
 
@@ -57,6 +56,8 @@ import Loader from 'components/Loader';
 import { fetchDockings } from '../../redux/features/dockings/actions';
 import DockingModal from 'components/docking/DokcingModal';
 import AddSuperintendentModal from 'components/docking/AddSuperIntendentModal';
+import NoDataMessage from 'components/@extended/NoDataMessage';
+import DropdownDependencyInfo from 'components/@extended/DropdownDependencyInfo';
 
 export const fuzzyFilter = (row, columnId, value, addMeta) => {
   const itemRank = rankItem(row.getValue(columnId), value);
@@ -183,7 +184,7 @@ const ManageDockings = ({ ship, shipDocking, dockedPlaces }) => {
   const [dockingPlaces, setDockingPlaces] = useState(dockedPlaces);
   const [dockingModal, setDockingModal] = useState(false);
   const [addSuperintendentModal, setAddSuperintendentModal] = useState(false);
-  const [selectedShip, setSelectedShip] = useState(null);
+  const [selectedShip, setSelectedShip] = useState(ship);
 
   const [open, setOpen] = useState(false);
   const [globalFilter, setGlobalFilter] = useState('');
@@ -207,7 +208,8 @@ const ManageDockings = ({ ship, shipDocking, dockedPlaces }) => {
   }, [user]);
 
   useEffect(() => {
-    if (!selectedShip || ship) return;
+    if (!selectedShip) return;
+
     (async () => {
       dispatch(fetchDockings({ shipyardID: user?.shipyard_id, queryParams: `ship_id=${selectedShip.id}` }));
       const dockingData = await getAvailableDockingPlaces(user?.shipyard_id);
@@ -286,6 +288,11 @@ const ManageDockings = ({ ship, shipDocking, dockedPlaces }) => {
 
   if (loading || [fetchingDockings, fetchingShips].includes('loading')) return <Loader />;
 
+  const renderInfoMessage = () => {
+    if (_.isEmpty(selectedShip)) return <DropdownDependencyInfo visible={_.isEmpty(selectedShip)} requiredField="Ship" />;
+    if (!lists.length)
+      return <NoDataMessage message="There are no active dockings for selected SHIP. You can create new one from above button" />;
+  };
   return (
     <>
       {!shipDocking && (
@@ -340,7 +347,7 @@ const ManageDockings = ({ ship, shipDocking, dockedPlaces }) => {
       )}
 
       <MainCard content={false}>
-        {!shipDocking && (
+        {!shipDocking && selectedShip && (
           <Stack
             direction={{ xs: 'column', sm: 'row' }}
             spacing={2}
@@ -373,7 +380,7 @@ const ManageDockings = ({ ship, shipDocking, dockedPlaces }) => {
             }}
           />
         ) : (
-          <EmptyReactTable columns={dockingColsWithoutActions} />
+          renderInfoMessage()
         )}
         {dockingModal && (
           <DockingModal

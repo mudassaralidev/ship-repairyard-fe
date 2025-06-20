@@ -39,7 +39,6 @@ import { rankItem } from '@tanstack/match-sorter-utils';
 import ScrollX from 'components/ScrollX';
 import MainCard from 'components/MainCard';
 import IconButton from 'components/@extended/IconButton';
-import EmptyReactTable from 'components/react-table/empty';
 
 import { DebouncedInput, RowSelection, TablePagination } from 'components/third-party/react-table';
 
@@ -52,6 +51,7 @@ import { deleteDepartment, getDepartments } from 'api/department';
 import DepartmentModal from 'components/department/DepartmentModal';
 import UserModal from 'components/users/UserModal';
 import AlertDeleteRecord from 'components/AlerDelete';
+import NoDataMessage from 'components/@extended/NoDataMessage';
 
 export const fuzzyFilter = (row, columnId, value, addMeta) => {
   const itemRank = rankItem(row.getValue(columnId), value);
@@ -315,7 +315,7 @@ const ManageDepartments = () => {
         </Stack>
 
         {loading || !departments.length ? (
-          <EmptyReactTable columns={departmentColumns} />
+          <NoDataMessage message="No data available for DEPARTMENTS. You can create new one from above button" />
         ) : (
           <ReactTable
             {...{

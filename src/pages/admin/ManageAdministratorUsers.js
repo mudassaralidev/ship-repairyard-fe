@@ -3,7 +3,6 @@ import { Fragment, useEffect, useMemo, useState } from 'react';
 // material-ui
 import { alpha, useTheme } from '@mui/material/styles';
 import {
-  Autocomplete,
   Box,
   Button,
   Divider,
@@ -19,7 +18,6 @@ import {
   TableContainer,
   TableHead,
   TableRow,
-  TextField,
   Tooltip,
   Typography,
   useMediaQuery
@@ -41,7 +39,6 @@ import { rankItem } from '@tanstack/match-sorter-utils';
 import ScrollX from 'components/ScrollX';
 import MainCard from 'components/MainCard';
 import IconButton from 'components/@extended/IconButton';
-import EmptyReactTable from 'components/react-table/empty';
 
 import { DebouncedInput, RowSelection, TablePagination } from 'components/third-party/react-table';
 
@@ -49,11 +46,12 @@ import { DebouncedInput, RowSelection, TablePagination } from 'components/third-
 import { DeleteOutlined, EditOutlined, PlusOutlined } from '@ant-design/icons';
 import { useDispatch, useSelector } from 'react-redux';
 import { userTableColumns } from 'utils/constants';
-import { fetchShipyard, fetchShipyards, sySpecificUsers } from '../../redux/features/shipyard/actions';
+import { fetchShipyard, sySpecificUsers } from '../../redux/features/shipyard/actions';
 import UserModal from 'components/users/UserModal';
 import AlertUserDelete from 'components/users/AlertDelete';
 import _ from 'lodash';
 import useAuth from 'hooks/useAuth';
+import NoDataMessage from 'components/@extended/NoDataMessage';
 
 export const fuzzyFilter = (row, columnId, value, addMeta) => {
   const itemRank = rankItem(row.getValue(columnId), value);
@@ -298,7 +296,7 @@ const ManageAdministratorUsers = () => {
             }}
           />
         ) : (
-          <EmptyReactTable columns={userColsWithoutActions} />
+          <NoDataMessage message="No data available for ADMINISTRATOR users. You can create new one from above button" />
         )}
         {open && <AlertUserDelete id={deleteId} title={deleteId} open={open} handleClose={handleClose} />}
         {userModal && (

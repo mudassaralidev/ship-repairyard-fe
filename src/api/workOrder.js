@@ -1,8 +1,9 @@
 import axios from 'utils/dataApi';
 
-export const fetchWorkOrdersApi = async (shipyardID) => {
+export const fetchWorkOrdersApi = async () => {
   try {
-    return {};
+    const { data } = await axios.get(`v1/work-orders`);
+    return data.work_orders;
   } catch (error) {
     throw error;
   }

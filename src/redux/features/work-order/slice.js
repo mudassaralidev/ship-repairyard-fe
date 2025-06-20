@@ -2,6 +2,7 @@ import { createSlice } from '@reduxjs/toolkit';
 
 const initialState = {
   workOrders: [],
+  inventoryOrders: [],
   status: 'idle',
   error: null,
   successMessage: null
@@ -43,6 +44,22 @@ const workOrderSlice = createSlice({
       state.workOrders = state.workOrders.filter((item) => item.id !== action.payload.id);
       state.successMessage = 'Work order deleted successfully!';
     },
+    setInventoryOrders: (state, action) => {
+      state.inventoryOrders = action.payload;
+    },
+    updateInventoryOrder: (state, action) => {
+      const index = state.inventoryOrders.findIndex((item) => item.id === action.payload.id);
+      if (index !== -1) {
+        state.inventoryOrders[index] = action.payload;
+        state.successMessage = 'Inventory Order updated successfully!';
+      } else {
+        state.successMessage = 'Inventory order updated successfully!';
+      }
+    },
+    createInventoryOrder: (state, action) => {
+      state.inventoryOrders = [action.payload, ...state.inventoryOrders];
+      state.successMessage = 'Inventory order created successfully!';
+    },
     clearSuccessMessage: (state) => {
       state.status = 'idle';
       state.successMessage = null;
@@ -50,7 +67,18 @@ const workOrderSlice = createSlice({
   }
 });
 
-export const { requestStart, requestSuccess, requestFailure, create, update, deleteWorkOrder, assignEmployees, clearSuccessMessage } =
-  workOrderSlice.actions;
+export const {
+  requestStart,
+  requestSuccess,
+  requestFailure,
+  create,
+  update,
+  deleteWorkOrder,
+  assignEmployees,
+  setInventoryOrders,
+  updateInventoryOrder,
+  createInventoryOrder,
+  clearSuccessMessage
+} = workOrderSlice.actions;
 
 export default workOrderSlice.reducer;

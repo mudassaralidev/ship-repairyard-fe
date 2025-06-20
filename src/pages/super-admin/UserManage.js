@@ -37,7 +37,6 @@ import { rankItem } from '@tanstack/match-sorter-utils';
 import ScrollX from 'components/ScrollX';
 import MainCard from 'components/MainCard';
 import IconButton from 'components/@extended/IconButton';
-import EmptyReactTable from 'components/react-table/empty';
 
 import { DebouncedInput, RowSelection, TablePagination } from 'components/third-party/react-table';
 
@@ -300,7 +299,7 @@ const UserListPage = () => {
               }}
             />
           ) : (
-            <EmptyReactTable columns={userColsWithoutActions} />
+            <NoDataMessage message="ADMIN users data does not exist for this shipyard. You can create new one from above button" />
           )}
           {open && <AlertUserDelete id={deleteId} title={deleteId} open={open} handleClose={handleClose} />}
           {userModal && <UserModal open={userModal} modalToggler={setUserModal} user={selectedUser} shipyard={selectedShipyard} />}

@@ -39,20 +39,17 @@ import { rankItem } from '@tanstack/match-sorter-utils';
 import ScrollX from 'components/ScrollX';
 import MainCard from 'components/MainCard';
 import IconButton from 'components/@extended/IconButton';
-import EmptyReactTable from 'components/react-table/empty';
 
 import { DebouncedInput, RowSelection, TablePagination } from 'components/third-party/react-table';
 
 // assets
 import { DeleteOutlined, EditOutlined, PlusOutlined } from '@ant-design/icons';
 import { useDispatch, useSelector } from 'react-redux';
-import { fetchShipyard } from '../../redux/features/shipyard/actions';
 import { placeColumns } from 'utils/constants';
 import useAuth from 'hooks/useAuth';
 import { deleteDockingPlace, getDockingPlaces } from 'api/dockingPlaces';
 import DockingPlaceModal from 'components/docking-places/DockingPlaceModal';
-
-const avatarImage = require.context('assets/images/users', true);
+import NoDataMessage from 'components/@extended/NoDataMessage';
 
 export const fuzzyFilter = (row, columnId, value, addMeta) => {
   const itemRank = rankItem(row.getValue(columnId), value);
@@ -295,7 +292,7 @@ const ManageDockingPlaces = () => {
         </Stack>
 
         {loading || !dockingPlaces.length ? (
-          <EmptyReactTable columns={placeColumns} />
+          <NoDataMessage message="Places for dockings are not available. You can create new one from above button" />
         ) : (
           <ReactTable
             {...{

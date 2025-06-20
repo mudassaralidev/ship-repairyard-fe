@@ -248,6 +248,13 @@ const dashboard = {
   ],
   FOREMAN: [
     {
+      id: 'Welcome',
+      title: <FormattedMessage id="Welcome" />,
+      type: 'item',
+      url: '/dashboard/welcome'
+    },
+
+    {
       id: 'Manage Work Orders',
       title: <FormattedMessage id="Manage Work Orders" />,
       type: 'item',

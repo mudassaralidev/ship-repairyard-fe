@@ -162,6 +162,7 @@ const ShipDetails = () => {
                           hideSYName={true}
                           showTitle={false}
                           showPagination={false}
+                          showCreateBtn={false}
                         />
                       </Box>
                     )}
@@ -182,7 +183,13 @@ const ShipDetails = () => {
                           📦 Inventory Orders
                         </Typography>
                         {/* <Box key={order.id} mt={1}> */}
-                        <InventoryOrderTable lists={repair.inventory_orders} showPagination={false} hideSYName={true} showTitle={false} />
+                        <InventoryOrderTable
+                          lists={repair.inventory_orders}
+                          showPagination={false}
+                          hideSYName={true}
+                          showTitle={false}
+                          showCreateBtn={false}
+                        />
                         {/* </Box> */}
                       </Box>
                     )}

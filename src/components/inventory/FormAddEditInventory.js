@@ -8,7 +8,7 @@ import { createNewInventory, updateExistingInventory } from '../../redux/feature
 import { useDispatch, useSelector } from 'react-redux';
 import { clearSuccessMessage } from '../../redux/features/inventory/slice';
 
-const FormAddEditInventory = ({ shipyard, inventory, closeModal }) => {
+const FormAddEditInventory = ({ shipyard, inventory, closeModal, repair }) => {
   const { user } = useAuth();
 
   const { successMessage } = useSelector((state) => state.inventory);
@@ -18,7 +18,8 @@ const FormAddEditInventory = ({ shipyard, inventory, closeModal }) => {
     initialValues: {
       name: inventory?.name || '',
       total_quantity: inventory?.total_quantity || '',
-      ...(inventory ? { remaining_quantity: inventory?.remaining_quantity || '' } : {})
+      ...(inventory ? { remaining_quantity: inventory?.remaining_quantity || '' } : {}),
+      repair_id: repair ? repair.id : null
     },
     validationSchema: Yup.object().shape({
       name: Yup.string().required('Inventory name is required').max(255, 'Name is too long'),

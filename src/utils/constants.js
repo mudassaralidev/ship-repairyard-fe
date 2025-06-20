@@ -332,7 +332,57 @@ export const workOrderColumns = [
   },
   {
     header: 'Description',
-    accessorKey: 'description'
+    cell: ({ row }) => (
+      <Tooltip
+        title={<Typography sx={{ fontSize: 14, p: 1, maxWidth: 300, whiteSpace: 'normal' }}>{row.original.description}</Typography>}
+        arrow
+        placement="top"
+        componentsProps={{
+          tooltip: {
+            sx: {
+              backgroundColor: '#333',
+              color: '#fff',
+              borderRadius: 1,
+              boxShadow: 3,
+              fontWeight: 400
+            }
+          }
+        }}
+      >
+        <Typography
+          noWrap
+          sx={{
+            maxWidth: '120px',
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+            whiteSpace: 'nowrap',
+            display: 'inline-block'
+          }}
+        >
+          {row.original.description}
+        </Typography>
+      </Tooltip>
+    )
+  },
+  {
+    header: 'Per Hour Cost',
+    accessorKey: 'per_hour_cost'
+  },
+  {
+    header: 'Total Hours',
+    accessorKey: 'total_hours'
+  },
+  {
+    header: 'Total Cost',
+    accessorKey: 'total_cost'
+  },
+  {
+    header: 'Foreman',
+    accessorKey: 'foreman.name'
+  },
+  {
+    header: 'Department',
+    accessorKey: 'foreman.department.name'
   },
   {
     header: 'Start Date',
@@ -343,22 +393,6 @@ export const workOrderColumns = [
     header: 'End Date',
     accessorKey: 'end_date',
     cell: ({ row }) => (row.original.end_date ? dayjs(row.original.end_date).format('DD-MM-YYYY') : '-')
-  },
-  {
-    header: 'Total Hours',
-    accessorKey: 'total_hours'
-  },
-  {
-    header: 'Per Hour Cost',
-    accessorKey: 'per_hour_cost'
-  },
-  {
-    header: 'Updated Reason',
-    accessorKey: 'updated_reason'
-  },
-  {
-    header: 'Foreman',
-    accessorKey: 'foreman.name'
   }
 ];
 
@@ -377,9 +411,13 @@ export const inventoryOrderColumns = [
     accessorKey: 'quantity'
   },
   {
-    header: 'Cost',
+    header: 'Cost Per Qty',
     accessorKey: 'cost',
-    cell: ({ row }) => (row.original.cost ? `$${parseFloat(row.original.cost).toFixed(2)}` : '-')
+    cell: ({ row }) => `$${parseFloat(row.original.cost).toFixed(2)}`
+  },
+  {
+    header: 'Total Cost',
+    cell: ({ row }) => `$${parseFloat(row.original.cost * row.original.quantity).toFixed(2)}`
   }
 ];
 

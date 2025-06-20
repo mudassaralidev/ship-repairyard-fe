@@ -15,16 +15,20 @@ import { useFormik, Form, FormikProvider } from 'formik';
 import * as Yup from 'yup';
 import { toast } from 'react-toastify';
 import useAuth from 'hooks/useAuth';
-import { createInventoryOrder } from 'api/repair';
+import { createInventoryOrder, updateInventoryOrderApi } from 'api/repair';
+import { useDispatch } from 'react-redux';
+import { updateInventoryOrder, createInventoryOrder as createInvOrderState } from '../../redux/features/work-order/slice';
+import { updateInventoryQtyBatch } from '../../redux/features/inventory/slice';
 
 const FormAddEditInventoryOrder = ({ repair, closeModal, inventoryOrder, inventories }) => {
-  const [selectedInventory, setSelectedInventory] = useState(null);
+  const [selectedInventory, setSelectedInventory] = useState(inventories?.find((i) => i?.id === inventoryOrder?.inventory?.id) || null);
+  const dispatch = useDispatch();
 
   const { user } = useAuth();
 
   const formik = useFormik({
     initialValues: {
-      inventory_id: inventoryOrder?.inventory_id || '',
+      inventory_id: inventoryOrder?.inventory?.id || '',
       quantity: inventoryOrder?.quantity || '',
       cost: inventoryOrder?.cost || ''
     },
@@ -42,15 +46,20 @@ const FormAddEditInventoryOrder = ({ repair, closeModal, inventoryOrder, invento
     onSubmit: async (values, { setSubmitting }) => {
       try {
         if (inventoryOrder) {
-          console.log('updating', values);
+          const res = await updateInventoryOrderApi(repair.id, inventoryOrder.id, values);
+          dispatch(updateInventoryOrder(res.order));
+          dispatch(updateInventoryQtyBatch(res.updatedInventories));
         } else {
           values.created_by = user?.id;
-          await createInventoryOrder(repair.id, values);
+          const res = await createInventoryOrder(repair.id, values);
+          dispatch(createInvOrderState(res.order));
+          dispatch(updateInventoryQtyBatch([res.order.inventory]));
         }
 
         toast.success(inventoryOrder ? 'Order updated successfully' : 'Order created successfully');
         closeModal();
       } catch (error) {
+        console.log(error);
         toast.error(error?.response?.data?.message || 'Something went wrong while creating Inventory Order!');
       } finally {
         setSubmitting(false);
@@ -127,7 +136,7 @@ const FormAddEditInventoryOrder = ({ repair, closeModal, inventoryOrder, invento
             Cancel
           </Button>
           <Button type="submit" variant="contained" disabled={isSubmitting}>
-            {inventoryOrder?.inventory_id ? 'Update' : 'Add'}
+            {inventoryOrder ? 'Update' : 'Add'}
           </Button>
         </DialogActions>
       </Form>

@@ -17,10 +17,10 @@ const handleError = (dispatch, error, hardCodedError) => {
   });
 };
 
-export const fetchWorkOrders = (shipyardID) => async (dispatch) => {
+export const fetchWorkOrders = () => async (dispatch) => {
   dispatch(requestStart());
   try {
-    const res = await fetchWorkOrdersApi(shipyardID);
+    const res = await fetchWorkOrdersApi();
     dispatch(requestSuccess(res));
   } catch (error) {
     handleError(dispatch, error, 'Error while fetching work orders');

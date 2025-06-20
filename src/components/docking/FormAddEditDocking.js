@@ -255,19 +255,21 @@ const FormAddEditDocking = ({ shipyard, docking, ship, dockingPlaces, closeModal
                   />
                 </Stack>
               </Grid>
-              <Grid item xs={12} sm={6}>
-                <Stack spacing={1}>
-                  <TextField
-                    label="Total Cost"
-                    id="total_cost"
-                    placeholder="Enter Total Cost"
-                    type="number"
-                    {...getFieldProps('total_cost')}
-                    error={touched.total_cost && Boolean(errors.total_cost)}
-                    helperText={touched.total_cost && errors.total_cost}
-                  />
-                </Stack>
-              </Grid>
+              {docking && (
+                <Grid item xs={12} sm={6}>
+                  <Stack spacing={1}>
+                    <TextField
+                      label="Total Cost"
+                      id="total_cost"
+                      placeholder="Enter Total Cost"
+                      type="number"
+                      {...getFieldProps('total_cost')}
+                      error={touched.total_cost && Boolean(errors.total_cost)}
+                      helperText={touched.total_cost && errors.total_cost}
+                    />
+                  </Stack>
+                </Grid>
+              )}
             </Grid>
           </DialogContent>
           <Divider />

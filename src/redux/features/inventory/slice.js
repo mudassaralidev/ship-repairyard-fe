@@ -42,6 +42,18 @@ const inventorySlice = createSlice({
     getInventory: (state, action) => {
       state.inventory = action.payload;
     },
+    updateInventoryQtyBatch: (state, action) => {
+      const updatedInventories = action.payload; // array of updated inventories
+      updatedInventories.forEach((inv) => {
+        const index = state.inventories.findIndex((item) => item.id === inv.id);
+        if (index !== -1) {
+          state.inventories[index] = {
+            ...state.inventories[index],
+            remaining_quantity: inv.remaining_quantity
+          };
+        }
+      });
+    },
     clearSuccessMessage: (state) => {
       state.status = 'idle';
       state.successMessage = null;
@@ -57,6 +69,7 @@ export const {
   updateInventory,
   deleteInventory,
   getInventory,
+  updateInventoryQtyBatch,
   clearSuccessMessage
 } = inventorySlice.actions;
 

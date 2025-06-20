@@ -25,7 +25,7 @@ import { updateWorkOrder } from '../../redux/features/work-order/actions';
 
 const UpdateStatusModal = ({ open, modalToggler, workOrder }) => {
   const { user } = useAuth();
-  if (!['FOREMAN', 'ADMIN'].includes(user?.role)) modalToggler();
+  if (!['FOREMAN', 'ADMIN', 'PROJECT_MANAGER'].includes(user?.role)) modalToggler();
 
   const dispatch = useDispatch();
   const { successMessage } = useSelector((state) => state.workOrder);

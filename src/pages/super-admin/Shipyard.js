@@ -33,7 +33,6 @@ import { rankItem } from '@tanstack/match-sorter-utils';
 import ScrollX from 'components/ScrollX';
 import MainCard from 'components/MainCard';
 import IconButton from 'components/@extended/IconButton';
-import EmptyReactTable from 'components/react-table/empty';
 
 import { DebouncedInput, RowSelection, TablePagination } from 'components/third-party/react-table';
 
@@ -46,8 +45,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { fetchShipyards } from '../../redux/features/shipyard/actions';
 import { shipyardColumnsWithoutActions } from 'utils/constants';
 import UserModal from 'components/users/UserModal';
-
-const avatarImage = require.context('assets/images/users', true);
+import NoDataMessage from 'components/@extended/NoDataMessage';
 
 export const fuzzyFilter = (row, columnId, value, addMeta) => {
   const itemRank = rankItem(row.getValue(columnId), value);
@@ -264,7 +262,7 @@ const ShipyardListPage = () => {
       </Stack>
 
       {status === 'loading' || !lists.length ? (
-        <EmptyReactTable columns={shipyardColumnsWithoutActions} />
+        <NoDataMessage message="No SHIPYARD data found. You can create new one from above button" />
       ) : (
         <ReactTable
           {...{

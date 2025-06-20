@@ -6,11 +6,6 @@ import {
   Box,
   Button,
   Divider,
-  FormControl,
-  Grid,
-  InputLabel,
-  MenuItem,
-  Select,
   Stack,
   Table,
   TableBody,
@@ -19,7 +14,6 @@ import {
   TableHead,
   TableRow,
   Tooltip,
-  Typography,
   useMediaQuery,
   Chip
 } from '@mui/material';
@@ -40,19 +34,19 @@ import { rankItem } from '@tanstack/match-sorter-utils';
 import ScrollX from 'components/ScrollX';
 import MainCard from 'components/MainCard';
 import IconButton from 'components/@extended/IconButton';
-import EmptyReactTable from 'components/react-table/empty';
 
 import { DebouncedInput, RowSelection, TablePagination } from 'components/third-party/react-table';
 
 // assets
 import { DeleteOutlined, EditOutlined, PlusOutlined } from '@ant-design/icons';
-import { useDispatch, useSelector } from 'react-redux';
 import { workOrderColumns } from 'utils/constants';
 import _ from 'lodash';
 import Loader from 'components/Loader';
 import WorkOrderModal from './WorkOrderModal';
 import UpdateStatusModal from './UpdateStatusModal';
 import AssignUpdateEmployeesModal from './AssignEmployeesModal';
+import NoDataMessage from 'components/@extended/NoDataMessage';
+import EmployeesModal from './EmployeesModal';
 
 const getStatusChipProps = (status) => {
   const normalized = status?.toUpperCase?.() ?? '';
@@ -176,12 +170,10 @@ function ReactTable({ data, columns, globalFilter, setGlobalFilter, showPaginati
   );
 }
 
-const WorkOrderTable = ({ lists = [], repair = {}, departments = [], showPagination = true }) => {
+const WorkOrderTable = ({ lists = [], repair = {}, departments = [], showPagination = true, showCreateBtn = true }) => {
   const theme = useTheme();
   const matchDownSM = useMediaQuery(theme.breakpoints.down('sm'));
 
-  const dispatch = useDispatch();
-  const { shipyard } = useSelector((state) => state.shipyard);
   const [selectedWorkOrder, setSelectedWorkOrder] = useState(null);
   const [workOrderModal, setWorkOrderModal] = useState(false);
 
@@ -189,6 +181,7 @@ const WorkOrderTable = ({ lists = [], repair = {}, departments = [], showPaginat
   const [globalFilter, setGlobalFilter] = useState('');
   const [updateStatusModal, setUpdateStatusModal] = useState(false);
   const [assignEmpModal, setAssignEmpModal] = useState(false);
+  const [employeesModal, setEmployeesModal] = useState(false);
 
   const colsWithoutActions = workOrderColumns;
 
@@ -228,7 +221,7 @@ const WorkOrderTable = ({ lists = [], repair = {}, departments = [], showPaginat
         },
         disableSortBy: true,
         cell: ({ row }) => {
-          return (
+          return row.original.status !== 'COMPLETED' ? (
             <Stack direction="row" alignItems="center" justifyContent="center" spacing={0}>
               <Tooltip title="Edit">
                 <IconButton
@@ -263,6 +256,24 @@ const WorkOrderTable = ({ lists = [], repair = {}, departments = [], showPaginat
                 Assign
               </Button>
             </Stack>
+          ) : (
+            <Tooltip title="View Employees" arrow>
+              <Button
+                variant="text"
+                size="small"
+                sx={{
+                  textTransform: 'capitalize',
+                  cursor: 'pointer',
+                  minWidth: '100px'
+                }}
+                onClick={() => {
+                  setSelectedWorkOrder(row.original);
+                  setEmployeesModal(true);
+                }}
+              >
+                <Chip label="View Employees" />
+              </Button>
+            </Tooltip>
           );
         }
       }
@@ -271,7 +282,7 @@ const WorkOrderTable = ({ lists = [], repair = {}, departments = [], showPaginat
   );
 
   const modalToggler = () => {
-    setWorkOrderModal(!inventoryModal);
+    setWorkOrderModal(!workOrderModal);
     setSelectedWorkOrder(null);
   };
 
@@ -280,7 +291,7 @@ const WorkOrderTable = ({ lists = [], repair = {}, departments = [], showPaginat
   return (
     <>
       <MainCard content={false}>
-        {lists.length > 1 && (
+        {showCreateBtn && (
           <Stack
             direction={{ xs: 'column', sm: 'row' }}
             spacing={2}
@@ -315,7 +326,7 @@ const WorkOrderTable = ({ lists = [], repair = {}, departments = [], showPaginat
             }}
           />
         ) : (
-          <EmptyReactTable columns={colsWithoutActions} />
+          <NoDataMessage message="There are no current work orders on selected repair. You can create one using the button above." />
         )}
 
         {workOrderModal && (
@@ -328,6 +339,7 @@ const WorkOrderTable = ({ lists = [], repair = {}, departments = [], showPaginat
             repair={repair}
             departments={departments}
             workOrder={selectedWorkOrder}
+            type={'Work Order'}
           />
         )}
 
@@ -350,6 +362,18 @@ const WorkOrderTable = ({ lists = [], repair = {}, departments = [], showPaginat
               setAssignEmpModal(!assignEmpModal);
             }}
             workOrder={{ ...selectedWorkOrder }}
+          />
+        )}
+
+        {employeesModal && (
+          <EmployeesModal
+            open={employeesModal}
+            employees={selectedWorkOrder.employees}
+            modalToggler={() => {
+              setSelectedWorkOrder({});
+              setEmployeesModal(false);
+            }}
+            departmentName={selectedWorkOrder.foreman.department.name}
           />
         )}
       </MainCard>

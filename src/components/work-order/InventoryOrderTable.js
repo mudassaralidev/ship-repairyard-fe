@@ -39,16 +39,17 @@ import { rankItem } from '@tanstack/match-sorter-utils';
 import ScrollX from 'components/ScrollX';
 import MainCard from 'components/MainCard';
 import IconButton from 'components/@extended/IconButton';
-import EmptyReactTable from 'components/react-table/empty';
 
 import { DebouncedInput, RowSelection, TablePagination } from 'components/third-party/react-table';
 
 // assets
 import { DeleteOutlined, EditOutlined, PlusOutlined } from '@ant-design/icons';
 import { useDispatch, useSelector } from 'react-redux';
-import { inventoryOrderColumns, workOrderColumns } from 'utils/constants';
+import { inventoryOrderColumns } from 'utils/constants';
 import _ from 'lodash';
 import Loader from 'components/Loader';
+import NoDataMessage from 'components/@extended/NoDataMessage';
+import WorkOrderModal from './WorkOrderModal';
 
 export const fuzzyFilter = (row, columnId, value, addMeta) => {
   const itemRank = rankItem(row.getValue(columnId), value);
@@ -155,7 +156,15 @@ function ReactTable({ data, columns, globalFilter, setGlobalFilter, showPaginati
   );
 }
 
-const InventoryOrderTable = ({ lists = [], hideSYName = false, showTitle = true, showPagination = true }) => {
+const InventoryOrderTable = ({
+  lists = [],
+  hideSYName = false,
+  showTitle = true,
+  showPagination = true,
+  showCreateBtn = true,
+  repair,
+  inventories = []
+}) => {
   const theme = useTheme();
   const matchDownSM = useMediaQuery(theme.breakpoints.down('sm'));
 
@@ -256,7 +265,7 @@ const InventoryOrderTable = ({ lists = [], hideSYName = false, showTitle = true,
       )}
 
       <MainCard content={false}>
-        {lists.length > 1 && (
+        {showCreateBtn && (
           <Stack
             direction={{ xs: 'column', sm: 'row' }}
             spacing={2}
@@ -291,17 +300,20 @@ const InventoryOrderTable = ({ lists = [], hideSYName = false, showTitle = true,
             }}
           />
         ) : (
-          <EmptyReactTable columns={colsWithoutActions} />
+          <NoDataMessage message="No inventory order exists for the selected repair." />
         )}
 
-        {/* {inventoryOrderModal && (
-            <InventoryOrderModal
-              open={inventoryOrderModal}
-              modalToggler={modalToggler}
-              shipyard={shipyard}
-              inventoryOrder={selectedInventoryOrder}
-            />
-          )} */}
+        {inventoryOrderModal && (
+          <WorkOrderModal
+            open={inventoryOrderModal}
+            modalToggler={modalToggler}
+            repair={repair}
+            shipyard={shipyard}
+            inventoryOrder={selectedInventoryOrder}
+            inventories={inventories}
+            type={'Inventory Order'}
+          />
+        )}
       </MainCard>
     </>
   );

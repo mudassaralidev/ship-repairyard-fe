@@ -1,5 +1,5 @@
 // material-ui
-import { Grid, MenuItem, Modal, Stack, TextField, Typography } from '@mui/material';
+import { Grid, Modal, Stack } from '@mui/material';
 
 // project-imports
 import MainCard from 'components/MainCard';
@@ -7,9 +7,10 @@ import SimpleBar from 'components/third-party/SimpleBar';
 import FormAddEditWorkOrder from './FormAddEditWorkOrder';
 import { useState } from 'react';
 import FormAddEditInventoryOrder from './FormAddEditInventoryOrder';
+import Dropdown from './Dropdown';
 
-const WorkOrderModal = ({ open, modalToggler, repair, workOrder, departments, inventories }) => {
-  const [selectedOrder, setSelectedOrder] = useState('Work Order');
+const WorkOrderModal = ({ open, modalToggler, repair, workOrder, departments, inventories, type, inventoryOrder }) => {
+  const [selectedOrder, setSelectedOrder] = useState(type || 'Work Order');
   return (
     <>
       {open && (
@@ -39,27 +40,35 @@ const WorkOrderModal = ({ open, modalToggler, repair, workOrder, departments, in
                 }
               }}
             >
-              <Grid container spacing={3}>
-                <Grid item sm={3}></Grid>
-                <Grid item xs={12} sm={6}>
-                  <Stack spacing={1}>
-                    <TextField value={selectedOrder} select fullWidth label="Order Type" onChange={(e) => setSelectedOrder(e.target.value)}>
-                      {['Work Order', 'Inventory Order'].map((statusOption) => (
-                        <MenuItem key={statusOption} value={statusOption}>
-                          <strong>{statusOption}</strong>
-                        </MenuItem>
-                      ))}
-                    </TextField>
-                  </Stack>
+              {!type && (
+                <Grid container spacing={3}>
+                  <Grid item sm={3}></Grid>
+                  <Grid item xs={12} sm={6}>
+                    <Stack spacing={1}>
+                      <Dropdown
+                        label="Order Type"
+                        value={selectedOrder}
+                        options={[...(type ? [type] : ['Work Order', 'Inventory Order'])]}
+                        onChange={(e) => setSelectedOrder(e.target.value)}
+                        getOptionLabel={(opt) => opt}
+                      />
+                    </Stack>
+                  </Grid>
+                  <Grid item sm={3}></Grid>
                 </Grid>
-                <Grid item sm={3}></Grid>
-              </Grid>
+              )}
 
               {selectedOrder === 'Work Order' && (
                 <FormAddEditWorkOrder closeModal={modalToggler} workOrder={workOrder} repair={repair} departments={departments} />
               )}
               {selectedOrder === 'Inventory Order' && (
-                <FormAddEditInventoryOrder closeModal={modalToggler} repair={repair} departments={departments} inventories={inventories} />
+                <FormAddEditInventoryOrder
+                  closeModal={modalToggler}
+                  repair={repair}
+                  departments={departments}
+                  inventories={inventories}
+                  inventoryOrder={inventoryOrder}
+                />
               )}
             </SimpleBar>
           </MainCard>

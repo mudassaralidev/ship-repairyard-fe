@@ -42,7 +42,6 @@ import { rankItem } from '@tanstack/match-sorter-utils';
 import ScrollX from 'components/ScrollX';
 import MainCard from 'components/MainCard';
 import IconButton from 'components/@extended/IconButton';
-import EmptyReactTable from 'components/react-table/empty';
 
 import { DebouncedInput, RowSelection, TablePagination } from 'components/third-party/react-table';
 
@@ -62,6 +61,8 @@ import WorkOrderModal from 'components/work-order/WorkOrderModal';
 import dataApi from 'utils/dataApi';
 import { toast } from 'react-toastify';
 import { fetchInventoriesApi } from 'api/shipyard';
+import NoDataMessage from 'components/@extended/NoDataMessage';
+import DropdownDependencyInfo from 'components/@extended/DropdownDependencyInfo';
 
 const getStatusChipProps = (status) => {
   const normalized = status?.toUpperCase?.() ?? '';
@@ -360,6 +361,12 @@ const ManageRepairs = ({ repairData, departsData = [], inventoryData = [], docke
 
   if ([fetchingRepairs].includes('loading')) return <Loader />;
 
+  const renderInfoMessage = () => {
+    if (!selectedDocking) return <DropdownDependencyInfo visible={!selectedDocking} requiredField="DOCKING" />;
+
+    return <NoDataMessage message="Selected docking has no any active REPAIRS. You can create new one from above button" />;
+  };
+
   return (
     <>
       {!repairData && (
@@ -413,7 +420,7 @@ const ManageRepairs = ({ repairData, departsData = [], inventoryData = [], docke
       )}
 
       <MainCard content={false}>
-        {!repairData && (
+        {!repairData && selectedDocking && (
           <Stack
             direction={{ xs: 'column', sm: 'row' }}
             spacing={2}
@@ -449,7 +456,7 @@ const ManageRepairs = ({ repairData, departsData = [], inventoryData = [], docke
             }}
           />
         ) : (
-          <EmptyReactTable columns={repairColsWithoutActions} />
+          renderInfoMessage()
         )}
 
         {repairModal && (

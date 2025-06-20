@@ -41,7 +41,6 @@ import { rankItem } from '@tanstack/match-sorter-utils';
 import ScrollX from 'components/ScrollX';
 import MainCard from 'components/MainCard';
 import IconButton from 'components/@extended/IconButton';
-import EmptyReactTable from 'components/react-table/empty';
 
 import { DebouncedInput, RowSelection, TablePagination } from 'components/third-party/react-table';
 
@@ -49,12 +48,14 @@ import { DebouncedInput, RowSelection, TablePagination } from 'components/third-
 import { DeleteOutlined, EditOutlined } from '@ant-design/icons';
 import { useDispatch, useSelector } from 'react-redux';
 import { userTableColumns } from 'utils/constants';
-import { fetchShipyard, sySpecificUsers } from '../../redux/features/shipyard/actions';
+import { sySpecificUsers } from '../../redux/features/shipyard/actions';
 import UserModal from 'components/users/UserModal';
 import AlertUserDelete from 'components/users/AlertDelete';
 import _ from 'lodash';
 import useAuth from 'hooks/useAuth';
 import { getDepartment, getDepartments } from 'api/department';
+import NoDataMessage from 'components/@extended/NoDataMessage';
+import DropdownDependencyInfo from 'components/@extended/DropdownDependencyInfo';
 
 export const fuzzyFilter = (row, columnId, value, addMeta) => {
   const itemRank = rankItem(row.getValue(columnId), value);
@@ -265,6 +266,12 @@ const ManageDeptUsers = () => {
     setSelectedUser(null);
   };
 
+  const renderInfoMessage = () => {
+    if (_.isEmpty(selectedDepartment)) return <DropdownDependencyInfo visible={_.isEmpty(selectedDepartment)} requiredField="Department" />;
+    if (!lists.length)
+      return <NoDataMessage message="No data available for DEPARTMENTAL users. You can create new one from above button" />;
+  };
+
   return (
     <>
       <Typography
@@ -343,19 +350,8 @@ const ManageDeptUsers = () => {
         </Grid>
       )}
 
-      {_.isEmpty(selectedDepartment) ? (
-        <Typography
-          variant="body1"
-          sx={{
-            color: 'gray',
-            fontStyle: 'italic',
-            marginTop: '8px'
-          }}
-        >
-          Please select a specific Department to list its <strong>USERS</strong>.
-        </Typography>
-      ) : (
-        <MainCard content={false}>
+      <MainCard content={false}>
+        {lists?.length ? (
           <Stack
             direction={{ xs: 'column', sm: 'row' }}
             spacing={2}
@@ -369,32 +365,34 @@ const ManageDeptUsers = () => {
               placeholder={`Search ${lists.length} records...`}
             />
           </Stack>
+        ) : (
+          <></>
+        )}
 
-          {loading || lists?.length ? (
-            <ReactTable
-              {...{
-                data: lists,
-                columns,
-                globalFilter,
-                setGlobalFilter
-              }}
-            />
-          ) : (
-            <EmptyReactTable columns={userColsWithoutActions} />
-          )}
-          {open && <AlertUserDelete id={deleteId} title={deleteId} open={open} handleClose={handleClose} />}
-          {userModal && (
-            <UserModal
-              open={userModal}
-              modalToggler={modalToggler}
-              user={selectedUser}
-              shipyard={{ value: shipyard?.id, label: shipyard?.name }}
-              department={selectedDepartment}
-              roleMap={roleMap}
-            />
-          )}
-        </MainCard>
-      )}
+        {lists?.length ? (
+          <ReactTable
+            {...{
+              data: lists,
+              columns,
+              globalFilter,
+              setGlobalFilter
+            }}
+          />
+        ) : (
+          renderInfoMessage()
+        )}
+        {open && <AlertUserDelete id={deleteId} title={deleteId} open={open} handleClose={handleClose} />}
+        {userModal && (
+          <UserModal
+            open={userModal}
+            modalToggler={modalToggler}
+            user={selectedUser}
+            shipyard={{ value: shipyard?.id, label: shipyard?.name }}
+            department={selectedDepartment}
+            roleMap={roleMap}
+          />
+        )}
+      </MainCard>
     </>
   );
 };
