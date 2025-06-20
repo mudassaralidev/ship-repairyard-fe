@@ -48,6 +48,8 @@ import { fetchShipyards, sySpecificUsers } from '../../redux/features/shipyard/a
 import UserModal from 'components/users/UserModal';
 import AlertUserDelete from 'components/users/AlertDelete';
 import _ from 'lodash';
+import DropdownDependencyInfo from 'components/@extended/DropdownDependencyInfo';
+import NoDataMessage from 'components/@extended/NoDataMessage';
 
 export const fuzzyFilter = (row, columnId, value, addMeta) => {
   const itemRank = rankItem(row.getValue(columnId), value);
@@ -255,16 +257,7 @@ const UserListPage = () => {
         </Grid>
       </Grid>
       {_.isEmpty(selectedShipyard) ? (
-        <Typography
-          variant="body1"
-          sx={{
-            color: 'gray',
-            fontStyle: 'italic',
-            marginTop: '8px'
-          }}
-        >
-          Please select a specific shipyard to list its <strong>USERS</strong>.
-        </Typography>
+        <DropdownDependencyInfo visible={_.isEmpty(selectedShipyard)} requiredField="Shipyard" />
       ) : (
         <MainCard content={false}>
           <Stack

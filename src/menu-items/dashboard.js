@@ -15,7 +15,6 @@ const icons = {
 
 const dashboard = {
   id: 'group-dashboard',
-  title: <FormattedMessage id="Super Admin" />,
   icon: icons.IdcardOutlined,
   type: 'group',
   SUPER_ADMIN: [

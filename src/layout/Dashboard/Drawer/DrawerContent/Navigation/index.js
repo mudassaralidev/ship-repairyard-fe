@@ -14,6 +14,7 @@ import { HORIZONTAL_MAX_ITEM } from 'config';
 import { useGetMenuMaster } from 'api/menu';
 import { MenuOrientation } from 'config';
 import useAuth from 'hooks/useAuth';
+import { FormattedMessage } from 'react-intl';
 // ==============================|| DRAWER CONTENT - NAVIGATION ||============================== //
 
 const Navigation = () => {
@@ -34,6 +35,7 @@ const Navigation = () => {
   useLayoutEffect(() => {
     const isFound = menuItem.items.some((element) => {
       if (element.id === 'group-dashboard') {
+        element.title = <FormattedMessage id={_.startCase(_.toLower(user.role))} />;
         return true;
       }
       return false;
