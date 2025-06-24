@@ -5,7 +5,8 @@ const initialState = {
   inventoryOrders: [],
   status: 'idle',
   error: null,
-  successMessage: null
+  successMessage: null,
+  lastAction: ''
 };
 
 const workOrderSlice = createSlice({
@@ -27,18 +28,19 @@ const workOrderSlice = createSlice({
     create: (state, action) => {
       state.workOrders = [action.payload, ...state.workOrders];
       state.successMessage = 'Work order created successfully!';
+      state.lastAction = state.lastAction === 'created' ? 'created again' : 'created';
     },
     update: (state, action) => {
       const index = state.workOrders.findIndex((item) => item.id === action.payload.id);
       if (index !== -1) {
         state.workOrders[index] = action.payload;
-        state.successMessage = 'Work order updated successfully!';
-      } else {
-        state.successMessage = 'Work order updated successfully!';
       }
+      state.successMessage = 'Work order updated successfully!';
+      state.lastAction = state.lastAction === 'updated' ? 'updated again' : 'updated';
     },
     assignEmployees: (state, action) => {
       state.successMessage = action.payload || 'Employees are assigned successfully!';
+      state.lastAction = state.lastAction === 'updated' ? 'updated again' : 'updated';
     },
     deleteWorkOrder: (state, action) => {
       state.workOrders = state.workOrders.filter((item) => item.id !== action.payload.id);
@@ -51,14 +53,15 @@ const workOrderSlice = createSlice({
       const index = state.inventoryOrders.findIndex((item) => item.id === action.payload.id);
       if (index !== -1) {
         state.inventoryOrders[index] = action.payload;
-        state.successMessage = 'Inventory Order updated successfully!';
-      } else {
-        state.successMessage = 'Inventory order updated successfully!';
       }
+      state.successMessage = 'Inventory order updated successfully!';
+
+      state.lastAction = state.lastAction === 'updated' ? 'updated again' : 'updated';
     },
     createInventoryOrder: (state, action) => {
       state.inventoryOrders = [action.payload, ...state.inventoryOrders];
       state.successMessage = 'Inventory order created successfully!';
+      state.lastAction = state.lastAction === 'created' ? 'created again' : 'created';
     },
     clearSuccessMessage: (state) => {
       state.status = 'idle';

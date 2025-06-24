@@ -50,7 +50,7 @@ const validationSchema = (workOrder) =>
 
 const getStatusOptions = (userRole, workOrder) => {
   if (['ADMIN', 'FOREMAN', 'PROJECT_MANAGER'].includes(userRole)) {
-    return workOrder ? ['STARTED', 'BLOCKED', 'COMPLETED'] : ['STARTED'];
+    return workOrder ? ['None', 'STARTED', 'BLOCKED', 'COMPLETED'] : ['None', 'STARTED'];
   } else {
     return [];
   }
@@ -80,6 +80,7 @@ const FormAddEditWorkOrder = ({ repair, closeModal, workOrder, departments }) =>
     onSubmit: async (values, { setSubmitting }) => {
       try {
         for (let key in values) {
+          if (values[key] === 'None') values[key] = '';
           if (!values[key]) delete values[key];
         }
 

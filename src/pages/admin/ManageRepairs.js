@@ -191,7 +191,7 @@ function ReactTable({ data, columns, globalFilter, setGlobalFilter, showPaginati
   );
 }
 
-const ManageRepairs = ({ repairData, departsData = [], inventoryData = [], dockedName }) => {
+const ManageRepairs = ({ repairData, departsData = [], inventoryData = [], docking }) => {
   const theme = useTheme();
   const matchDownSM = useMediaQuery(theme.breakpoints.down('sm'));
   const { user } = useAuth();
@@ -201,8 +201,8 @@ const ManageRepairs = ({ repairData, departsData = [], inventoryData = [], docke
   const { repairs: lists, status: fetchingRepairs } = useSelector((state) => state.repair);
   const [selectedRepair, setSelectedRepair] = useState(null);
   const [repairModal, setRepairModal] = useState(false);
-  const [dockingNames, setDockingNames] = useState(dockedName ? [dockedName] : []);
-  const [selectedDocking, setSelectedDocking] = useState(null);
+  const [dockingNames, setDockingNames] = useState([]);
+  const [selectedDocking, setSelectedDocking] = useState(docking);
   const [updateStatusModal, setUpdateStatusModal] = useState(false);
   const [workOrderModal, setWOModal] = useState(false);
   const [departments, setDepartments] = useState(departsData);
@@ -220,7 +220,7 @@ const ManageRepairs = ({ repairData, departsData = [], inventoryData = [], docke
   const { shipyard_id } = user;
 
   useEffect(() => {
-    if (!user | repairData) return;
+    if (!user || repairData) return;
 
     try {
       (async () => {
@@ -260,17 +260,24 @@ const ManageRepairs = ({ repairData, departsData = [], inventoryData = [], docke
           const { requires_work_order, requires_subcontractor, status } = row.original;
           if (requires_work_order && status === 'APPROVED')
             return (
-              <Stack direction="row" gap={1}>
+              <Stack direction="row" gap={1} justifyContent="center" alignItems="center">
                 <Typography>Work Order</Typography>
                 <Button
-                  sx={{ padding: '0px', justifyContent: 'end', minWidth: '30px' }}
+                  sx={{
+                    padding: '0px',
+                    minWidth: '24px',
+                    maxHeight: '24px',
+                    '& .MuiButton-startIcon': {
+                      marginRight: '0px' // Remove the default margin
+                    }
+                  }}
                   variant="outlined"
                   startIcon={<PlusOutlined />}
                   onClick={() => {
                     setWOModal(true);
                     setSelectedRepair(row.original);
                   }}
-                ></Button>
+                />
               </Stack>
             );
           if (requires_work_order) return 'Work Order';

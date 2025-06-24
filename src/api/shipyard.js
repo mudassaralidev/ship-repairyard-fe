@@ -44,7 +44,7 @@ export const createSYUserApi = async ({ shipyard_id, data }) => {
 
 export const fetchInventoriesApi = async (id) => {
   try {
-    const { data } = await axios.get(`v1/shipyards/${id}/inventory`);
+    const { data } = await axios.get(`v1/shipyards/${id}/inventories`);
     return data.inventories;
   } catch (error) {
     console.log('Error while fetching inventories on shipyard', error.message);

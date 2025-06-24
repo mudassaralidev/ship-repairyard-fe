@@ -13,7 +13,6 @@ const MaintenanceError = Loadable(lazy(() => import('pages/maintenance/404')));
 import { useDispatch } from 'react-redux';
 import { fetchRoles } from '../redux/features/roles/actions';
 import { fetchShipyard } from '../redux/features/shipyard/actions';
-import ShipDetails from 'pages/admin/ManageShipDetails';
 import { ROLE_BASED_ROUTES } from './RoleBasedRoutes';
 
 const MainRoutes = () => {
@@ -29,12 +28,7 @@ const MainRoutes = () => {
   }, [user]);
 
   const routes = useMemo(() => {
-    const dashboardChildren = [
-      { path: 'welcome', element: <WelcomePage /> },
-      ...(ROLE_BASED_ROUTES[user?.role] || [])
-
-      // { path: 'ships/:id', element: <ShipDetails /> },
-    ];
+    const dashboardChildren = [{ path: 'welcome', element: <WelcomePage /> }, ...(ROLE_BASED_ROUTES[user?.role] || [])];
 
     return [
       {

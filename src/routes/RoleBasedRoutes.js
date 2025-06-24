@@ -12,6 +12,7 @@ const ManageShips = Loadable(lazy(() => import('pages/admin/ManageShips')));
 const ManageDockings = Loadable(lazy(() => import('pages/admin/ManageDockings')));
 const ManageRepairs = Loadable(lazy(() => import('pages/admin/ManageRepairs')));
 const ManageWorkOrders = Loadable(lazy(() => import('pages/admin/ManageWorkOrders')));
+const ShipDetailPage = Loadable(lazy(() => import('pages/admin/ManageShipDetail')));
 
 export const ROLE_BASED_ROUTES = {
   SUPER_ADMIN: [
@@ -28,7 +29,8 @@ export const ROLE_BASED_ROUTES = {
     { path: 'ships', element: <ManageShips /> },
     { path: 'dockings', element: <ManageDockings /> },
     { path: 'repairs', element: <ManageRepairs /> },
-    { path: 'work-orders', element: <ManageWorkOrders /> }
+    { path: 'work-orders', element: <ManageWorkOrders /> },
+    { path: 'ships/:id', element: <ShipDetailPage /> }
   ],
   CALCULATOR_ENGINEER: [
     { path: 'administrator-users', element: <ManageAdministratorUsers /> },
@@ -42,7 +44,8 @@ export const ROLE_BASED_ROUTES = {
     { path: 'ships', element: <ManageShips /> },
     { path: 'dockings', element: <ManageDockings /> },
     { path: 'repairs', element: <ManageRepairs /> },
-    { path: 'work-orders', element: <ManageWorkOrders /> }
+    { path: 'work-orders', element: <ManageWorkOrders /> },
+    { path: 'ships/:id', element: <ShipDetailPage /> }
   ],
   DOCKING_MASTER: [
     { path: 'docking-places', element: <ManageDockingPlaces /> },

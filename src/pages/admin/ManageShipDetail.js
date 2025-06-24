@@ -9,7 +9,6 @@ import ManageDockings from './ManageDockings';
 import DockingModal from 'components/docking/DokcingModal';
 import useAuth from 'hooks/useAuth';
 import { getAvailableDockingPlaces } from 'api/dockingPlaces';
-import { getDockingNamesForRepair } from 'api/docking';
 import dataApi from 'utils/dataApi';
 import { fetchInventoriesApi } from 'api/shipyard';
 import ManageRepairs from './ManageRepairs';
@@ -17,18 +16,25 @@ import RepairModal from 'components/repair/RepairModal';
 import WorkOrderTable from 'components/work-order/WorkOrderTable';
 import InventoryOrderTable from 'components/work-order/InventoryOrderTable';
 import { PlusOutlined, CloseOutlined, EyeOutlined } from '@ant-design/icons';
+import { toast } from 'react-toastify';
+
+const SHIP_STATE_ACTIONS = ['created', 'updated', 'created again', 'updated again'];
 
 const ShipDetails = () => {
   const { id } = useParams();
   const dispatch = useDispatch();
   const { user } = useAuth();
 
-  const { ship, error, status } = useSelector((state) => state.ship);
+  const {
+    ship: { ship, status, error },
+    docking: { lastAction: dockLastAction, error: dockingError },
+    repair: { lastAction: repairLastAction, error: repairError },
+    workOrder: { lastAction: woLastAction, error: woError }
+  } = useSelector((state) => state);
   const { shipyard } = useSelector((state) => state.shipyard);
   const [dockingModal, setDockingModal] = useState(false);
   const [dockingPlaces, setDockingPlaces] = useState([]);
   const [departments, setDepartments] = useState([]);
-  const [dockingNames, setDockingNames] = useState([]);
   const [inventories, setInventories] = useState([]);
   const [selectedDocking, setSelectedDocking] = useState(null);
   const [repairModal, setRepairModal] = useState(false);
@@ -42,22 +48,36 @@ const ShipDetails = () => {
 
   useEffect(() => {
     if (!user) return;
+
     const { shipyard_id } = user;
     dispatch(fetchShip(id));
     (async () => {
-      const dockingData = await getAvailableDockingPlaces(shipyard_id);
-      setDockingPlaces(dockingData);
-      const [data, { data: departsData }, inventories] = await Promise.all([
-        getDockingNamesForRepair(shipyard_id),
-        dataApi.get('/v1/departments?include_foreman=true'),
-        fetchInventoriesApi(shipyard_id)
-      ]);
-      setDepartments(departsData.departments);
-      setDockingNames(data);
-      setInventories(inventories);
-      setLoading(false);
+      try {
+        const dockingPlacesData = await getAvailableDockingPlaces(shipyard_id);
+        setDockingPlaces(dockingPlacesData);
+        const [{ data: departsData }, inventories] = await Promise.all([
+          dataApi.get('/v1/departments?include_foreman=true'),
+          fetchInventoriesApi(shipyard_id)
+        ]);
+        setDepartments(departsData.departments);
+        setInventories(inventories);
+        setLoading(false);
+      } catch (error) {
+        toast.error(
+          error?.response?.data?.message ||
+            error?.response?.data?.error?.message ||
+            fallbackMsg ||
+            'Something went wrong while performing inventory action'
+        );
+      }
     })();
   }, []);
+
+  useEffect(() => {
+    if (!SHIP_STATE_ACTIONS.some((value) => [dockLastAction, repairLastAction, woLastAction].includes(value))) return;
+
+    dispatch(fetchShip(id));
+  }, [dockLastAction, repairLastAction, woLastAction]);
 
   useEffect(() => {
     if (selectedDockingDetails && detailsEndRef.current) {
@@ -85,7 +105,14 @@ const ShipDetails = () => {
           </Button>
         </Stack>
 
-        <ManageShips showCreateBtn={false} shipData={ship} dockedPlaces={dockingPlaces} />
+        <ManageShips
+          showCreateBtn={false}
+          shipData={ship}
+          dockedPlaces={dockingPlaces}
+          showTitle={false}
+          showShipyardName={false}
+          showActions={user?.role === 'ADMIN'}
+        />
       </Box>
 
       <Grid container spacing={2}>
@@ -95,7 +122,7 @@ const ShipDetails = () => {
             <Grid item xs={12} key={docking.id}>
               <Box p={2} borderRadius={2} sx={{ bgcolor: 'primary.lighter', boxShadow: 1 }}>
                 <Stack direction="row" justifyContent="space-between" alignItems="center" mb={1}>
-                  <Typography variant="h5">🚢 Docking #{dockingIndex + 1}</Typography>
+                  <Typography variant="h5">🚢 Docking# {docking?.name || dockingIndex + 1}</Typography>
                   <Stack direction="row" spacing={1}>
                     <Button
                       variant="outlined"
@@ -118,7 +145,7 @@ const ShipDetails = () => {
                   </Stack>
                 </Stack>
 
-                <ManageDockings ship={[ship]} shipDocking={docking} dockedPlaces={dockingPlaces} />
+                <ManageDockings ship={ship} shipDocking={docking} dockedPlaces={dockingPlaces} />
               </Box>
 
               <Collapse in={isOpen} timeout="auto" unmountOnExit>
@@ -139,9 +166,9 @@ const ShipDetails = () => {
                     <Typography variant="subtitle1" fontWeight={600}>
                       🛠️ Repair #{repairIndex + 1}
                     </Typography>
-                    <ManageRepairs repairData={repair} departsData={departments} inventoryData={inventories} dockedName={docking} />
+                    <ManageRepairs repairData={repair} departsData={departments} inventoryData={inventories} docking={docking} />
                     {/* Work Order */}
-                    {repair.work_orders.length && (
+                    {repair.work_orders.length ? (
                       <Box
                         mt={2}
                         ml={3}
@@ -165,10 +192,12 @@ const ShipDetails = () => {
                           showCreateBtn={false}
                         />
                       </Box>
+                    ) : (
+                      <></>
                     )}
 
                     {/* Inventory Orders */}
-                    {repair.inventory_orders?.length > 0 && (
+                    {repair.inventory_orders?.length > 0 ? (
                       <Box
                         mt={2}
                         ml={3}
@@ -189,9 +218,13 @@ const ShipDetails = () => {
                           hideSYName={true}
                           showTitle={false}
                           showCreateBtn={false}
+                          inventories={inventories}
+                          repair={repair}
                         />
                         {/* </Box> */}
                       </Box>
+                    ) : (
+                      <></>
                     )}
                   </Box>
                 ))}

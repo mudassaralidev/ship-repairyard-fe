@@ -4,7 +4,8 @@ const initialState = {
   repairs: [],
   status: 'idle',
   error: null,
-  successMessage: null
+  successMessage: null,
+  lastAction: ''
 };
 
 const repairSlice = createSlice({
@@ -26,17 +27,20 @@ const repairSlice = createSlice({
     create: (state, action) => {
       state.repairs = [action.payload, ...state.repairs];
       state.successMessage = 'Repair created successfully!';
+      state.lastAction = state.lastAction === 'created' ? 'created again' : 'created';
     },
     update: (state, action) => {
       const index = state.repairs.findIndex((item) => item.id === action.payload.id);
       if (index !== -1) {
         state.repairs[index] = action.payload;
-        state.successMessage = 'Repair updated successfully!';
       }
+      state.successMessage = 'Repair updated successfully!';
+      state.lastAction = state.lastAction === 'updated' ? 'updated again' : 'updated';
     },
     deleteRepair: (state, action) => {
       state.repairs = state.repairs.filter((item) => item.id !== action.payload.id);
       state.successMessage = 'Repair deleted successfully!';
+      state.lastAction = 'deleted';
     },
     clearSuccessMessage: (state) => {
       state.status = 'idle';

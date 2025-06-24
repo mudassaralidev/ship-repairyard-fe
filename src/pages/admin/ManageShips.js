@@ -170,7 +170,14 @@ function ReactTable({ data, columns, globalFilter, setGlobalFilter, showPaginati
   );
 }
 
-const ManageShips = ({ showCreateBtn = true, shipData, dockedPlaces = [] }) => {
+const ManageShips = ({
+  showCreateBtn = true,
+  shipData,
+  dockedPlaces = [],
+  showTitle = true,
+  showShipyardName = true,
+  showActions = true
+}) => {
   const theme = useTheme();
   const matchDownSM = useMediaQuery(theme.breakpoints.down('sm'));
   const { user } = useAuth();
@@ -242,60 +249,64 @@ const ManageShips = ({ showCreateBtn = true, shipData, dockedPlaces = [] }) => {
     () => [
       ...shipColumns,
 
-      {
-        header: 'Actions',
-        meta: {
-          className: 'cell-center'
-        },
-        disableSortBy: true,
-        cell: ({ row }) => {
-          return (
-            <Stack direction="row" alignItems="center" justifyContent="center" spacing={0}>
-              {row.original?.dockings ? (
-                !row.original?.dockings?.length
-              ) : row.original.docking_count < 1 ? (
-                <Button
-                  variant="text"
-                  size="small"
-                  onClick={() => {
-                    setSelectedShip(row.original);
-                    setAddDockModal(true);
-                  }}
-                >
-                  Dock
-                </Button>
-              ) : (
-                <></>
-              )}
-              <Tooltip title="Edit">
-                <IconButton
-                  color="primary"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setSelectedShip(row.original);
-                    setAddEditModal(true);
-                  }}
-                >
-                  <EditOutlined />
-                </IconButton>
-              </Tooltip>
+      ...(showActions
+        ? [
+            {
+              header: 'Actions',
+              meta: {
+                className: 'cell-center'
+              },
+              disableSortBy: true,
+              cell: ({ row }) => {
+                return (
+                  <Stack direction="row" alignItems="center" justifyContent="center" spacing={0}>
+                    {row.original?.dockings ? (
+                      !row.original?.dockings?.length
+                    ) : row.original.docking_count < 1 ? (
+                      <Button
+                        variant="text"
+                        size="small"
+                        onClick={() => {
+                          setSelectedShip(row.original);
+                          setAddDockModal(true);
+                        }}
+                      >
+                        Dock
+                      </Button>
+                    ) : (
+                      <></>
+                    )}
+                    <Tooltip title="Edit">
+                      <IconButton
+                        color="primary"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setSelectedShip(row.original);
+                          setAddEditModal(true);
+                        }}
+                      >
+                        <EditOutlined />
+                      </IconButton>
+                    </Tooltip>
 
-              <Tooltip title="Delete">
-                <IconButton
-                  color="error"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleClose();
-                    setSelectedShip(row.original);
-                  }}
-                >
-                  <DeleteOutlined />
-                </IconButton>
-              </Tooltip>
-            </Stack>
-          );
-        }
-      }
+                    <Tooltip title="Delete">
+                      <IconButton
+                        color="error"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleClose();
+                          setSelectedShip(row.original);
+                        }}
+                      >
+                        <DeleteOutlined />
+                      </IconButton>
+                    </Tooltip>
+                  </Stack>
+                );
+              }
+            }
+          ]
+        : [])
     ],
     [theme]
   );
@@ -307,18 +318,20 @@ const ManageShips = ({ showCreateBtn = true, shipData, dockedPlaces = [] }) => {
 
   return (
     <>
-      <Typography
-        variant="h2"
-        sx={{
-          fontSize: {
-            xs: 'h5.fontSize',
-            md: 'h2.fontSize'
-          }
-        }}
-      >
-        Manage Ships
-      </Typography>
-      {_.isEmpty(shipyard) ? (
+      {showTitle && (
+        <Typography
+          variant="h2"
+          sx={{
+            fontSize: {
+              xs: 'h5.fontSize',
+              md: 'h2.fontSize'
+            }
+          }}
+        >
+          Manage Ships
+        </Typography>
+      )}
+      {_.isEmpty(shipyard) || !showShipyardName ? (
         <></>
       ) : (
         <Grid container spacing={2} sx={{ marginTop: '16px', marginBottom: '8px' }}>
