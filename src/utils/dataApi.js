@@ -1,17 +1,17 @@
 // src/api/dataApi.js
-import axios from 'axios';
+import axios from "axios";
 
 const dataApi = axios.create({
   baseURL: process.env.REACT_APP_BACKEND_URL,
   timeout: 10000,
-  headers: { 'Content-Type': 'application/json' }
+  headers: {"Content-Type": "application/json"}
 });
 
 dataApi.interceptors.request.use(
   async (config) => {
-    const accessToken = localStorage.getItem('serviceToken');
+    const accessToken = localStorage.getItem("serviceToken");
     if (accessToken) {
-      config.headers['Authorization'] = `Bearer ${accessToken}`;
+      config.headers["Authorization"] = `Bearer ${accessToken}`;
     }
     return config;
   },
@@ -23,9 +23,9 @@ dataApi.interceptors.request.use(
 dataApi.interceptors.response.use(
   (response) => response,
   (error) => {
-    const { response } = error;
+    const {response} = error;
     if (response && response.status === 401) {
-      window.location = '/dashboard/welcome';
+      window.location = "/dashboard/welcome";
     }
     return Promise.reject(error);
   }

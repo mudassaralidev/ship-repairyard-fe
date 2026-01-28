@@ -27,7 +27,7 @@ import SimpleBar from 'components/third-party/SimpleBar';
 import Transitions from 'components/@extended/Transitions';
 import { ThemeMode, MenuOrientation } from 'config';
 
-import useConfig from 'hooks/useConfig';
+import useConfig from '../../../../../hooks/useConfig';
 import { handlerActiveItem, useGetMenuMaster } from 'api/menu';
 
 // assets

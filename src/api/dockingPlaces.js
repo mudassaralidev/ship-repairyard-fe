@@ -1,48 +1,119 @@
-import axios from 'utils/dataApi';
+import axios from "utils/dataApi";
 
-export const getDockingPlaces = async (shipyardID) => {
+/**
+ * Fetch all docking places for a shipyard with pagination
+ * @param {number} shipyardID - Shipyard ID
+ * @param {number} page - Page number (default: 1)
+ * @param {number} pageSize - Records per page (default: 10)
+ * @returns {Promise<{data: Array, pagination: Object}>}
+ */
+export const fetchDockingPlacesApi = async (
+  shipyardID,
+  page = 1,
+  pageSize = 10,
+) => {
   try {
-    const { data } = await axios.get(`v1/docking_places?shipyard_id=${shipyardID}`);
+    const queryParams = new URLSearchParams({
+      shipyard_id: shipyardID,
+      page,
+      pageSize,
+    });
 
-    return data.dockingPlaces || [];
+    const { data } = await axios.get(
+      `v1/docking_places?${queryParams.toString()}`,
+    );
+
+    return {
+      data: data.data || [],
+      pagination: data.pagination || {},
+    };
   } catch (error) {
     throw error;
   }
 };
 
-export const deleteDockingPlace = async (placeID) => {
-  try {
-    await axios.delete(`v1/docking_places/${placeID}`);
-  } catch (error) {
-    throw error;
-  }
-};
-
-export const updateDockingPlace = async (placeId, data) => {
-  try {
-    const { data: response } = await axios.put(`v1/docking_places/${placeId}`, data);
-
-    return response.dockingPlace;
-  } catch (error) {
-    throw error;
-  }
-};
-
-export const createDockingPlace = async (data) => {
-  try {
-    const { data: response } = await axios.post(`v1/docking_places`, data);
-
-    return response.dockingPlace;
-  } catch (error) {
-    throw error;
-  }
-};
-
+/**
+ * Fetch all available (unused) docking places for a shipyard
+ * @param {number} shipyardID - Shipyard ID
+ * @returns {Promise<Array>}
+ */
 export const getAvailableDockingPlaces = async (shipyardID) => {
   try {
-    const { data } = await axios.get(`v1/docking_places?shipyard_id=${shipyardID}&available_places=true`);
+    const { data } = await axios.get(
+      `v1/docking_places?shipyard_id=${shipyardID}&is_used=false`,
+    );
+    return data.data || [];
+  } catch (error) {
+    throw error;
+  }
+};
 
-    return data.dockingPlaces || [];
+/**
+ * Create a new docking place
+ * @param {object} data - Docking place data (place_name, shipyard_id, created_by)
+ * @returns {Promise<Object>}
+ */
+export const createDockingPlaceApi = async (data) => {
+  try {
+    const { data: response } = await axios.post("v1/docking_places", data);
+    return {
+      data: response.data,
+      message: response.message,
+    };
+  } catch (error) {
+    throw error;
+  }
+};
+
+/**
+ * Update a docking place
+ * @param {number} placeID - Docking place ID
+ * @param {object} data - Updated docking place data
+ * @returns {Promise<Object>}
+ */
+export const updateDockingPlaceApi = async (placeID, data) => {
+  try {
+    const { data: response } = await axios.put(
+      `v1/docking_places/${placeID}`,
+      data,
+    );
+    return {
+      data: response.data,
+      message: response.message,
+    };
+  } catch (error) {
+    throw error;
+  }
+};
+
+/**
+ * Delete a docking place
+ * @param {number} placeID - Docking place ID
+ * @returns {Promise<Object>}
+ */
+export const deleteDockingPlaceApi = async (placeID) => {
+  try {
+    const { data: response } = await axios.delete(
+      `v1/docking_places/${placeID}`,
+    );
+    return {
+      message: response.message || "Docking place deleted successfully",
+    };
+  } catch (error) {
+    throw error;
+  }
+};
+
+/**
+ * Legacy function - Kept for backward compatibility
+ * Use fetchDockingPlacesApi instead
+ */
+export const getDockingPlaces = async (shipyardID) => {
+  try {
+    const { data } = await axios.get(
+      `v1/docking_places?shipyard_id=${shipyardID}`,
+    );
+    return data.data || [];
   } catch (error) {
     throw error;
   }

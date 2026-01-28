@@ -1,7 +1,7 @@
-import { Fragment, useEffect, useMemo, useState } from 'react';
+import { Fragment, useEffect, useMemo, useState } from "react";
 
 // material-ui
-import { alpha, useTheme } from '@mui/material/styles';
+import { alpha, useTheme } from "@mui/material/styles";
 import {
   Autocomplete,
   Box,
@@ -22,8 +22,8 @@ import {
   TextField,
   Tooltip,
   Typography,
-  useMediaQuery
-} from '@mui/material';
+  useMediaQuery,
+} from "@mui/material";
 
 // third-party
 import {
@@ -33,31 +33,35 @@ import {
   getPaginationRowModel,
   getFilteredRowModel,
   getExpandedRowModel,
-  useReactTable
-} from '@tanstack/react-table';
-import { rankItem } from '@tanstack/match-sorter-utils';
+  useReactTable,
+} from "@tanstack/react-table";
+import { rankItem } from "@tanstack/match-sorter-utils";
 
 // project-import
-import ScrollX from 'components/ScrollX';
-import MainCard from 'components/MainCard';
-import IconButton from 'components/@extended/IconButton';
+import ScrollX from "components/ScrollX";
+import MainCard from "components/MainCard";
+import IconButton from "components/@extended/IconButton";
 
-import { DebouncedInput, RowSelection, TablePagination } from 'components/third-party/react-table';
+import {
+  DebouncedInput,
+  RowSelection,
+  TablePagination,
+} from "components/third-party/react-table";
 
 // assets
-import { DeleteOutlined, EditOutlined, PlusOutlined } from '@ant-design/icons';
-import { useDispatch, useSelector } from 'react-redux';
-import { shipColumns } from 'utils/constants';
-import AlertUserDelete from 'components/users/AlertDelete';
-import _ from 'lodash';
-import useAuth from 'hooks/useAuth';
-import { fetchShips } from '../../redux/features/ships/actions';
-import { fetchClients } from 'api/client';
-import { toast } from 'react-toastify';
-import AddEditShipModal from 'components/ships/AddEditShipModal';
-import DockingModal from 'components/docking/DokcingModal';
-import { getAvailableDockingPlaces } from 'api/dockingPlaces';
-import NoDataMessage from 'components/@extended/NoDataMessage';
+import { DeleteOutlined, EditOutlined, PlusOutlined } from "@ant-design/icons";
+import { useDispatch, useSelector } from "react-redux";
+import { shipColumns } from "utils/constants";
+import AlertUserDelete from "components/users/AlertDelete";
+import _ from "lodash";
+import useAuth from "hooks/useAuth";
+import { fetchShips } from "../../redux/features/ships/actions";
+import { fetchClients } from "api/client";
+import { toast } from "react-toastify";
+import AddEditShipModal from "components/ships/AddEditShipModal";
+import DockingModal from "components/docking/DokcingModal";
+import { getAvailableDockingPlaces } from "api/dockingPlaces";
+import NoDataMessage from "components/@extended/NoDataMessage";
 
 export const fuzzyFilter = (row, columnId, value, addMeta) => {
   const itemRank = rankItem(row.getValue(columnId), value);
@@ -67,7 +71,13 @@ export const fuzzyFilter = (row, columnId, value, addMeta) => {
   return itemRank.passed;
 };
 
-function ReactTable({ data, columns, globalFilter, setGlobalFilter, showPagination }) {
+function ReactTable({
+  data,
+  columns,
+  globalFilter,
+  setGlobalFilter,
+  showPagination,
+}) {
   const theme = useTheme();
 
   const [rowSelection, setRowSelection] = useState({});
@@ -77,7 +87,7 @@ function ReactTable({ data, columns, globalFilter, setGlobalFilter, showPaginati
     columns,
     state: {
       rowSelection,
-      globalFilter
+      globalFilter,
     },
     enableRowSelection: true,
     onRowSelectionChange: setRowSelection,
@@ -89,7 +99,7 @@ function ReactTable({ data, columns, globalFilter, setGlobalFilter, showPaginati
     getPaginationRowModel: getPaginationRowModel(),
     getExpandedRowModel: getExpandedRowModel(),
     globalFilterFn: fuzzyFilter,
-    debugTable: true
+    debugTable: true,
   });
 
   const backColor = alpha(theme.palette.primary.lighter, 0.1);
@@ -98,8 +108,8 @@ function ReactTable({ data, columns, globalFilter, setGlobalFilter, showPaginati
     (columns) =>
       columns.accessorKey &&
       headers.push({
-        label: typeof columns.header === 'string' ? columns.header : '#'
-      })
+        label: typeof columns.header === "string" ? columns.header : "#",
+      }),
   );
 
   return (
@@ -113,10 +123,22 @@ function ReactTable({ data, columns, globalFilter, setGlobalFilter, showPaginati
                 <TableRow key={headerGroup.id}>
                   {headerGroup.headers.map((header) => {
                     return (
-                      <TableCell key={header.id} {...header.column.columnDef.meta}>
+                      <TableCell
+                        key={header.id}
+                        {...header.column.columnDef.meta}
+                      >
                         {header.isPlaceholder ? null : (
-                          <Stack direction="row" spacing={1} alignItems="center">
-                            <Box>{flexRender(header.column.columnDef.header, header.getContext())}</Box>
+                          <Stack
+                            direction="row"
+                            spacing={1}
+                            alignItems="center"
+                          >
+                            <Box>
+                              {flexRender(
+                                header.column.columnDef.header,
+                                header.getContext(),
+                              )}
+                            </Box>
                           </Stack>
                         )}
                       </TableCell>
@@ -131,12 +153,20 @@ function ReactTable({ data, columns, globalFilter, setGlobalFilter, showPaginati
                   <TableRow>
                     {row.getVisibleCells().map((cell) => (
                       <TableCell key={cell.id} {...cell.column.columnDef.meta}>
-                        {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                        {flexRender(
+                          cell.column.columnDef.cell,
+                          cell.getContext(),
+                        )}
                       </TableCell>
                     ))}
                   </TableRow>
                   {row.getIsExpanded() && (
-                    <TableRow sx={{ bgcolor: backColor, '&:hover': { bgcolor: `${backColor} !important` } }}>
+                    <TableRow
+                      sx={{
+                        bgcolor: backColor,
+                        "&:hover": { bgcolor: `${backColor} !important` },
+                      }}
+                    >
                       <TableCell colSpan={row.getVisibleCells().length}>
                         {/* <ExpandingUserDetail data={row.original} /> */}
                         <>Expanding Detail</>
@@ -157,7 +187,7 @@ function ReactTable({ data, columns, globalFilter, setGlobalFilter, showPaginati
                   setPageSize: table.setPageSize,
                   setPageIndex: table.setPageIndex,
                   getState: table.getState,
-                  getPageCount: table.getPageCount
+                  getPageCount: table.getPageCount,
                 }}
               />
             </Box>
@@ -176,28 +206,28 @@ const ManageShips = ({
   dockedPlaces = [],
   showTitle = true,
   showShipyardName = true,
-  showActions = true
+  showActions = true,
 }) => {
   const theme = useTheme();
-  const matchDownSM = useMediaQuery(theme.breakpoints.down('sm'));
+  const matchDownSM = useMediaQuery(theme.breakpoints.down("sm"));
   const { user } = useAuth();
 
   const dispatch = useDispatch();
   const {
     shipyard: { shipyard, status },
     ship: { ships: lists = [], status: shipStatus } = {},
-    docking: { successMessage } = {}
+    docking: { successMessage } = {},
   } = useSelector((state) => state);
   const [selectedShip, setSelectedShip] = useState({});
   const [clients, setClients] = useState([]);
   const [loading, setLoading] = useState(true);
 
   const [open, setOpen] = useState(false);
-  const [globalFilter, setGlobalFilter] = useState('');
+  const [globalFilter, setGlobalFilter] = useState("");
 
   const [addEditModal, setAddEditModal] = useState(false);
   const [addDockModal, setAddDockModal] = useState(false);
-  const [deleteId, setDeleteId] = useState('');
+  const [deleteId, setDeleteId] = useState("");
   const [dockingPlaces, setDockingPlaces] = useState(dockedPlaces);
 
   const handleClose = () => {
@@ -211,15 +241,19 @@ const ManageShips = ({
         dispatch(fetchShips({ shipyardID: user.shipyard_id }));
         const [clientsData, dockingData] = await Promise.all([
           fetchClients(user.shipyard_id),
-          getAvailableDockingPlaces(user?.shipyard_id)
+          getAvailableDockingPlaces(user?.shipyard_id),
         ]);
         setClients(clientsData);
         setDockingPlaces(dockingData);
 
         setLoading(false);
       } catch (error) {
-        toast.error(error.response.data.error.message || error.response.data.message || 'Some error occurred, please try again later');
-        console.error('Error occurred while getting departments', error);
+        toast.error(
+          error.response.data.error.message ||
+            error.response.data.message ||
+            "Some error occurred, please try again later",
+        );
+        console.error("Error occurred while getting departments", error);
       }
     })();
   }, [user]);
@@ -232,6 +266,7 @@ const ManageShips = ({
 
   useEffect(() => {
     if (!shipData) return;
+
     try {
       (async () => {
         const clientsData = fetchClients(user.shipyard_id);
@@ -240,8 +275,8 @@ const ManageShips = ({
         setLoading(false);
       })();
     } catch (error) {
-      console.error('Error occurred while getting dockings', error);
-      toast.error('Some error occurred, please try again later');
+      console.error("Error occurred while getting dockings", error);
+      toast.error("Some error occurred, please try again later");
     }
   }, [shipData?.id]);
 
@@ -252,14 +287,19 @@ const ManageShips = ({
       ...(showActions
         ? [
             {
-              header: 'Actions',
+              header: "Actions",
               meta: {
-                className: 'cell-center'
+                className: "cell-center",
               },
               disableSortBy: true,
               cell: ({ row }) => {
                 return (
-                  <Stack direction="row" alignItems="center" justifyContent="center" spacing={0}>
+                  <Stack
+                    direction="row"
+                    alignItems="center"
+                    justifyContent="center"
+                    spacing={0}
+                  >
                     {row.original?.dockings ? (
                       !row.original?.dockings?.length
                     ) : row.original.docking_count < 1 ? (
@@ -303,12 +343,12 @@ const ManageShips = ({
                     </Tooltip>
                   </Stack>
                 );
-              }
-            }
+              },
+            },
           ]
-        : [])
+        : []),
     ],
-    [theme]
+    [theme],
   );
 
   const modalToggler = () => {
@@ -323,9 +363,9 @@ const ManageShips = ({
           variant="h2"
           sx={{
             fontSize: {
-              xs: 'h5.fontSize',
-              md: 'h2.fontSize'
-            }
+              xs: "h5.fontSize",
+              md: "h2.fontSize",
+            },
           }}
         >
           Manage Ships
@@ -334,13 +374,22 @@ const ManageShips = ({
       {_.isEmpty(shipyard) || !showShipyardName ? (
         <></>
       ) : (
-        <Grid container spacing={2} sx={{ marginTop: '16px', marginBottom: '8px' }}>
+        <Grid
+          container
+          spacing={2}
+          sx={{ marginTop: "16px", marginBottom: "8px" }}
+        >
           <Grid item xs={12}>
             <Stack direction="row" spacing={2} alignItems="center">
               {/* Shipyard Select */}
               <FormControl sx={{ minWidth: 200 }}>
                 <InputLabel id="shipyard-select-label">Shipyard</InputLabel>
-                <Select labelId="shipyard-select-label" id="shipyard-select" value={shipyard?.id || ''} label="Shipyard">
+                <Select
+                  labelId="shipyard-select-label"
+                  id="shipyard-select"
+                  value={shipyard?.id || ""}
+                  label="Shipyard"
+                >
                   <MenuItem value={shipyard?.id}>{shipyard?.name}</MenuItem>
                 </Select>
               </FormControl>
@@ -351,20 +400,36 @@ const ManageShips = ({
       <MainCard content={false}>
         {showCreateBtn && (
           <Stack
-            direction={{ xs: 'column', sm: 'row' }}
+            direction={{ xs: "column", sm: "row" }}
             spacing={2}
             alignItems="center"
             justifyContent="space-between"
-            sx={{ padding: 2, ...(matchDownSM && { '& .MuiOutlinedInput-root, & .MuiFormControl-root': { width: '100%' } }) }}
+            sx={{
+              padding: 2,
+              ...(matchDownSM && {
+                "& .MuiOutlinedInput-root, & .MuiFormControl-root": {
+                  width: "100%",
+                },
+              }),
+            }}
           >
             <DebouncedInput
-              value={globalFilter ?? ''}
+              value={globalFilter ?? ""}
               onFilterChange={(value) => setGlobalFilter(String(value))}
               placeholder={`Search ${lists.length} records...`}
             />
-            <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} alignItems="center" sx={{ width: { xs: '100%', sm: 'auto' } }}>
+            <Stack
+              direction={{ xs: "column", sm: "row" }}
+              spacing={2}
+              alignItems="center"
+              sx={{ width: { xs: "100%", sm: "auto" } }}
+            >
               <Stack direction="row" spacing={2} alignItems="center">
-                <Button variant="contained" startIcon={<PlusOutlined />} onClick={modalToggler}>
+                <Button
+                  variant="contained"
+                  startIcon={<PlusOutlined />}
+                  onClick={modalToggler}
+                >
                   Create Ship
                 </Button>
               </Stack>
@@ -372,7 +437,7 @@ const ManageShips = ({
           </Stack>
         )}
 
-        {status === 'loading' || shipStatus === 'loading' || loading ? (
+        {status === "loading" || shipStatus === "loading" || loading ? (
           <NoDataMessage message="There is no SHIP data available. You can create new one from above button" />
         ) : (
           <ReactTable
@@ -381,13 +446,26 @@ const ManageShips = ({
               columns,
               globalFilter,
               setGlobalFilter,
-              showPagination: !shipData
+              showPagination: !shipData,
             }}
           />
         )}
-        {open && <AlertUserDelete id={deleteId} title={deleteId} open={open} handleClose={handleClose} />}
+        {open && (
+          <AlertUserDelete
+            id={deleteId}
+            title={deleteId}
+            open={open}
+            handleClose={handleClose}
+          />
+        )}
         {addEditModal && (
-          <AddEditShipModal open={addEditModal} modalToggler={modalToggler} shipyard={shipyard} clients={clients} ship={selectedShip} />
+          <AddEditShipModal
+            open={addEditModal}
+            modalToggler={modalToggler}
+            shipyard={shipyard}
+            clients={clients}
+            ship={selectedShip}
+          />
         )}
 
         {addDockModal && (
@@ -399,7 +477,11 @@ const ManageShips = ({
             shipyard={shipyard}
             ship={selectedShip}
             dockingPlaces={dockingPlaces}
-            removeUsedPlace={(placeId) => setDockingPlaces((preState) => preState.filter((p) => p.id !== placeId))}
+            removeUsedPlace={(placeId) =>
+              setDockingPlaces((preState) =>
+                preState.filter((p) => p.id !== placeId),
+              )
+            }
           />
         )}
       </MainCard>
