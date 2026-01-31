@@ -1,7 +1,7 @@
-import { Fragment, useEffect, useMemo, useState } from 'react';
+import { Fragment, useEffect, useMemo, useState } from "react";
 
 // material-ui
-import { alpha, useTheme } from '@mui/material/styles';
+import { alpha, useTheme } from "@mui/material/styles";
 import {
   Box,
   Button,
@@ -20,8 +20,8 @@ import {
   TableRow,
   Tooltip,
   Typography,
-  useMediaQuery
-} from '@mui/material';
+  useMediaQuery,
+} from "@mui/material";
 
 // third-party
 import {
@@ -31,28 +31,36 @@ import {
   getPaginationRowModel,
   getFilteredRowModel,
   getExpandedRowModel,
-  useReactTable
-} from '@tanstack/react-table';
-import { rankItem } from '@tanstack/match-sorter-utils';
+  useReactTable,
+} from "@tanstack/react-table";
+import { rankItem } from "@tanstack/match-sorter-utils";
 
 // project-import
-import ScrollX from 'components/ScrollX';
-import MainCard from 'components/MainCard';
-import IconButton from 'components/@extended/IconButton';
+import ScrollX from "components/ScrollX";
+import MainCard from "components/MainCard";
+import IconButton from "components/@extended/IconButton";
 
-import { DebouncedInput, RowSelection, TablePagination } from 'components/third-party/react-table';
+import {
+  DebouncedInput,
+  RowSelection,
+  TablePagination,
+} from "components/third-party/react-table";
 
 // assets
-import { DeleteOutlined, EditOutlined, PlusOutlined } from '@ant-design/icons';
-import { useDispatch, useSelector } from 'react-redux';
-import { userTableColumns } from 'utils/constants';
-import { fetchShipyard, sySpecificUsers } from '../../redux/features/shipyard/actions';
-import UserModal from 'components/users/UserModal';
-import AlertUserDelete from 'components/users/AlertDelete';
-import _ from 'lodash';
-import useAuth from 'hooks/useAuth';
-import ClientAssignmentModal from 'components/users/ClientAssignmentModal';
-import NoDataMessage from 'components/@extended/NoDataMessage';
+import { DeleteOutlined, EditOutlined, PlusOutlined } from "@ant-design/icons";
+import { useDispatch, useSelector } from "react-redux";
+import { userTableColumns } from "utils/constants";
+import {
+  fetchShipyard,
+  sySpecificUsers,
+} from "../../redux/features/shipyard/actions";
+import UserModal from "components/users/UserModal";
+import AlertUserDelete from "components/users/AlertDelete";
+import _ from "lodash";
+import useAuth from "hooks/useAuth";
+import ClientAssignmentModal from "components/users/ClientAssignmentModal";
+import NoDataMessage from "components/@extended/NoDataMessage";
+import { resetShipyardState } from "../../redux/features/shipyard/slice";
 
 export const fuzzyFilter = (row, columnId, value, addMeta) => {
   const itemRank = rankItem(row.getValue(columnId), value);
@@ -62,7 +70,16 @@ export const fuzzyFilter = (row, columnId, value, addMeta) => {
   return itemRank.passed;
 };
 
-function ReactTable({ data, columns, globalFilter, setGlobalFilter }) {
+function ReactTable({
+  data,
+  columns,
+  globalFilter,
+  setGlobalFilter,
+  pagination,
+  onPageChange,
+  currentPage,
+  pageSize,
+}) {
   const theme = useTheme();
 
   const [rowSelection, setRowSelection] = useState({});
@@ -72,11 +89,27 @@ function ReactTable({ data, columns, globalFilter, setGlobalFilter }) {
     columns,
     state: {
       rowSelection,
-      globalFilter
+      globalFilter,
+      pagination: {
+        pageIndex: currentPage - 1,
+        pageSize: pageSize,
+      },
     },
     enableRowSelection: true,
     onRowSelectionChange: setRowSelection,
     onGlobalFilterChange: setGlobalFilter,
+    onPaginationChange: (updater) => {
+      const newState =
+        typeof updater === "function"
+          ? updater({ pageIndex: currentPage - 1, pageSize })
+          : updater;
+      if (newState.pageIndex !== currentPage - 1) {
+        onPageChange(newState.pageIndex + 1);
+      }
+      if (newState.pageSize !== pageSize) {
+        onPageChange(newState.pageIndex + 1, newState.pageSize);
+      }
+    },
     getRowCanExpand: () => true,
     getSortedRowModel: getSortedRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
@@ -84,7 +117,8 @@ function ReactTable({ data, columns, globalFilter, setGlobalFilter }) {
     getPaginationRowModel: getPaginationRowModel(),
     getExpandedRowModel: getExpandedRowModel(),
     globalFilterFn: fuzzyFilter,
-    debugTable: true
+    pageCount: pagination?.totalPages || 0,
+    manualPagination: true,
   });
 
   const backColor = alpha(theme.palette.primary.lighter, 0.1);
@@ -93,8 +127,8 @@ function ReactTable({ data, columns, globalFilter, setGlobalFilter }) {
     (columns) =>
       columns.accessorKey &&
       headers.push({
-        label: typeof columns.header === 'string' ? columns.header : '#'
-      })
+        label: typeof columns.header === "string" ? columns.header : "#",
+      }),
   );
 
   return (
@@ -108,10 +142,22 @@ function ReactTable({ data, columns, globalFilter, setGlobalFilter }) {
                 <TableRow key={headerGroup.id}>
                   {headerGroup.headers.map((header) => {
                     return (
-                      <TableCell key={header.id} {...header.column.columnDef.meta}>
+                      <TableCell
+                        key={header.id}
+                        {...header.column.columnDef.meta}
+                      >
                         {header.isPlaceholder ? null : (
-                          <Stack direction="row" spacing={1} alignItems="center">
-                            <Box>{flexRender(header.column.columnDef.header, header.getContext())}</Box>
+                          <Stack
+                            direction="row"
+                            spacing={1}
+                            alignItems="center"
+                          >
+                            <Box>
+                              {flexRender(
+                                header.column.columnDef.header,
+                                header.getContext(),
+                              )}
+                            </Box>
                           </Stack>
                         )}
                       </TableCell>
@@ -126,12 +172,20 @@ function ReactTable({ data, columns, globalFilter, setGlobalFilter }) {
                   <TableRow>
                     {row.getVisibleCells().map((cell) => (
                       <TableCell key={cell.id} {...cell.column.columnDef.meta}>
-                        {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                        {flexRender(
+                          cell.column.columnDef.cell,
+                          cell.getContext(),
+                        )}
                       </TableCell>
                     ))}
                   </TableRow>
                   {row.getIsExpanded() && (
-                    <TableRow sx={{ bgcolor: backColor, '&:hover': { bgcolor: `${backColor} !important` } }}>
+                    <TableRow
+                      sx={{
+                        bgcolor: backColor,
+                        "&:hover": { bgcolor: `${backColor} !important` },
+                      }}
+                    >
                       <TableCell colSpan={row.getVisibleCells().length}>
                         {/* <ExpandingUserDetail data={row.original} /> */}
                         <>Expanding Detail</>
@@ -151,7 +205,8 @@ function ReactTable({ data, columns, globalFilter, setGlobalFilter }) {
                 setPageSize: table.setPageSize,
                 setPageIndex: table.setPageIndex,
                 getState: table.getState,
-                getPageCount: table.getPageCount
+                getPageCount: table.getPageCount,
+                apiPageSize: pagination?.pageSize,
               }}
             />
           </Box>
@@ -163,54 +218,77 @@ function ReactTable({ data, columns, globalFilter, setGlobalFilter }) {
 
 const ManageClientUser = () => {
   const theme = useTheme();
-  const matchDownSM = useMediaQuery(theme.breakpoints.down('sm'));
+  const matchDownSM = useMediaQuery(theme.breakpoints.down("sm"));
   const { user } = useAuth();
 
   const dispatch = useDispatch();
-  const { shipyard, shipyardUsers: lists, status } = useSelector((state) => state.shipyard);
+  const {
+    shipyard,
+    shipyardUsers: lists,
+    shipyardUsersPagination: pagination,
+    status,
+  } = useSelector((state) => state.shipyard);
 
   const [open, setOpen] = useState(false);
-  const [globalFilter, setGlobalFilter] = useState('');
+  const [globalFilter, setGlobalFilter] = useState("");
 
   const [userModal, setUserModal] = useState(false);
   const [selectedUser, setSelectedUser] = useState(null);
-  const [deleteId, setDeleteId] = useState('');
-  const [activeBtn, setActiveBtn] = useState('');
+  const [deleteId, setDeleteId] = useState("");
+  const [activeBtn, setActiveBtn] = useState("");
   const [assignClientModal, setAssignClientModal] = useState(false);
-  const [roleMap, setRoleMap] = useState('');
+  const [roleCategory] = useState(
+    ["ADMIN", "CALCULATOR_ENGINEER"].includes(user.role) ? "clients" : "",
+  );
+  const [pageSize, setPageSize] = useState(50);
+  const [currentPage, setCurrentPage] = useState(1);
 
-  const userColsWithoutActions = userTableColumns('clientUsers');
+  const userColsWithoutActions = userTableColumns("clientUsers");
 
   const handleClose = () => {
     setOpen(!open);
   };
 
+  const handlePageChange = (newPage, newPageSize) => {
+    if (newPageSize !== undefined) {
+      setPageSize(newPageSize);
+    } else {
+      setCurrentPage(newPage);
+    }
+  };
+
   useEffect(() => {
     if (user) {
-      setRoleMap(() => {
-        if (user.role === 'ADMIN') {
-          return 'ADMIN_CLIENT';
-        } else if (user.role === 'CALCULATOR_ENGINEER') {
-          return 'CALC_CLINET';
-        } else {
-          return '';
-        }
-      });
       dispatch(fetchShipyard(user?.shipyard_id));
-      dispatch(sySpecificUsers({ shipyard_id: user?.shipyard_id, query_params: 'user_types=clients' }));
+      dispatch(
+        sySpecificUsers({
+          shipyard_id: user?.shipyard_id,
+          page: currentPage,
+          page_size: pageSize,
+          otherParams: {
+            user_types: roleCategory,
+          },
+        }),
+      );
     }
-  }, [user]);
+  }, [user, roleCategory]);
+
+  useEffect(() => {
+    return () => {
+      dispatch(resetShipyardState());
+    };
+  }, [dispatch]);
 
   const columns = useMemo(
     () => [
       ...userColsWithoutActions,
-      ...(user?.role === 'ADMIN'
+      ...(user?.role === "ADMIN"
         ? [
             {
-              header: 'Assign Company',
+              header: "Assign Company",
               disableSortBy: true,
               cell: ({ row }) => {
-                return row.original?.role?.name === 'SUPERINTENDENT' ? (
+                return row.original?.role?.name === "SUPERINTENDENT" ? (
                   <Button
                     variant="text"
                     size="small"
@@ -219,22 +297,27 @@ const ManageClientUser = () => {
                       setSelectedUser(row.original);
                     }}
                   >
-                    {!row.original.client?.name ? 'Assign' : 'Update'}
+                    {!row.original.client?.name ? "Assign" : "Update"}
                   </Button>
                 ) : (
                   <></>
                 );
-              }
+              },
             },
             {
-              header: 'Actions',
+              header: "Actions",
               meta: {
-                className: 'cell-center'
+                className: "cell-center",
               },
               disableSortBy: true,
               cell: ({ row }) => {
                 return (
-                  <Stack direction="row" alignItems="center" justifyContent="center" spacing={0}>
+                  <Stack
+                    direction="row"
+                    alignItems="center"
+                    justifyContent="center"
+                    spacing={0}
+                  >
                     <Tooltip title="Edit">
                       <IconButton
                         color="primary"
@@ -261,12 +344,12 @@ const ManageClientUser = () => {
                     </Tooltip>
                   </Stack>
                 );
-              }
-            }
+              },
+            },
           ]
-        : [])
+        : []),
     ],
-    [theme]
+    [theme],
   );
 
   const modalToggler = () => {
@@ -280,9 +363,9 @@ const ManageClientUser = () => {
         variant="h2"
         sx={{
           fontSize: {
-            xs: 'h5.fontSize',
-            md: 'h2.fontSize'
-          }
+            xs: "h5.fontSize",
+            md: "h2.fontSize",
+          },
         }}
       >
         Manage Client Users
@@ -290,42 +373,55 @@ const ManageClientUser = () => {
       {_.isEmpty(shipyard) ? (
         <></>
       ) : (
-        <Grid container spacing={2} sx={{ marginTop: '16px', marginBottom: '8px' }}>
+        <Grid
+          container
+          spacing={2}
+          sx={{ marginTop: "16px", marginBottom: "8px" }}
+        >
           <Grid item xs={12} md={6} lg={2}>
             <FormControl>
-              <InputLabel id="demo-simple-select-helper-label">Shipyard</InputLabel>
-              <Select labelId="demo-simple-select-helper-label" id="demo-simple-select-helper" value={shipyard?.id} label="Shipyard">
+              <InputLabel id="demo-simple-select-helper-label">
+                Shipyard
+              </InputLabel>
+              <Select
+                labelId="demo-simple-select-helper-label"
+                id="demo-simple-select-helper"
+                value={shipyard?.id}
+                label="Shipyard"
+              >
                 <MenuItem value={shipyard?.id}>{shipyard?.name}</MenuItem>
               </Select>
             </FormControl>
           </Grid>
-          {user?.role === 'ADMIN' && (
+          {user?.role === "ADMIN" && (
             <Grid item xs={12} md={6}>
               <Stack direction="row" gap={2}>
                 <Button
-                  variant={activeBtn === 'client' ? 'contained' : 'outlined'}
+                  variant={activeBtn === "client" ? "contained" : "outlined"}
                   onClick={() => {
-                    if (activeBtn === 'client') {
-                      setActiveBtn('');
-                      setGlobalFilter('');
+                    if (activeBtn === "client") {
+                      setActiveBtn("");
+                      setGlobalFilter("");
                       return;
                     }
-                    setActiveBtn('client');
-                    setGlobalFilter('CLIENT');
+                    setActiveBtn("client");
+                    setGlobalFilter("CLIENT");
                   }}
                 >
                   Clients
                 </Button>
                 <Button
-                  variant={activeBtn === 'superintendent' ? 'contained' : 'outlined'}
+                  variant={
+                    activeBtn === "superintendent" ? "contained" : "outlined"
+                  }
                   onClick={() => {
-                    if (activeBtn === 'superintendent') {
-                      setActiveBtn('');
-                      setGlobalFilter('');
+                    if (activeBtn === "superintendent") {
+                      setActiveBtn("");
+                      setGlobalFilter("");
                       return;
                     }
-                    setActiveBtn('superintendent');
-                    setGlobalFilter('SUPERINTENDENT');
+                    setActiveBtn("superintendent");
+                    setGlobalFilter("SUPERINTENDENT");
                   }}
                 >
                   Superintendents
@@ -338,22 +434,38 @@ const ManageClientUser = () => {
 
       <MainCard content={false}>
         <Stack
-          direction={{ xs: 'column', sm: 'row' }}
+          direction={{ xs: "column", sm: "row" }}
           spacing={2}
           alignItems="center"
           justifyContent="space-between"
-          sx={{ padding: 2, ...(matchDownSM && { '& .MuiOutlinedInput-root, & .MuiFormControl-root': { width: '100%' } }) }}
+          sx={{
+            padding: 2,
+            ...(matchDownSM && {
+              "& .MuiOutlinedInput-root, & .MuiFormControl-root": {
+                width: "100%",
+              },
+            }),
+          }}
         >
           <DebouncedInput
-            value={globalFilter ?? ''}
+            value={globalFilter ?? ""}
             onFilterChange={(value) => setGlobalFilter(String(value))}
             placeholder={`Search ${lists.length} records...`}
           />
 
-          {user?.role === 'ADMIN' && (
-            <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} alignItems="center" sx={{ width: { xs: '100%', sm: 'auto' } }}>
+          {user?.role === "ADMIN" && (
+            <Stack
+              direction={{ xs: "column", sm: "row" }}
+              spacing={2}
+              alignItems="center"
+              sx={{ width: { xs: "100%", sm: "auto" } }}
+            >
               <Stack direction="row" spacing={2} alignItems="center">
-                <Button variant="contained" startIcon={<PlusOutlined />} onClick={modalToggler}>
+                <Button
+                  variant="contained"
+                  startIcon={<PlusOutlined />}
+                  onClick={modalToggler}
+                >
                   Create User
                 </Button>
               </Stack>
@@ -361,26 +473,37 @@ const ManageClientUser = () => {
           )}
         </Stack>
 
-        {status !== 'loading' || lists?.length ? (
+        {status !== "loading" || lists?.length ? (
           <ReactTable
             {...{
               data: lists,
               columns,
               globalFilter,
-              setGlobalFilter
+              setGlobalFilter,
+              pagination,
+              onPageChange: handlePageChange,
+              currentPage,
+              pageSize,
             }}
           />
         ) : (
           <NoDataMessage message="No data available for COMPANY/CLIENT users. You can create new one from above button" />
         )}
-        {open && <AlertUserDelete id={deleteId} title={deleteId} open={open} handleClose={handleClose} />}
+        {open && (
+          <AlertUserDelete
+            id={deleteId}
+            title={deleteId}
+            open={open}
+            handleClose={handleClose}
+          />
+        )}
         {userModal && (
           <UserModal
             open={userModal}
             modalToggler={modalToggler}
             user={selectedUser}
             shipyard={{ value: shipyard?.id, label: shipyard?.name }}
-            roleMap={roleMap}
+            roleCategory={roleCategory}
           />
         )}
         {assignClientModal && (

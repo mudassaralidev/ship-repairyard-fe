@@ -358,7 +358,7 @@ const UserListPage = () => {
   useEffect(() => {
     fetchOptions();
 
-    return () => dispatch(resetShipyardState);
+    return () => dispatch(resetShipyardState());
   }, [dispatch]);
 
   useEffect(() => {

@@ -91,7 +91,7 @@ export const deleteShipyard = (id) => async (dispatch) => {
 };
 
 export const sySpecificUsers =
-  ({ shipyard_id, page = 1, pageSize = 50 }) =>
+  ({ shipyard_id, page = 1, pageSize = 50, otherParams = {} }) =>
   async (dispatch) => {
     dispatch(requestStart());
     try {
@@ -99,6 +99,7 @@ export const sySpecificUsers =
         shipyard_id,
         page,
         pageSize,
+        otherParams,
       });
       dispatch(shipyardUsers(users));
     } catch (error) {

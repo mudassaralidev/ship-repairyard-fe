@@ -541,25 +541,34 @@ export const getFieldsByRole = ({
     : defaultFields;
 };
 
-export const roleBasedUserCreation = (currentUserRole) => {
-  const roleUserCreationMap = {
-    ADMIN: [
-      "CALCULATOR_ENGINEER",
-      "DOCKING_MASTER",
-      "PROJECT_MANAGER",
-      "TECHNICAL_PURCHASER",
-    ],
-    ADMIN_CLIENT: ["CLIENT", "SUPERINTENDENT"],
-    CALC_CLINET: ["CLIENT"],
-    ADMIN_FOREMAN: ["FOREMAN"],
-    ADMIN_EMP: ["EMPLOYEE"],
-    SUPER_ADMIN: [
-      "ADMIN",
-      "CALCULATOR_ENGINEER",
-      "DOCKING_MASTER",
-      "PROJECT_MANAGER",
-    ],
+export const getRolesUserCanCreate = (loggedUserRole, roleCategory) => {
+  const ROLE_CREATION_RULES = {
+    ADMIN: {
+      default: [
+        "CALCULATOR_ENGINEER",
+        "DOCKING_MASTER",
+        "PROJECT_MANAGER",
+        "TECHNICAL_PURCHASER",
+      ],
+      clients: ["CLIENT", "SUPERINTENDENT"],
+      foremen: ["FOREMAN"],
+      employees: ["EMPLOYEE"],
+    },
+    CALCULATOR_ENGINEER: {
+      default: [],
+      clients: ["CLIENT"],
+    },
+    SUPER_ADMIN: {
+      default: [
+        "ADMIN",
+        "CALCULATOR_ENGINEER",
+        "DOCKING_MASTER",
+        "PROJECT_MANAGER",
+      ],
+    },
   };
 
-  return roleUserCreationMap[currentUserRole] || [];
+  return ROLE_CREATION_RULES[loggedUserRole][roleCategory]
+    ? ROLE_CREATION_RULES[loggedUserRole][roleCategory]
+    : ROLE_CREATION_RULES[loggedUserRole].default;
 };

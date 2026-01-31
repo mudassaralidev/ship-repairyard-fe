@@ -46,11 +46,12 @@ export const shipyardSpecificUsersAPI = async ({
   shipyard_id,
   page = 1,
   pageSize = 50,
+  otherParams,
 }) => {
   try {
-    const { data } = await axios.get(
-      `v1/shipyards/${shipyard_id}/users?page=${page}&pageSize=${pageSize}`,
-    );
+    const { data } = await axios.get(`v1/shipyards/${shipyard_id}/users`, {
+      params: { page, pageSize, ...otherParams },
+    });
     return data;
   } catch (error) {
     console.error("Error while fetching users", error.message);

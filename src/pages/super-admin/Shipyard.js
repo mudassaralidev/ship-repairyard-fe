@@ -223,24 +223,6 @@ const ShipyardListPage = () => {
   const [deleteId, setDeleteId] = useState("");
   const [userModal, setUserModal] = useState(false);
 
-  const handleClose = () => {
-    setOpen(!open);
-  };
-
-  useEffect(() => {
-    dispatch(fetchShipyards(currentPage, pageSize));
-
-    return () => dispatch(resetShipyardState());
-  }, [dispatch, currentPage, pageSize]);
-
-  const handlePageChange = (newPage, newPageSize) => {
-    if (newPageSize !== undefined) {
-      setPageSize(newPageSize);
-    } else {
-      setCurrentPage(newPage);
-    }
-  };
-
   const columns = useMemo(
     () => [
       ...shipyardColumnsWithoutActions,
@@ -320,6 +302,28 @@ const ShipyardListPage = () => {
     setShipyardModal(true);
     setSelectedShipyard(null);
   };
+
+  const handleClose = () => {
+    setOpen(!open);
+  };
+
+  const handlePageChange = (newPage, newPageSize) => {
+    if (newPageSize !== undefined) {
+      setPageSize(newPageSize);
+    } else {
+      setCurrentPage(newPage);
+    }
+  };
+
+  useEffect(() => {
+    dispatch(fetchShipyards(currentPage, pageSize));
+  }, [dispatch, currentPage, pageSize]);
+
+  useEffect(() => {
+    return () => {
+      dispatch(resetShipyardState());
+    };
+  }, [dispatch]);
 
   return (
     <MainCard content={false}>

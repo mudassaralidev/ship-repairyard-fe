@@ -18,7 +18,7 @@ import { openSnackbar } from "api/snackbar";
 import { useDispatch, useSelector } from "react-redux";
 import useAuth from "hooks/useAuth";
 import { clearSuccessMessage } from "../../redux/features/shipyard/slice";
-import { roleBasedUserCreation, getFieldsByRole } from "utils/constants";
+import { getFieldsByRole, getRolesUserCanCreate } from "utils/constants";
 import {
   createUserSY,
   updateUserSY,
@@ -101,8 +101,15 @@ const validationSchemas = (user) => ({
   }),
 });
 
-const FormAddUser = ({ user, closeModal, shipyard, roleMap, department }) => {
+const FormAddUser = ({
+  user,
+  closeModal,
+  shipyard,
+  roleCategory,
+  department,
+}) => {
   const dispatch = useDispatch();
+  //getting roles from backend and skipping the role which user is logged in as
   const { roles } = useSelector((state) => state.role);
   const { successMessage, status } = useSelector((state) => state.shipyard);
   const { user: currentUser } = useAuth();
@@ -276,8 +283,9 @@ const FormAddUser = ({ user, closeModal, shipyard, roleMap, department }) => {
                       .map(({ id, name }) => ({ label: name, value: id }))
                   : roles
                       .filter(({ name }) =>
-                        roleBasedUserCreation(
-                          roleMap ? roleMap : currentUser.role,
+                        getRolesUserCanCreate(
+                          currentUser.role,
+                          roleCategory,
                         ).includes(name),
                       )
                       .map(({ id, name }) => ({ label: name, value: id })),

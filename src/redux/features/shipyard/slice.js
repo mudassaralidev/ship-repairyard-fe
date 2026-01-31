@@ -88,6 +88,7 @@ const shipyardSlice = createSlice({
       state.successMessage = null;
     },
     resetShipyardState: (state) => {
+      console.log("Resetting shipyard state");
       state.shipyardUsers = [];
       state.shipyards = [];
       state.shipyardsPagination = { ...INITIAL_PAGINATION };
