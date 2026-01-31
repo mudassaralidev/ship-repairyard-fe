@@ -1,17 +1,11 @@
 import { createSlice } from "@reduxjs/toolkit";
+import { INITIAL_PAGINATION } from "utils/pagination";
 
 const initialState = {
   dockingPlaces: [],
   dockingPlace: null,
   pagination: {
-    currentPage: 1,
-    pageSize: 10,
-    totalRecords: 0,
-    totalPages: 0,
-    hasNextPage: false,
-    hasPreviousPage: false,
-    nextPage: null,
-    previousPage: null,
+    ...INITIAL_PAGINATION,
   },
   loading: false,
   error: null,

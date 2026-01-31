@@ -1,7 +1,7 @@
-import { Fragment, useEffect, useMemo, useState } from 'react';
+import { Fragment, useEffect, useMemo, useState } from "react";
 
 // material-ui
-import { alpha, useTheme } from '@mui/material/styles';
+import { alpha, useTheme } from "@mui/material/styles";
 import {
   Box,
   Button,
@@ -14,8 +14,8 @@ import {
   TableHead,
   TableRow,
   Tooltip,
-  useMediaQuery
-} from '@mui/material';
+  useMediaQuery,
+} from "@mui/material";
 
 // third-party
 import {
@@ -25,27 +25,32 @@ import {
   getPaginationRowModel,
   getFilteredRowModel,
   getExpandedRowModel,
-  useReactTable
-} from '@tanstack/react-table';
-import { rankItem } from '@tanstack/match-sorter-utils';
+  useReactTable,
+} from "@tanstack/react-table";
+import { rankItem } from "@tanstack/match-sorter-utils";
 
 // project-import
-import ScrollX from 'components/ScrollX';
-import MainCard from 'components/MainCard';
-import IconButton from 'components/@extended/IconButton';
+import ScrollX from "components/ScrollX";
+import MainCard from "components/MainCard";
+import IconButton from "components/@extended/IconButton";
 
-import { DebouncedInput, RowSelection, TablePagination } from 'components/third-party/react-table';
+import {
+  DebouncedInput,
+  RowSelection,
+  TablePagination,
+} from "components/third-party/react-table";
 
-import ShipyardModal from 'components/shipyard/ShipyardModal';
-import AlertShipyardDelete from 'components/shipyard/AlertDelete';
+import ShipyardModal from "components/shipyard/ShipyardModal";
+import AlertShipyardDelete from "components/shipyard/AlertDelete";
 
 // assets
-import { DeleteOutlined, EditOutlined, PlusOutlined } from '@ant-design/icons';
-import { useDispatch, useSelector } from 'react-redux';
-import { fetchShipyards } from '../../redux/features/shipyard/actions';
-import { shipyardColumnsWithoutActions } from 'utils/constants';
-import UserModal from 'components/users/UserModal';
-import NoDataMessage from 'components/@extended/NoDataMessage';
+import { DeleteOutlined, EditOutlined, PlusOutlined } from "@ant-design/icons";
+import { useDispatch, useSelector } from "react-redux";
+import { fetchShipyards } from "../../redux/features/shipyard/actions";
+import { shipyardColumnsWithoutActions } from "utils/constants";
+import UserModal from "components/users/UserModal";
+import NoDataMessage from "components/@extended/NoDataMessage";
+import { resetShipyardState } from "../../redux/features/shipyard/slice";
 
 export const fuzzyFilter = (row, columnId, value, addMeta) => {
   const itemRank = rankItem(row.getValue(columnId), value);
@@ -55,7 +60,16 @@ export const fuzzyFilter = (row, columnId, value, addMeta) => {
   return itemRank.passed;
 };
 
-function ReactTable({ data, columns, globalFilter, setGlobalFilter }) {
+function ReactTable({
+  data,
+  columns,
+  globalFilter,
+  setGlobalFilter,
+  pagination,
+  onPageChange,
+  currentPage,
+  pageSize,
+}) {
   const theme = useTheme();
 
   const [rowSelection, setRowSelection] = useState({});
@@ -65,11 +79,27 @@ function ReactTable({ data, columns, globalFilter, setGlobalFilter }) {
     columns,
     state: {
       rowSelection,
-      globalFilter
+      globalFilter,
+      pagination: {
+        pageIndex: currentPage - 1,
+        pageSize: pageSize,
+      },
     },
     enableRowSelection: true,
     onRowSelectionChange: setRowSelection,
     onGlobalFilterChange: setGlobalFilter,
+    onPaginationChange: (updater) => {
+      const newState =
+        typeof updater === "function"
+          ? updater({ pageIndex: currentPage - 1, pageSize })
+          : updater;
+      if (newState.pageIndex !== currentPage - 1) {
+        onPageChange(newState.pageIndex + 1);
+      }
+      if (newState.pageSize !== pageSize) {
+        onPageChange(newState.pageIndex + 1, newState.pageSize);
+      }
+    },
     getRowCanExpand: () => true,
     getSortedRowModel: getSortedRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
@@ -77,7 +107,8 @@ function ReactTable({ data, columns, globalFilter, setGlobalFilter }) {
     getPaginationRowModel: getPaginationRowModel(),
     getExpandedRowModel: getExpandedRowModel(),
     globalFilterFn: fuzzyFilter,
-    debugTable: true
+    pageCount: pagination?.totalPages || 0,
+    manualPagination: true,
   });
 
   const backColor = alpha(theme.palette.primary.lighter, 0.1);
@@ -86,8 +117,8 @@ function ReactTable({ data, columns, globalFilter, setGlobalFilter }) {
     (columns) =>
       columns.accessorKey &&
       headers.push({
-        label: typeof columns.header === 'string' ? columns.header : '#'
-      })
+        label: typeof columns.header === "string" ? columns.header : "#",
+      }),
   );
 
   return (
@@ -101,10 +132,22 @@ function ReactTable({ data, columns, globalFilter, setGlobalFilter }) {
                 <TableRow key={headerGroup.id}>
                   {headerGroup.headers.map((header) => {
                     return (
-                      <TableCell key={header.id} {...header.column.columnDef.meta}>
+                      <TableCell
+                        key={header.id}
+                        {...header.column.columnDef.meta}
+                      >
                         {header.isPlaceholder ? null : (
-                          <Stack direction="row" spacing={1} alignItems="center">
-                            <Box>{flexRender(header.column.columnDef.header, header.getContext())}</Box>
+                          <Stack
+                            direction="row"
+                            spacing={1}
+                            alignItems="center"
+                          >
+                            <Box>
+                              {flexRender(
+                                header.column.columnDef.header,
+                                header.getContext(),
+                              )}
+                            </Box>
                           </Stack>
                         )}
                       </TableCell>
@@ -119,12 +162,20 @@ function ReactTable({ data, columns, globalFilter, setGlobalFilter }) {
                   <TableRow>
                     {row.getVisibleCells().map((cell) => (
                       <TableCell key={cell.id} {...cell.column.columnDef.meta}>
-                        {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                        {flexRender(
+                          cell.column.columnDef.cell,
+                          cell.getContext(),
+                        )}
                       </TableCell>
                     ))}
                   </TableRow>
                   {row.getIsExpanded() && (
-                    <TableRow sx={{ bgcolor: backColor, '&:hover': { bgcolor: `${backColor} !important` } }}>
+                    <TableRow
+                      sx={{
+                        bgcolor: backColor,
+                        "&:hover": { bgcolor: `${backColor} !important` },
+                      }}
+                    >
                       <TableCell colSpan={row.getVisibleCells().length}>
                         {/* <ExpandingUserDetail data={row.original} /> */}
                         <>Expanding Detail</>
@@ -136,37 +187,40 @@ function ReactTable({ data, columns, globalFilter, setGlobalFilter }) {
             </TableBody>
           </Table>
         </TableContainer>
-        <>
-          <Divider />
-          <Box sx={{ p: 2 }}>
-            <TablePagination
-              {...{
-                setPageSize: table.setPageSize,
-                setPageIndex: table.setPageIndex,
-                getState: table.getState,
-                getPageCount: table.getPageCount
-              }}
-            />
-          </Box>
-        </>
+        <Box sx={{ p: 2 }}>
+          <TablePagination
+            {...{
+              setPageSize: table.setPageSize,
+              setPageIndex: table.setPageIndex,
+              getState: table.getState,
+              getPageCount: table.getPageCount,
+              apiPageSize: pagination?.pageSize,
+            }}
+          />
+        </Box>
       </Stack>
     </ScrollX>
   );
 }
-
 const ShipyardListPage = () => {
   const theme = useTheme();
-  const matchDownSM = useMediaQuery(theme.breakpoints.down('sm'));
+  const matchDownSM = useMediaQuery(theme.breakpoints.down("sm"));
 
   const dispatch = useDispatch();
-  const { shipyards: lists, status } = useSelector((state) => state.shipyard);
+  const {
+    shipyards: lists,
+    shipyardsPagination: pagination,
+    status,
+  } = useSelector((state) => state.shipyard);
 
   const [open, setOpen] = useState(false);
-  const [globalFilter, setGlobalFilter] = useState('');
+  const [globalFilter, setGlobalFilter] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(50);
 
   const [shipyardModal, setShipyardModal] = useState(false);
   const [selectedShipyard, setSelectedShipyard] = useState(null);
-  const [deleteId, setDeleteId] = useState('');
+  const [deleteId, setDeleteId] = useState("");
   const [userModal, setUserModal] = useState(false);
 
   const handleClose = () => {
@@ -174,28 +228,55 @@ const ShipyardListPage = () => {
   };
 
   useEffect(() => {
-    dispatch(fetchShipyards());
-  }, []);
+    dispatch(fetchShipyards(currentPage, pageSize));
+
+    return () => dispatch(resetShipyardState());
+  }, [dispatch, currentPage, pageSize]);
+
+  const handlePageChange = (newPage, newPageSize) => {
+    if (newPageSize !== undefined) {
+      setPageSize(newPageSize);
+    } else {
+      setCurrentPage(newPage);
+    }
+  };
 
   const columns = useMemo(
     () => [
       ...shipyardColumnsWithoutActions,
       {
-        header: 'Actions',
+        header: "Actions",
         meta: {
-          className: 'cell-center'
+          className: "cell-center",
         },
         disableSortBy: true,
         cell: ({ row }) => {
           return (
-            <Stack direction="row" alignItems="center" justifyContent="center" spacing={0}>
+            <Stack
+              direction="row"
+              alignItems="center"
+              justifyContent="center"
+              spacing={0}
+            >
               <Tooltip title="Edit">
                 <IconButton
                   color="primary"
                   onClick={(e) => {
-                    const { id, name, address, city, state, postal_code, country } = row.original;
+                    const {
+                      id,
+                      name,
+                      address,
+                      city,
+                      state,
+                      postal_code,
+                      country,
+                    } = row.original;
                     e.stopPropagation();
-                    setSelectedShipyard({ id, name, location: { address, city, state, postal_code, country } });
+                    setSelectedShipyard({
+                      id,
+                      name,
+                      location: { address, city, state, postal_code, country },
+                    });
                     setShipyardModal(true);
                   }}
                 >
@@ -218,7 +299,10 @@ const ShipyardListPage = () => {
                 size="sm"
                 variant="outlined"
                 onClick={() => {
-                  setSelectedShipyard({ label: row.original.name, value: row.original.id });
+                  setSelectedShipyard({
+                    label: row.original.name,
+                    value: row.original.id,
+                  });
                   setUserModal(true);
                 }}
               >
@@ -226,10 +310,10 @@ const ShipyardListPage = () => {
               </Button>
             </Stack>
           );
-        }
-      }
+        },
+      },
     ],
-    [theme]
+    [theme],
   );
 
   const modalToggler = () => {
@@ -240,28 +324,44 @@ const ShipyardListPage = () => {
   return (
     <MainCard content={false}>
       <Stack
-        direction={{ xs: 'column', sm: 'row' }}
+        direction={{ xs: "column", sm: "row" }}
         spacing={2}
         alignItems="center"
         justifyContent="space-between"
-        sx={{ padding: 2, ...(matchDownSM && { '& .MuiOutlinedInput-root, & .MuiFormControl-root': { width: '100%' } }) }}
+        sx={{
+          padding: 2,
+          ...(matchDownSM && {
+            "& .MuiOutlinedInput-root, & .MuiFormControl-root": {
+              width: "100%",
+            },
+          }),
+        }}
       >
         <DebouncedInput
-          value={globalFilter ?? ''}
+          value={globalFilter ?? ""}
           onFilterChange={(value) => setGlobalFilter(String(value))}
-          placeholder={`Search ${lists.length} records...`}
+          placeholder={`Search ${pagination?.totalRecords || 0} records...`}
         />
 
-        <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} alignItems="center" sx={{ width: { xs: '100%', sm: 'auto' } }}>
+        <Stack
+          direction={{ xs: "column", sm: "row" }}
+          spacing={2}
+          alignItems="center"
+          sx={{ width: { xs: "100%", sm: "auto" } }}
+        >
           <Stack direction="row" spacing={2} alignItems="center">
-            <Button variant="contained" startIcon={<PlusOutlined />} onClick={modalToggler}>
+            <Button
+              variant="contained"
+              startIcon={<PlusOutlined />}
+              onClick={modalToggler}
+            >
               Create Shipyard
             </Button>
           </Stack>
         </Stack>
       </Stack>
 
-      {status === 'loading' || !lists.length ? (
+      {status === "loading" || !lists.length ? (
         <NoDataMessage message="No SHIPYARD data found. You can create new one from above button" />
       ) : (
         <ReactTable
@@ -269,13 +369,36 @@ const ShipyardListPage = () => {
             data: lists,
             columns,
             globalFilter,
-            setGlobalFilter
+            setGlobalFilter,
+            pagination,
+            onPageChange: handlePageChange,
+            currentPage,
+            pageSize,
           }}
         />
       )}
-      {open && <AlertShipyardDelete id={deleteId} title={deleteId} open={open} handleClose={handleClose} />}
-      {shipyardModal && <ShipyardModal open={shipyardModal} modalToggler={setShipyardModal} shipyard={selectedShipyard} />}
-      {userModal && <UserModal open={userModal} modalToggler={() => setUserModal(!userModal)} shipyard={selectedShipyard} />}
+      {open && (
+        <AlertShipyardDelete
+          id={deleteId}
+          title={deleteId}
+          open={open}
+          handleClose={handleClose}
+        />
+      )}
+      {shipyardModal && (
+        <ShipyardModal
+          open={shipyardModal}
+          modalToggler={setShipyardModal}
+          shipyard={selectedShipyard}
+        />
+      )}
+      {userModal && (
+        <UserModal
+          open={userModal}
+          modalToggler={() => setUserModal(!userModal)}
+          shipyard={selectedShipyard}
+        />
+      )}
     </MainCard>
   );
 };
