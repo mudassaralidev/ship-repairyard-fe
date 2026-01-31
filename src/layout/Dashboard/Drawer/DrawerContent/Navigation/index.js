@@ -1,20 +1,20 @@
-import { useEffect, useLayoutEffect, useState } from 'react';
+import { useEffect, useLayoutEffect, useState } from "react";
 
 // material-ui
-import { useTheme } from '@mui/material/styles';
-import { Box, Divider, List, useMediaQuery } from '@mui/material';
+import { useTheme } from "@mui/material/styles";
+import { Box, Divider, List, useMediaQuery } from "@mui/material";
 
 // project import
-import NavItem from './NavItem';
-import NavGroup from './NavGroup';
-import menuItem from 'menu-items';
+import NavItem from "./NavItem";
+import NavGroup from "./NavGroup";
+import menuItem from "menu-items";
 
-import useConfig from 'hooks/useConfig';
-import { HORIZONTAL_MAX_ITEM } from 'config';
-import { useGetMenuMaster } from 'api/menu';
-import { MenuOrientation } from 'config';
-import useAuth from 'hooks/useAuth';
-import { FormattedMessage } from 'react-intl';
+import useConfig from "hooks/useConfig";
+import { HORIZONTAL_MAX_ITEM } from "config";
+import { useGetMenuMaster } from "api/menu";
+import { MenuOrientation } from "config";
+import useAuth from "hooks/useAuth";
+import { FormattedMessage } from "react-intl";
 // ==============================|| DRAWER CONTENT - NAVIGATION ||============================== //
 
 const Navigation = () => {
@@ -24,9 +24,9 @@ const Navigation = () => {
   const [menuLoading, setMenuLoading] = useState(false);
   const { menuMaster } = useGetMenuMaster();
   const drawerOpen = menuMaster.isDashboardDrawerOpened;
-  const downLG = useMediaQuery(theme.breakpoints.down('lg'));
+  const downLG = useMediaQuery(theme.breakpoints.down("lg"));
 
-  const [selectedItems, setSelectedItems] = useState('');
+  const [selectedItems, setSelectedItems] = useState("");
   const [selectedLevel, setSelectedLevel] = useState(0);
   const [menuItems, setMenuItems] = useState({ items: [] });
 
@@ -34,8 +34,10 @@ const Navigation = () => {
 
   useLayoutEffect(() => {
     const isFound = menuItem.items.some((element) => {
-      if (element.id === 'group-dashboard') {
-        element.title = <FormattedMessage id={_.startCase(_.toLower(user.role))} />;
+      if (element.id === "group-dashboard") {
+        element.title = (
+          <FormattedMessage id={_.startCase(_.toLower(user?.role)) || "-"} />
+        );
         return true;
       }
       return false;
@@ -51,7 +53,7 @@ const Navigation = () => {
       const items = menuItem.items.map((item) => {
         return {
           ...item,
-          children: item[user?.role] || []
+          children: item[user?.role] || [],
         };
       });
       setMenuItems({ items: [...items] });
@@ -59,7 +61,8 @@ const Navigation = () => {
     // eslint-disable-next-line
   }, [menuLoading]);
 
-  const isHorizontal = menuOrientation === MenuOrientation.HORIZONTAL && !downLG;
+  const isHorizontal =
+    menuOrientation === MenuOrientation.HORIZONTAL && !downLG;
 
   const lastItem = isHorizontal ? HORIZONTAL_MAX_ITEM : null;
   let lastItemIndex = menuItems.items.length - 1;
@@ -72,54 +75,58 @@ const Navigation = () => {
   if (lastItem && lastItem < menuItems.items.length) {
     lastItemId = menuItems.items[lastItem - 1].id;
     lastItemIndex = lastItem - 1;
-    remItems = menuItems.items.slice(lastItem - 1, menuItems.items.length).map((item) => ({
-      title: item.title,
-      elements: item.children,
-      icon: item.icon,
-      ...(item.url && {
-        url: item.url
-      })
-    }));
+    remItems = menuItems.items
+      .slice(lastItem - 1, menuItems.items.length)
+      .map((item) => ({
+        title: item.title,
+        elements: item.children,
+        icon: item.icon,
+        ...(item.url && {
+          url: item.url,
+        }),
+      }));
   }
 
-  const navGroups = menuItems.items.slice(0, lastItemIndex + 1).map((item, index) => {
-    switch (item.type) {
-      case 'group':
-        if (item.url && item.id !== lastItemId) {
-          return (
-            <List key={item.id} {...(isHorizontal && { sx: { mt: 0.5 } })}>
-              {!isHorizontal && index !== 0 && <Divider sx={{ my: 0.5 }} />}
-              <NavItem item={item} level={1} isParents />
-            </List>
-          );
-        }
+  const navGroups = menuItems.items
+    .slice(0, lastItemIndex + 1)
+    .map((item, index) => {
+      switch (item.type) {
+        case "group":
+          if (item.url && item.id !== lastItemId) {
+            return (
+              <List key={item.id} {...(isHorizontal && { sx: { mt: 0.5 } })}>
+                {!isHorizontal && index !== 0 && <Divider sx={{ my: 0.5 }} />}
+                <NavItem item={item} level={1} isParents />
+              </List>
+            );
+          }
 
-        return (
-          <NavGroup
-            key={item.id}
-            setSelectedItems={setSelectedItems}
-            setSelectedLevel={setSelectedLevel}
-            selectedLevel={selectedLevel}
-            selectedItems={selectedItems}
-            lastItem={lastItem}
-            remItems={remItems}
-            lastItemId={lastItemId}
-            item={item}
-          />
-        );
-      default:
-        return <></>;
-    }
-  });
+          return (
+            <NavGroup
+              key={item.id}
+              setSelectedItems={setSelectedItems}
+              setSelectedLevel={setSelectedLevel}
+              selectedLevel={selectedLevel}
+              selectedItems={selectedItems}
+              lastItem={lastItem}
+              remItems={remItems}
+              lastItemId={lastItemId}
+              item={item}
+            />
+          );
+        default:
+          return <></>;
+      }
+    });
 
   return (
     <Box
       sx={{
         pt: drawerOpen ? (isHorizontal ? 0 : 2) : 0,
         ...(!isHorizontal && {
-          '& > ul:first-of-type': { mt: 0 }
+          "& > ul:first-of-type": { mt: 0 },
         }),
-        display: isHorizontal ? { xs: 'block', lg: 'flex' } : 'block'
+        display: isHorizontal ? { xs: "block", lg: "flex" } : "block",
       }}
     >
       {navGroups}

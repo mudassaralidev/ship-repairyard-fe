@@ -28,9 +28,7 @@ const LogoSection = ({ reverse, isIcon, sx, to }) => {
         sx,
       })}
     >
-      {isIcon ? (
-        <LogoIcon />
-      ) : (
+      {isLoggedIn && (
         <Logo
           reverse={reverse}
           shipyardName={shipyard_name}

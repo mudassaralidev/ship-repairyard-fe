@@ -1,6 +1,6 @@
-import PropTypes from 'prop-types';
-import React from 'react';
-import { Link as RouterLink } from 'react-router-dom';
+import PropTypes from "prop-types";
+import React from "react";
+import { Link as RouterLink } from "react-router-dom";
 
 // material-ui used
 import {
@@ -14,28 +14,28 @@ import {
   InputLabel,
   OutlinedInput,
   Stack,
-  Typography
-} from '@mui/material';
+  Typography,
+} from "@mui/material";
 
 // third party
-import * as Yup from 'yup';
-import { Formik } from 'formik';
-import { preload } from 'swr';
+import * as Yup from "yup";
+import { Formik } from "formik";
+import { preload } from "swr";
 
 // project import
-import useAuth from 'hooks/useAuth';
-import useScriptRef from 'hooks/useScriptRef';
-import IconButton from 'components/@extended/IconButton';
-import AnimateButton from 'components/@extended/AnimateButton';
-import { fetcher } from 'utils/axios';
+import useAuth from "hooks/useAuth";
+import useScriptRef from "hooks/useScriptRef";
+import IconButton from "components/@extended/IconButton";
+import AnimateButton from "components/@extended/AnimateButton";
+import { fetcher } from "utils/axios";
 
 // assets
-import { EyeOutlined, EyeInvisibleOutlined } from '@ant-design/icons';
-import { toast } from 'react-toastify';
+import { EyeOutlined, EyeInvisibleOutlined } from "@ant-design/icons";
+import { toast } from "react-toastify";
 
 // ============================|| JWT - LOGIN ||============================ //
 
-const AuthLogin = ({ isDemo = false }) => {
+const AuthLogin = ({ isDemo = false, onLoginFailed, onLoginSuccess }) => {
   const [checked, setChecked] = React.useState(false);
 
   const { login } = useAuth();
@@ -54,23 +54,31 @@ const AuthLogin = ({ isDemo = false }) => {
     <>
       <Formik
         initialValues={{
-          email: 'super_admin@gmail.com',
-          password: 'super_admin',
-          submit: null
+          email: "super_admin@gmail.com",
+          password: "super_admin",
+          submit: null,
         }}
         validationSchema={Yup.object().shape({
-          email: Yup.string().email('Must be a valid email').max(255).required('Email is required'),
-          password: Yup.string().max(255).required('Password is required')
+          email: Yup.string()
+            .email("Must be a valid email")
+            .max(255)
+            .required("Email is required"),
+          password: Yup.string().max(255).required("Password is required"),
         })}
         onSubmit={async (values, { setErrors, setStatus, setSubmitting }) => {
           try {
             await login(values.email, values.password);
+            onLoginSuccess?.();
             if (scriptedRef.current) {
               setStatus({ success: true });
               setSubmitting(false);
             }
           } catch (err) {
-            toast.error(err?.response?.data?.error?.message || 'Some error occurred while logging in the user');
+            toast.error(
+              err?.response?.data?.error?.message ||
+                "Some error occurred while logging in the user",
+            );
+            onLoginFailed?.();
             if (scriptedRef.current) {
               setStatus({ success: false });
               setErrors({ submit: err.error.message });
@@ -79,7 +87,15 @@ const AuthLogin = ({ isDemo = false }) => {
           }
         }}
       >
-        {({ errors, handleBlur, handleChange, handleSubmit, isSubmitting, touched, values }) => (
+        {({
+          errors,
+          handleBlur,
+          handleChange,
+          handleSubmit,
+          isSubmitting,
+          touched,
+          values,
+        }) => (
           <form noValidate onSubmit={handleSubmit}>
             <Grid container spacing={3}>
               <Grid item xs={12}>
@@ -98,7 +114,10 @@ const AuthLogin = ({ isDemo = false }) => {
                   />
                 </Stack>
                 {touched.email && errors.email && (
-                  <FormHelperText error id="standard-weight-helper-text-email-login">
+                  <FormHelperText
+                    error
+                    id="standard-weight-helper-text-email-login"
+                  >
                     {errors.email}
                   </FormHelperText>
                 )}
@@ -110,7 +129,7 @@ const AuthLogin = ({ isDemo = false }) => {
                     fullWidth
                     error={Boolean(touched.password && errors.password)}
                     id="-password-login"
-                    type={showPassword ? 'text' : 'password'}
+                    type={showPassword ? "text" : "password"}
                     value={values.password}
                     name="password"
                     onBlur={handleBlur}
@@ -124,7 +143,11 @@ const AuthLogin = ({ isDemo = false }) => {
                           edge="end"
                           color="secondary"
                         >
-                          {showPassword ? <EyeOutlined /> : <EyeInvisibleOutlined />}
+                          {showPassword ? (
+                            <EyeOutlined />
+                          ) : (
+                            <EyeInvisibleOutlined />
+                          )}
                         </IconButton>
                       </InputAdornment>
                     }
@@ -132,14 +155,22 @@ const AuthLogin = ({ isDemo = false }) => {
                   />
                 </Stack>
                 {touched.password && errors.password && (
-                  <FormHelperText error id="standard-weight-helper-text-password-login">
+                  <FormHelperText
+                    error
+                    id="standard-weight-helper-text-password-login"
+                  >
                     {errors.password}
                   </FormHelperText>
                 )}
               </Grid>
 
               <Grid item xs={12} sx={{ mt: -1 }}>
-                <Stack direction="row" justifyContent="space-between" alignItems="center" spacing={2}>
+                <Stack
+                  direction="row"
+                  justifyContent="space-between"
+                  alignItems="center"
+                  spacing={2}
+                >
                   <FormControlLabel
                     control={
                       <Checkbox
@@ -150,9 +181,16 @@ const AuthLogin = ({ isDemo = false }) => {
                         size="small"
                       />
                     }
-                    label={<Typography variant="h6">Keep me sign in</Typography>}
+                    label={
+                      <Typography variant="h6">Keep me sign in</Typography>
+                    }
                   />
-                  <Link variant="h6" component={RouterLink} to={isDemo ? '/auth/forgot-password' : '/forgot-password'} color="text.primary">
+                  <Link
+                    variant="h6"
+                    component={RouterLink}
+                    to={isDemo ? "/auth/forgot-password" : "/forgot-password"}
+                    color="text.primary"
+                  >
                     Forgot Password?
                   </Link>
                 </Stack>
@@ -164,7 +202,15 @@ const AuthLogin = ({ isDemo = false }) => {
               )}
               <Grid item xs={12}>
                 <AnimateButton>
-                  <Button disableElevation disabled={isSubmitting} fullWidth size="large" type="submit" variant="contained" color="primary">
+                  <Button
+                    disableElevation
+                    disabled={isSubmitting}
+                    fullWidth
+                    size="large"
+                    type="submit"
+                    variant="contained"
+                    color="primary"
+                  >
                     Login
                   </Button>
                 </AnimateButton>
@@ -178,7 +224,9 @@ const AuthLogin = ({ isDemo = false }) => {
 };
 
 AuthLogin.propTypes = {
-  isDemo: PropTypes.bool
+  isDemo: PropTypes.bool,
+  onLoginFailed: PropTypes.func,
+  onLoginSuccess: PropTypes.func,
 };
 
 export default AuthLogin;
