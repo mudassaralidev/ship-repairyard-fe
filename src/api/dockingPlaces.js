@@ -49,6 +49,30 @@ export const getAvailableDockingPlaces = async (shipyardID) => {
 };
 
 /**
+ * Fetch all available (unused) docking places for a shipyard
+ * @param {number} shipyard_id - Shipyard ID
+ * @param {number} page - Page number for pagination
+ * @param {number} pageSize - no of records per page
+ * @param {string} search - Get specific name place from backend
+ * @returns {Promise<Array>}
+ */
+export const getDockingPlacesOptions = async (cancelToken, params) => {
+  try {
+    const { data } = await axios.get("v1/docking_places/options", {
+      params,
+      cancelToken,
+    });
+
+    return {
+      options: data?.data || [],
+      pagination: data?.pagination || {},
+    };
+  } catch (error) {
+    throw error;
+  }
+};
+
+/**
  * Create a new docking place
  * @param {object} data - Docking place data (place_name, shipyard_id, created_by)
  * @returns {Promise<Object>}

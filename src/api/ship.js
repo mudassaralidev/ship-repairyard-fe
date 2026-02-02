@@ -1,8 +1,10 @@
-import axios from 'utils/dataApi';
+import axios from "utils/dataApi";
 
-export const fetchShipsApi = async ({ shipyardID, queryParams = '' }) => {
-  const { data } = await axios.get(`v1/ships?shipyard_id=${shipyardID}&${queryParams}`);
-  return data.ships;
+export const fetchShipsApi = async ({ shipyardID, queryParams }) => {
+  const { data } = await axios.get(`v1/ships?shipyard_id=${shipyardID}`, {
+    params: { ...queryParams },
+  });
+  return data;
 };
 
 export const fetchShipApi = async (shipID) => {
@@ -11,7 +13,7 @@ export const fetchShipApi = async (shipID) => {
 };
 
 export const createShipApi = async (data) => {
-  const { data: response } = await axios.post('v1/ships', data);
+  const { data: response } = await axios.post("v1/ships", data);
   return response.ship;
 };
 

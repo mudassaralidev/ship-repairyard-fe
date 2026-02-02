@@ -1,24 +1,36 @@
-import React, { useEffect, useState, useRef } from 'react';
-import { Box, Typography, Skeleton, Stack, Button, Grid, Collapse } from '@mui/material';
-import MainCard from 'components/MainCard';
-import { useParams } from 'react-router-dom';
-import { fetchShip } from '../../redux/features/ships/actions';
-import { useDispatch, useSelector } from 'react-redux';
-import ManageShips from './ManageShips';
-import ManageDockings from './ManageDockings';
-import DockingModal from 'components/docking/DokcingModal';
-import useAuth from 'hooks/useAuth';
-import { getAvailableDockingPlaces } from 'api/dockingPlaces';
-import dataApi from 'utils/dataApi';
-import { fetchInventoriesApi } from 'api/shipyard';
-import ManageRepairs from './ManageRepairs';
-import RepairModal from 'components/repair/RepairModal';
-import WorkOrderTable from 'components/work-order/WorkOrderTable';
-import InventoryOrderTable from 'components/work-order/InventoryOrderTable';
-import { PlusOutlined, CloseOutlined, EyeOutlined } from '@ant-design/icons';
-import { toast } from 'react-toastify';
+import React, { useEffect, useState, useRef } from "react";
+import {
+  Box,
+  Typography,
+  Skeleton,
+  Stack,
+  Button,
+  Grid,
+  Collapse,
+} from "@mui/material";
+import MainCard from "components/MainCard";
+import { useParams } from "react-router-dom";
+import { fetchShip } from "../../redux/features/ships/actions";
+import { useDispatch, useSelector } from "react-redux";
+import ManageShips from "./ManageShips";
+import ManageDockings from "./ManageDockings";
+import DockingModal from "components/docking/DokcingModal";
+import useAuth from "hooks/useAuth";
+import dataApi from "utils/dataApi";
+import { fetchInventoriesApi } from "api/shipyard";
+import ManageRepairs from "./ManageRepairs";
+import RepairModal from "components/repair/RepairModal";
+import WorkOrderTable from "components/work-order/WorkOrderTable";
+import InventoryOrderTable from "components/work-order/InventoryOrderTable";
+import { PlusOutlined, CloseOutlined, EyeOutlined } from "@ant-design/icons";
+import { toast } from "react-toastify";
 
-const SHIP_STATE_ACTIONS = ['created', 'updated', 'created again', 'updated again'];
+const SHIP_STATE_ACTIONS = [
+  "created",
+  "updated",
+  "created again",
+  "updated again",
+];
 
 const ShipDetails = () => {
   const { id } = useParams();
@@ -29,11 +41,10 @@ const ShipDetails = () => {
     ship: { ship, status, error },
     docking: { lastAction: dockLastAction, error: dockingError },
     repair: { lastAction: repairLastAction, error: repairError },
-    workOrder: { lastAction: woLastAction, error: woError }
+    workOrder: { lastAction: woLastAction, error: woError },
   } = useSelector((state) => state);
   const { shipyard } = useSelector((state) => state.shipyard);
   const [dockingModal, setDockingModal] = useState(false);
-  const [dockingPlaces, setDockingPlaces] = useState([]);
   const [departments, setDepartments] = useState([]);
   const [inventories, setInventories] = useState([]);
   const [selectedDocking, setSelectedDocking] = useState(null);
@@ -43,7 +54,9 @@ const ShipDetails = () => {
   const detailsEndRef = useRef(null);
 
   const toggleDockingDetails = (dockingId) => {
-    setSelectedDockingDetails((prev) => (prev === dockingId ? null : dockingId));
+    setSelectedDockingDetails((prev) =>
+      prev === dockingId ? null : dockingId,
+    );
   };
 
   useEffect(() => {
@@ -53,11 +66,9 @@ const ShipDetails = () => {
     dispatch(fetchShip(id));
     (async () => {
       try {
-        const dockingPlacesData = await getAvailableDockingPlaces(shipyard_id);
-        setDockingPlaces(dockingPlacesData);
         const [{ data: departsData }, inventories] = await Promise.all([
-          dataApi.get('/v1/departments?include_foreman=true'),
-          fetchInventoriesApi(shipyard_id)
+          dataApi.get("/v1/departments?include_foreman=true"),
+          fetchInventoriesApi(shipyard_id),
         ]);
         setDepartments(departsData.departments);
         setInventories(inventories);
@@ -67,14 +78,19 @@ const ShipDetails = () => {
           error?.response?.data?.message ||
             error?.response?.data?.error?.message ||
             fallbackMsg ||
-            'Something went wrong while performing inventory action'
+            "Something went wrong while performing inventory action",
         );
       }
     })();
   }, []);
 
   useEffect(() => {
-    if (!SHIP_STATE_ACTIONS.some((value) => [dockLastAction, repairLastAction, woLastAction].includes(value))) return;
+    if (
+      !SHIP_STATE_ACTIONS.some((value) =>
+        [dockLastAction, repairLastAction, woLastAction].includes(value),
+      )
+    )
+      return;
 
     dispatch(fetchShip(id));
   }, [dockLastAction, repairLastAction, woLastAction]);
@@ -83,24 +99,37 @@ const ShipDetails = () => {
     if (selectedDockingDetails && detailsEndRef.current) {
       // Delay scroll to allow Collapse animation to complete
       const timeout = setTimeout(() => {
-        detailsEndRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' });
+        detailsEndRef.current?.scrollIntoView({
+          behavior: "smooth",
+          block: "end",
+        });
       }, 300); // match Collapse's transition time
 
       return () => clearTimeout(timeout);
     }
   }, [selectedDockingDetails]);
 
-  if (status === 'loading' || loading) return <Skeleton variant="rectangular" height={400} sx={{ m: 2 }} />;
+  if (status === "loading" || loading)
+    return <Skeleton variant="rectangular" height={400} sx={{ m: 2 }} />;
   if (!ship || error) return <Typography>No data found</Typography>;
 
   return (
     <MainCard content={false}>
       <Box p={3}>
-        <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} alignItems="center" justifyContent="space-between">
+        <Stack
+          direction={{ xs: "column", sm: "row" }}
+          spacing={2}
+          alignItems="center"
+          justifyContent="space-between"
+        >
           <Typography variant="h4" gutterBottom>
             Ship: {ship.name}
           </Typography>
-          <Button variant="contained" startIcon={<PlusOutlined />} onClick={() => setDockingModal(!dockingModal)}>
+          <Button
+            variant="contained"
+            startIcon={<PlusOutlined />}
+            onClick={() => setDockingModal(!dockingModal)}
+          >
             Create Docking
           </Button>
         </Stack>
@@ -108,10 +137,9 @@ const ShipDetails = () => {
         <ManageShips
           showCreateBtn={false}
           shipData={ship}
-          dockedPlaces={dockingPlaces}
           showTitle={false}
           showShipyardName={false}
-          showActions={user?.role === 'ADMIN'}
+          showActions={user?.role === "ADMIN"}
         />
       </Box>
 
@@ -120,17 +148,28 @@ const ShipDetails = () => {
           const isOpen = selectedDockingDetails === docking.id;
           return (
             <Grid item xs={12} key={docking.id}>
-              <Box p={2} borderRadius={2} sx={{ bgcolor: 'primary.lighter', boxShadow: 1 }}>
-                <Stack direction="row" justifyContent="space-between" alignItems="center" mb={1}>
-                  <Typography variant="h5">🚢 Docking# {docking?.name || dockingIndex + 1}</Typography>
+              <Box
+                p={2}
+                borderRadius={2}
+                sx={{ bgcolor: "primary.lighter", boxShadow: 1 }}
+              >
+                <Stack
+                  direction="row"
+                  justifyContent="space-between"
+                  alignItems="center"
+                  mb={1}
+                >
+                  <Typography variant="h5">
+                    🚢 Docking# {docking?.name || dockingIndex + 1}
+                  </Typography>
                   <Stack direction="row" spacing={1}>
                     <Button
                       variant="outlined"
-                      color={isOpen ? 'error' : 'secondary'}
+                      color={isOpen ? "error" : "secondary"}
                       startIcon={isOpen ? <CloseOutlined /> : <EyeOutlined />}
                       onClick={() => toggleDockingDetails(docking.id)}
                     >
-                      {isOpen ? 'Details' : 'Detail'}
+                      {isOpen ? "Details" : "Detail"}
                     </Button>
                     <Button
                       variant="contained"
@@ -145,7 +184,7 @@ const ShipDetails = () => {
                   </Stack>
                 </Stack>
 
-                <ManageDockings ship={ship} shipDocking={docking} dockedPlaces={dockingPlaces} />
+                <ManageDockings ship={ship} shipDocking={docking} />
               </Box>
 
               <Collapse in={isOpen} timeout="auto" unmountOnExit>
@@ -158,15 +197,20 @@ const ShipDetails = () => {
                     p={2}
                     borderRadius={2}
                     sx={{
-                      bgcolor: 'secondary.lighter',
-                      borderLeft: '4px solid #90caf9',
-                      boxShadow: 0.5
+                      bgcolor: "secondary.lighter",
+                      borderLeft: "4px solid #90caf9",
+                      boxShadow: 0.5,
                     }}
                   >
                     <Typography variant="subtitle1" fontWeight={600}>
                       🛠️ Repair #{repairIndex + 1}
                     </Typography>
-                    <ManageRepairs repairData={repair} departsData={departments} inventoryData={inventories} docking={docking} />
+                    <ManageRepairs
+                      repairData={repair}
+                      departsData={departments}
+                      inventoryData={inventories}
+                      docking={docking}
+                    />
                     {/* Work Order */}
                     {repair.work_orders.length ? (
                       <Box
@@ -175,8 +219,8 @@ const ShipDetails = () => {
                         p={2}
                         borderRadius={2}
                         sx={{
-                          bgcolor: 'info.lighter',
-                          borderLeft: '4px solid #1976d2'
+                          bgcolor: "info.lighter",
+                          borderLeft: "4px solid #1976d2",
                         }}
                       >
                         <Typography variant="subtitle2" fontWeight={600}>
@@ -204,8 +248,8 @@ const ShipDetails = () => {
                         p={2}
                         borderRadius={2}
                         sx={{
-                          bgcolor: 'warning.lighter',
-                          borderLeft: '4px solid #ffa726'
+                          bgcolor: "warning.lighter",
+                          borderLeft: "4px solid #ffa726",
                         }}
                       >
                         <Typography variant="subtitle2" fontWeight={600}>
@@ -243,13 +287,16 @@ const ShipDetails = () => {
           }}
           shipyard={shipyard}
           ship={ship}
-          dockingPlaces={dockingPlaces}
-          removeUsedPlace={(placeId) => setDockingPlaces((preState) => preState.filter((p) => p.id !== placeId))}
         />
       )}
 
       {repairModal && (
-        <RepairModal open={repairModal} modalToggler={() => setRepairModal(!repairModal)} shipyard={shipyard} docking={selectedDocking} />
+        <RepairModal
+          open={repairModal}
+          modalToggler={() => setRepairModal(!repairModal)}
+          shipyard={shipyard}
+          docking={selectedDocking}
+        />
       )}
     </MainCard>
   );

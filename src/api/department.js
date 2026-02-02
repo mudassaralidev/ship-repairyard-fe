@@ -1,10 +1,24 @@
-import axios from 'utils/dataApi';
+import axios from "utils/dataApi";
 
 export const getDepartments = async (shipyardID) => {
   try {
     const { data } = await axios.get(`v1/shipyards/${shipyardID}/departments`);
 
     return data.departments || [];
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const getDepartmentOptions = async (cancelToken, params) => {
+  try {
+    const { shipyardId } = params;
+    const { data } = await axios.get(
+      `v1/shipyards/${shipyardId}/departments/options`,
+      { cancelToken },
+    );
+
+    return { options: data.data || [], pagination: data.pagination || {} };
   } catch (error) {
     throw error;
   }
@@ -40,7 +54,10 @@ export const deleteDepartment = async (departmentID) => {
 
 export const updateDepartment = async (departmentID, data) => {
   try {
-    const { data: response } = await axios.put(`v1/departments/${departmentID}`, data);
+    const { data: response } = await axios.put(
+      `v1/departments/${departmentID}`,
+      data,
+    );
 
     return response.department;
   } catch (error) {

@@ -5,12 +5,24 @@ export const fetchShipyardsApi = async (page = 1, pageSize = 50) => {
   return res;
 };
 
-export const fetchShipyardOptionsApi = async ({
+export const fetchShipyardOptionsApi = async (cancelToken = null, params) => {
+  const res = await axios.get("/v1/shipyards/options", {
+    params,
+    cancelToken,
+  });
+
+  return {
+    options: res?.data?.data || [],
+    pagination: res?.data?.pagination || {},
+  };
+};
+
+export const fetchInventoriesOptionsApi = async ({
   search = "",
   page = 1,
   token = null,
 }) => {
-  const res = await axios.get("/v1/shipyards/options", {
+  const { data } = await axios.get("/v1/shipyards/options", {
     params: {
       search,
       page,
@@ -20,8 +32,24 @@ export const fetchShipyardOptionsApi = async ({
   });
 
   return {
-    options: res?.data?.data || [],
-    pagination: res?.data?.pagination || {},
+    options: data?.data || [],
+    pagination: data?.pagination || {},
+  };
+};
+
+export const fetchClientsOptionsApi = async (cancelToken, params) => {
+  const { shipyardId, ...rest } = params;
+  const { data } = await axios.get(
+    `v1/shipyards/${shipyardId}/clients/options`,
+    {
+      params: rest,
+      cancelToken,
+    },
+  );
+
+  return {
+    options: data?.data || [],
+    pagination: data?.pagination || {},
   };
 };
 

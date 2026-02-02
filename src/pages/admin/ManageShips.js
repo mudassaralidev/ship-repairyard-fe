@@ -3,7 +3,6 @@ import { Fragment, useEffect, useMemo, useState } from "react";
 // material-ui
 import { alpha, useTheme } from "@mui/material/styles";
 import {
-  Autocomplete,
   Box,
   Button,
   Divider,
@@ -56,12 +55,11 @@ import AlertUserDelete from "components/users/AlertDelete";
 import _ from "lodash";
 import useAuth from "hooks/useAuth";
 import { fetchShips } from "../../redux/features/ships/actions";
-import { fetchClients } from "api/client";
 import { toast } from "react-toastify";
 import AddEditShipModal from "components/ships/AddEditShipModal";
 import DockingModal from "components/docking/DokcingModal";
-import { getAvailableDockingPlaces } from "api/dockingPlaces";
 import NoDataMessage from "components/@extended/NoDataMessage";
+import { resetPagination } from "../../redux/features/ships/slice";
 
 export const fuzzyFilter = (row, columnId, value, addMeta) => {
   const itemRank = rankItem(row.getValue(columnId), value);
@@ -76,7 +74,10 @@ function ReactTable({
   columns,
   globalFilter,
   setGlobalFilter,
-  showPagination,
+  pagination,
+  onPageChange,
+  currentPage,
+  pageSize,
 }) {
   const theme = useTheme();
 
@@ -88,10 +89,26 @@ function ReactTable({
     state: {
       rowSelection,
       globalFilter,
+      pagination: {
+        pageIndex: currentPage - 1,
+        pageSize: pageSize,
+      },
     },
     enableRowSelection: true,
     onRowSelectionChange: setRowSelection,
     onGlobalFilterChange: setGlobalFilter,
+    onPaginationChange: (updater) => {
+      const newState =
+        typeof updater === "function"
+          ? updater({ pageIndex: currentPage - 1, pageSize })
+          : updater;
+      if (newState.pageIndex !== currentPage - 1) {
+        onPageChange(newState.pageIndex + 1);
+      }
+      if (newState.pageSize !== pageSize) {
+        onPageChange(newState.pageIndex + 1, newState.pageSize);
+      }
+    },
     getRowCanExpand: () => true,
     getSortedRowModel: getSortedRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
@@ -99,7 +116,8 @@ function ReactTable({
     getPaginationRowModel: getPaginationRowModel(),
     getExpandedRowModel: getExpandedRowModel(),
     globalFilterFn: fuzzyFilter,
-    debugTable: true,
+    pageCount: pagination?.totalPages || 0,
+    manualPagination: true,
   });
 
   const backColor = alpha(theme.palette.primary.lighter, 0.1);
@@ -178,23 +196,20 @@ function ReactTable({
             </TableBody>
           </Table>
         </TableContainer>
-        {showPagination ? (
-          <>
-            <Divider />
-            <Box sx={{ p: 2 }}>
-              <TablePagination
-                {...{
-                  setPageSize: table.setPageSize,
-                  setPageIndex: table.setPageIndex,
-                  getState: table.getState,
-                  getPageCount: table.getPageCount,
-                }}
-              />
-            </Box>
-          </>
-        ) : (
-          <></>
-        )}
+        <>
+          <Divider />
+          <Box sx={{ p: 2 }}>
+            <TablePagination
+              {...{
+                setPageSize: table.setPageSize,
+                setPageIndex: table.setPageIndex,
+                getState: table.getState,
+                getPageCount: table.getPageCount,
+                apiPageSize: pagination?.pageSize,
+              }}
+            />
+          </Box>
+        </>
       </Stack>
     </ScrollX>
   );
@@ -203,7 +218,6 @@ function ReactTable({
 const ManageShips = ({
   showCreateBtn = true,
   shipData,
-  dockedPlaces = [],
   showTitle = true,
   showShipyardName = true,
   showActions = true,
@@ -215,12 +229,9 @@ const ManageShips = ({
   const dispatch = useDispatch();
   const {
     shipyard: { shipyard, status },
-    ship: { ships: lists = [], status: shipStatus } = {},
-    docking: { successMessage } = {},
+    ship: { ships: lists = [], status: shipStatus, pagination } = {},
   } = useSelector((state) => state);
   const [selectedShip, setSelectedShip] = useState({});
-  const [clients, setClients] = useState([]);
-  const [loading, setLoading] = useState(true);
 
   const [open, setOpen] = useState(false);
   const [globalFilter, setGlobalFilter] = useState("");
@@ -228,57 +239,20 @@ const ManageShips = ({
   const [addEditModal, setAddEditModal] = useState(false);
   const [addDockModal, setAddDockModal] = useState(false);
   const [deleteId, setDeleteId] = useState("");
-  const [dockingPlaces, setDockingPlaces] = useState(dockedPlaces);
+  const [pageSize, setPageSize] = useState(50);
+  const [currentPage, setCurrentPage] = useState(1);
 
   const handleClose = () => {
     setOpen(!open);
   };
 
-  useEffect(() => {
-    if (!user || shipData) return;
-    (async () => {
-      try {
-        dispatch(fetchShips({ shipyardID: user.shipyard_id }));
-        const [clientsData, dockingData] = await Promise.all([
-          fetchClients(user.shipyard_id),
-          getAvailableDockingPlaces(user?.shipyard_id),
-        ]);
-        setClients(clientsData);
-        setDockingPlaces(dockingData);
-
-        setLoading(false);
-      } catch (error) {
-        toast.error(
-          error.response.data.error.message ||
-            error.response.data.message ||
-            "Some error occurred, please try again later",
-        );
-        console.error("Error occurred while getting departments", error);
-      }
-    })();
-  }, [user]);
-
-  useEffect(() => {
-    if (!successMessage) return;
-
-    dispatch(fetchShips({ shipyardID: user.shipyard_id }));
-  }, [successMessage]);
-
-  useEffect(() => {
-    if (!shipData) return;
-
-    try {
-      (async () => {
-        const clientsData = fetchClients(user.shipyard_id);
-        setClients(clientsData);
-
-        setLoading(false);
-      })();
-    } catch (error) {
-      console.error("Error occurred while getting dockings", error);
-      toast.error("Some error occurred, please try again later");
+  const handlePageChange = (newPage, newPageSize) => {
+    if (newPageSize !== undefined) {
+      setPageSize(newPageSize);
+    } else {
+      setCurrentPage(newPage);
     }
-  }, [shipData?.id]);
+  };
 
   const columns = useMemo(
     () => [
@@ -293,6 +267,7 @@ const ManageShips = ({
               },
               disableSortBy: true,
               cell: ({ row }) => {
+                console.log();
                 return (
                   <Stack
                     direction="row"
@@ -302,7 +277,8 @@ const ManageShips = ({
                   >
                     {row.original?.dockings ? (
                       !row.original?.dockings?.length
-                    ) : row.original.docking_count < 1 ? (
+                    ) : !row.original.docking_count ||
+                      row.original.docking_count < 1 ? (
                       <Button
                         variant="text"
                         size="small"
@@ -355,6 +331,38 @@ const ManageShips = ({
     setAddEditModal(!addEditModal);
     setSelectedShip(null);
   };
+
+  useEffect(() => {
+    //getting data for listing page
+    if (user && !shipData) {
+      (async () => {
+        try {
+          dispatch(
+            fetchShips({
+              shipyardID: user.shipyard_id,
+              queryParams: {
+                page: currentPage,
+                page_size: pageSize,
+              },
+            }),
+          );
+        } catch (error) {
+          toast.error(
+            error.response.data.error.message ||
+              error.response.data.message ||
+              "Some error occurred, please try again later",
+          );
+          console.error("Error occurred while getting departments", error);
+        }
+      })();
+    }
+  }, [user, shipData?.id]);
+
+  useEffect(() => {
+    return () => {
+      dispatch(resetPagination());
+    };
+  }, [dispatch]);
 
   return (
     <>
@@ -437,7 +445,9 @@ const ManageShips = ({
           </Stack>
         )}
 
-        {status === "loading" || shipStatus === "loading" || loading ? (
+        {status === "loading" ||
+        shipStatus === "loading" ||
+        (!shipData && !lists.length) ? (
           <NoDataMessage message="There is no SHIP data available. You can create new one from above button" />
         ) : (
           <ReactTable
@@ -446,7 +456,10 @@ const ManageShips = ({
               columns,
               globalFilter,
               setGlobalFilter,
-              showPagination: !shipData,
+              pagination,
+              onPageChange: handlePageChange,
+              currentPage,
+              pageSize,
             }}
           />
         )}
@@ -463,7 +476,6 @@ const ManageShips = ({
             open={addEditModal}
             modalToggler={modalToggler}
             shipyard={shipyard}
-            clients={clients}
             ship={selectedShip}
           />
         )}
@@ -476,12 +488,6 @@ const ManageShips = ({
             }}
             shipyard={shipyard}
             ship={selectedShip}
-            dockingPlaces={dockingPlaces}
-            removeUsedPlace={(placeId) =>
-              setDockingPlaces((preState) =>
-                preState.filter((p) => p.id !== placeId),
-              )
-            }
           />
         )}
       </MainCard>

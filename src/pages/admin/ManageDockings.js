@@ -1,7 +1,7 @@
-import { Fragment, useEffect, useMemo, useState } from 'react';
+import { Fragment, useEffect, useMemo, useState } from "react";
 
 // material-ui
-import { alpha, useTheme } from '@mui/material/styles';
+import { alpha, useTheme } from "@mui/material/styles";
 import {
   Autocomplete,
   Box,
@@ -22,8 +22,8 @@ import {
   TextField,
   Tooltip,
   Typography,
-  useMediaQuery
-} from '@mui/material';
+  useMediaQuery,
+} from "@mui/material";
 
 // third-party
 import {
@@ -33,31 +33,34 @@ import {
   getPaginationRowModel,
   getFilteredRowModel,
   getExpandedRowModel,
-  useReactTable
-} from '@tanstack/react-table';
-import { rankItem } from '@tanstack/match-sorter-utils';
+  useReactTable,
+} from "@tanstack/react-table";
+import { rankItem } from "@tanstack/match-sorter-utils";
 
 // project-import
-import ScrollX from 'components/ScrollX';
-import MainCard from 'components/MainCard';
-import IconButton from 'components/@extended/IconButton';
+import ScrollX from "components/ScrollX";
+import MainCard from "components/MainCard";
+import IconButton from "components/@extended/IconButton";
 
-import { DebouncedInput, RowSelection, TablePagination } from 'components/third-party/react-table';
+import {
+  DebouncedInput,
+  RowSelection,
+  TablePagination,
+} from "components/third-party/react-table";
 
 // assets
-import { DeleteOutlined, EditOutlined, PlusOutlined } from '@ant-design/icons';
-import { useDispatch, useSelector } from 'react-redux';
-import { dockingColumns } from 'utils/constants';
-import _ from 'lodash';
-import useAuth from 'hooks/useAuth';
-import { fetchShips } from '../../redux/features/ships/actions';
-import { getAvailableDockingPlaces } from 'api/dockingPlaces';
-import Loader from 'components/Loader';
-import { fetchDockings } from '../../redux/features/dockings/actions';
-import DockingModal from 'components/docking/DokcingModal';
-import AddSuperintendentModal from 'components/docking/AddSuperIntendentModal';
-import NoDataMessage from 'components/@extended/NoDataMessage';
-import DropdownDependencyInfo from 'components/@extended/DropdownDependencyInfo';
+import { DeleteOutlined, EditOutlined, PlusOutlined } from "@ant-design/icons";
+import { useDispatch, useSelector } from "react-redux";
+import { dockingColumns } from "utils/constants";
+import _ from "lodash";
+import useAuth from "hooks/useAuth";
+import { fetchShips } from "../../redux/features/ships/actions";
+import Loader from "components/Loader";
+import { fetchDockings } from "../../redux/features/dockings/actions";
+import DockingModal from "components/docking/DokcingModal";
+import AddSuperintendentModal from "components/docking/AddSuperIntendentModal";
+import NoDataMessage from "components/@extended/NoDataMessage";
+import DropdownDependencyInfo from "components/@extended/DropdownDependencyInfo";
 
 export const fuzzyFilter = (row, columnId, value, addMeta) => {
   const itemRank = rankItem(row.getValue(columnId), value);
@@ -67,7 +70,13 @@ export const fuzzyFilter = (row, columnId, value, addMeta) => {
   return itemRank.passed;
 };
 
-function ReactTable({ data, columns, globalFilter, setGlobalFilter, showPagination }) {
+function ReactTable({
+  data,
+  columns,
+  globalFilter,
+  setGlobalFilter,
+  showPagination,
+}) {
   const theme = useTheme();
 
   const [rowSelection, setRowSelection] = useState({});
@@ -77,7 +86,7 @@ function ReactTable({ data, columns, globalFilter, setGlobalFilter, showPaginati
     columns,
     state: {
       rowSelection,
-      globalFilter
+      globalFilter,
     },
     enableRowSelection: true,
     onRowSelectionChange: setRowSelection,
@@ -89,7 +98,7 @@ function ReactTable({ data, columns, globalFilter, setGlobalFilter, showPaginati
     getPaginationRowModel: getPaginationRowModel(),
     getExpandedRowModel: getExpandedRowModel(),
     globalFilterFn: fuzzyFilter,
-    debugTable: true
+    debugTable: true,
   });
 
   const backColor = alpha(theme.palette.primary.lighter, 0.1);
@@ -98,8 +107,8 @@ function ReactTable({ data, columns, globalFilter, setGlobalFilter, showPaginati
     (columns) =>
       columns.accessorKey &&
       headers.push({
-        label: typeof columns.header === 'string' ? columns.header : '#'
-      })
+        label: typeof columns.header === "string" ? columns.header : "#",
+      }),
   );
 
   return (
@@ -113,10 +122,22 @@ function ReactTable({ data, columns, globalFilter, setGlobalFilter, showPaginati
                 <TableRow key={headerGroup.id}>
                   {headerGroup.headers.map((header) => {
                     return (
-                      <TableCell key={header.id} {...header.column.columnDef.meta}>
+                      <TableCell
+                        key={header.id}
+                        {...header.column.columnDef.meta}
+                      >
                         {header.isPlaceholder ? null : (
-                          <Stack direction="row" spacing={1} alignItems="center">
-                            <Box>{flexRender(header.column.columnDef.header, header.getContext())}</Box>
+                          <Stack
+                            direction="row"
+                            spacing={1}
+                            alignItems="center"
+                          >
+                            <Box>
+                              {flexRender(
+                                header.column.columnDef.header,
+                                header.getContext(),
+                              )}
+                            </Box>
                           </Stack>
                         )}
                       </TableCell>
@@ -131,12 +152,20 @@ function ReactTable({ data, columns, globalFilter, setGlobalFilter, showPaginati
                   <TableRow>
                     {row.getVisibleCells().map((cell) => (
                       <TableCell key={cell.id} {...cell.column.columnDef.meta}>
-                        {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                        {flexRender(
+                          cell.column.columnDef.cell,
+                          cell.getContext(),
+                        )}
                       </TableCell>
                     ))}
                   </TableRow>
                   {row.getIsExpanded() && (
-                    <TableRow sx={{ bgcolor: backColor, '&:hover': { bgcolor: `${backColor} !important` } }}>
+                    <TableRow
+                      sx={{
+                        bgcolor: backColor,
+                        "&:hover": { bgcolor: `${backColor} !important` },
+                      }}
+                    >
                       <TableCell colSpan={row.getVisibleCells().length}>
                         {/* <ExpandingUserDetail data={row.original} /> */}
                         <>Expanding Detail</>
@@ -157,7 +186,7 @@ function ReactTable({ data, columns, globalFilter, setGlobalFilter, showPaginati
                   setPageSize: table.setPageSize,
                   setPageIndex: table.setPageIndex,
                   getState: table.getState,
-                  getPageCount: table.getPageCount
+                  getPageCount: table.getPageCount,
                 }}
               />
             </Box>
@@ -170,24 +199,25 @@ function ReactTable({ data, columns, globalFilter, setGlobalFilter, showPaginati
   );
 }
 
-const ManageDockings = ({ ship, shipDocking, dockedPlaces }) => {
+const ManageDockings = ({ ship, shipDocking }) => {
   const theme = useTheme();
-  const matchDownSM = useMediaQuery(theme.breakpoints.down('sm'));
+  const matchDownSM = useMediaQuery(theme.breakpoints.down("sm"));
   const { user } = useAuth();
 
   const dispatch = useDispatch();
   const { shipyard } = useSelector((state) => state.shipyard);
-  const { dockings: lists, status: fetchingDockings } = useSelector((state) => state.docking);
+  const { dockings: lists, status: fetchingDockings } = useSelector(
+    (state) => state.docking,
+  );
   const { ships, status: fetchingShips } = useSelector((state) => state.ship);
   const [selectedDocking, setSelectedDocking] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [dockingPlaces, setDockingPlaces] = useState(dockedPlaces);
   const [dockingModal, setDockingModal] = useState(false);
   const [addSuperintendentModal, setAddSuperintendentModal] = useState(false);
   const [selectedShip, setSelectedShip] = useState(ship);
 
   const [open, setOpen] = useState(false);
-  const [globalFilter, setGlobalFilter] = useState('');
+  const [globalFilter, setGlobalFilter] = useState("");
 
   const dockingColsWithoutActions = dockingColumns;
 
@@ -201,7 +231,7 @@ const ManageDockings = ({ ship, shipDocking, dockedPlaces }) => {
 
       dispatch(fetchShips({ shipyardID: user?.shipyard_id }));
     } catch (error) {
-      console.error('Error occurred while getting departments', error);
+      console.error("Error occurred while getting departments", error);
     } finally {
       setLoading(false);
     }
@@ -211,9 +241,12 @@ const ManageDockings = ({ ship, shipDocking, dockedPlaces }) => {
     if (!selectedShip) return;
 
     (async () => {
-      dispatch(fetchDockings({ shipyardID: user?.shipyard_id, queryParams: `ship_id=${selectedShip.id}` }));
-      const dockingData = await getAvailableDockingPlaces(user?.shipyard_id);
-      setDockingPlaces(dockingData);
+      dispatch(
+        fetchDockings({
+          shipyardID: user?.shipyard_id,
+          queryParams: `ship_id=${selectedShip.id}`,
+        }),
+      );
     })();
   }, [selectedShip]);
 
@@ -221,7 +254,7 @@ const ManageDockings = ({ ship, shipDocking, dockedPlaces }) => {
     () => [
       ...dockingColsWithoutActions,
       {
-        header: 'Superintendent',
+        header: "Superintendent",
         cell: ({ row }) => {
           return !row?.original?.superintendent ? (
             <Button
@@ -237,18 +270,23 @@ const ManageDockings = ({ ship, shipDocking, dockedPlaces }) => {
           ) : (
             row?.original?.superintendent?.name
           );
-        }
+        },
       },
 
       {
-        header: 'Actions',
+        header: "Actions",
         meta: {
-          className: 'cell-center'
+          className: "cell-center",
         },
         disableSortBy: true,
         cell: ({ row }) => {
           return (
-            <Stack direction="row" alignItems="center" justifyContent="center" spacing={0}>
+            <Stack
+              direction="row"
+              alignItems="center"
+              justifyContent="center"
+              spacing={0}
+            >
               <Tooltip title="Edit">
                 <IconButton
                   color="primary"
@@ -275,10 +313,10 @@ const ManageDockings = ({ ship, shipDocking, dockedPlaces }) => {
               </Tooltip>
             </Stack>
           );
-        }
-      }
+        },
+      },
     ],
-    [theme]
+    [theme],
   );
 
   const modalToggler = () => {
@@ -286,12 +324,21 @@ const ManageDockings = ({ ship, shipDocking, dockedPlaces }) => {
     setSelectedDocking(null);
   };
 
-  if (loading || [fetchingDockings, fetchingShips].includes('loading')) return <Loader />;
+  if (loading || [fetchingDockings, fetchingShips].includes("loading"))
+    return <Loader />;
 
   const renderInfoMessage = () => {
-    if (_.isEmpty(selectedShip)) return <DropdownDependencyInfo visible={_.isEmpty(selectedShip)} requiredField="Ship" />;
+    if (_.isEmpty(selectedShip))
+      return (
+        <DropdownDependencyInfo
+          visible={_.isEmpty(selectedShip)}
+          requiredField="Ship"
+        />
+      );
     if (!lists.length)
-      return <NoDataMessage message="There are no active dockings for selected SHIP. You can create new one from above button" />;
+      return (
+        <NoDataMessage message="There are no active dockings for selected SHIP. You can create new one from above button" />
+      );
   };
   return (
     <>
@@ -300,9 +347,9 @@ const ManageDockings = ({ ship, shipDocking, dockedPlaces }) => {
           variant="h2"
           sx={{
             fontSize: {
-              xs: 'h5.fontSize',
-              md: 'h2.fontSize'
-            }
+              xs: "h5.fontSize",
+              md: "h2.fontSize",
+            },
           }}
         >
           Manage Dockings
@@ -311,14 +358,27 @@ const ManageDockings = ({ ship, shipDocking, dockedPlaces }) => {
       {_.isEmpty(shipyard) || shipDocking ? (
         <></>
       ) : (
-        <Grid container spacing={2} sx={{ marginTop: '16px', marginBottom: '8px' }}>
-          <Grid container spacing={2} sx={{ marginTop: '16px', marginBottom: '8px' }}>
+        <Grid
+          container
+          spacing={2}
+          sx={{ marginTop: "16px", marginBottom: "8px" }}
+        >
+          <Grid
+            container
+            spacing={2}
+            sx={{ marginTop: "16px", marginBottom: "8px" }}
+          >
             <Grid item xs={12}>
               <Stack direction="row" spacing={2} alignItems="center">
                 {/* Shipyard Select */}
                 <FormControl sx={{ minWidth: 200 }}>
                   <InputLabel id="shipyard-select-label">Shipyard</InputLabel>
-                  <Select labelId="shipyard-select-label" id="shipyard-select" value={shipyard?.id || ''} label="Shipyard">
+                  <Select
+                    labelId="shipyard-select-label"
+                    id="shipyard-select"
+                    value={shipyard?.id || ""}
+                    label="Shipyard"
+                  >
                     <MenuItem value={shipyard?.id}>{shipyard?.name}</MenuItem>
                   </Select>
                 </FormControl>
@@ -331,13 +391,17 @@ const ManageDockings = ({ ship, shipDocking, dockedPlaces }) => {
                     onChange={(e, value) => {
                       setSelectedShip(value);
                     }}
-                    isOptionEqualToValue={(option, value) => option.id === value?.id}
+                    isOptionEqualToValue={(option, value) =>
+                      option.id === value?.id
+                    }
                     renderOption={(props, option) => (
                       <li {...props} key={option.id}>
                         {option.name}
                       </li>
                     )}
-                    renderInput={(params) => <TextField {...params} label="Ship" />}
+                    renderInput={(params) => (
+                      <TextField {...params} label="Ship" />
+                    )}
                   />
                 </FormControl>
               </Stack>
@@ -349,20 +413,36 @@ const ManageDockings = ({ ship, shipDocking, dockedPlaces }) => {
       <MainCard content={false}>
         {!shipDocking && selectedShip && (
           <Stack
-            direction={{ xs: 'column', sm: 'row' }}
+            direction={{ xs: "column", sm: "row" }}
             spacing={2}
             alignItems="center"
             justifyContent="space-between"
-            sx={{ padding: 2, ...(matchDownSM && { '& .MuiOutlinedInput-root, & .MuiFormControl-root': { width: '100%' } }) }}
+            sx={{
+              padding: 2,
+              ...(matchDownSM && {
+                "& .MuiOutlinedInput-root, & .MuiFormControl-root": {
+                  width: "100%",
+                },
+              }),
+            }}
           >
             <DebouncedInput
-              value={globalFilter ?? ''}
+              value={globalFilter ?? ""}
               onFilterChange={(value) => setGlobalFilter(String(value))}
               placeholder={`Search ${lists.length} records...`}
             />
-            <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} alignItems="center" sx={{ width: { xs: '100%', sm: 'auto' } }}>
+            <Stack
+              direction={{ xs: "column", sm: "row" }}
+              spacing={2}
+              alignItems="center"
+              sx={{ width: { xs: "100%", sm: "auto" } }}
+            >
               <Stack direction="row" spacing={2} alignItems="center">
-                <Button variant="contained" startIcon={<PlusOutlined />} onClick={modalToggler}>
+                <Button
+                  variant="contained"
+                  startIcon={<PlusOutlined />}
+                  onClick={modalToggler}
+                >
                   Create Docking
                 </Button>
               </Stack>
@@ -376,7 +456,7 @@ const ManageDockings = ({ ship, shipDocking, dockedPlaces }) => {
               columns,
               globalFilter,
               setGlobalFilter,
-              showPagination: !shipDocking
+              showPagination: !shipDocking,
             }}
           />
         ) : (
@@ -389,8 +469,6 @@ const ManageDockings = ({ ship, shipDocking, dockedPlaces }) => {
             shipyard={shipyard}
             docking={shipDocking ? shipDocking : selectedDocking}
             ship={selectedShip}
-            dockingPlaces={dockingPlaces}
-            removeUsedPlace={(placeId) => setDockingPlaces((preState) => preState.filter((p) => p.id !== placeId))}
           />
         )}
         {addSuperintendentModal && (
@@ -401,8 +479,8 @@ const ManageDockings = ({ ship, shipDocking, dockedPlaces }) => {
               setAddSuperintendentModal(!addSuperintendentModal);
             }}
             dockID={selectedDocking?.id}
-            clientName={ships.find((s) => s.id === selectedDocking?.ship?.id)?.client?.name}
-            superintendents={ships.find((s) => s.id === selectedDocking?.ship?.id)?.client?.superintendents}
+            clientName={selectedShip?.name || ""}
+            superintendents={selectedShip?.client?.superintendents}
           />
         )}
       </MainCard>

@@ -3,7 +3,6 @@ import { Fragment, useEffect, useMemo, useState } from "react";
 // material-ui
 import { alpha, useTheme } from "@mui/material/styles";
 import {
-  Autocomplete,
   Box,
   Button,
   Divider,
@@ -57,10 +56,11 @@ import UserModal from "components/users/UserModal";
 import AlertUserDelete from "components/users/AlertDelete";
 import _ from "lodash";
 import useAuth from "hooks/useAuth";
-import { getDepartment, getDepartments } from "api/department";
+import { getDepartment, getDepartmentOptions } from "api/department";
 import NoDataMessage from "components/@extended/NoDataMessage";
 import DropdownDependencyInfo from "components/@extended/DropdownDependencyInfo";
 import { resetShipyardState } from "../../redux/features/shipyard/slice";
+import PaginatedAutocomplete from "components/@extended/PaginatedAutocomplete";
 
 export const fuzzyFilter = (row, columnId, value, addMeta) => {
   const itemRank = rankItem(row.getValue(columnId), value);
@@ -227,7 +227,6 @@ const ManageDeptUsers = () => {
     shipyardUsers: lists,
     shipyardUsersPagination: pagination,
   } = useSelector((state) => state.shipyard);
-  const [departments, setDepartments] = useState([]);
   const [selectedDepartment, setSelectedDepartment] = useState(null);
   const [loading, setLoading] = useState(true);
 
@@ -312,6 +311,7 @@ const ManageDeptUsers = () => {
 
   useEffect(() => {
     if (!user) return;
+
     try {
       (async () => {
         if (user.role === "FOREMAN") {
@@ -320,9 +320,6 @@ const ManageDeptUsers = () => {
             value: department.id,
             label: department.name,
           });
-        } else {
-          const departments = await getDepartments(user.shipyard_id);
-          setDepartments(departments);
         }
 
         setLoading(false);
@@ -354,6 +351,8 @@ const ManageDeptUsers = () => {
     };
   }, [dispatch]);
 
+  if (loading) return <></>;
+
   const renderInfoMessage = () => {
     if (_.isEmpty(selectedDepartment))
       return (
@@ -362,6 +361,7 @@ const ManageDeptUsers = () => {
           requiredField="Department"
         />
       );
+
     if (!lists.length)
       return (
         <NoDataMessage message="No data available for DEPARTMENTAL users. You can create new one from above button" />
@@ -422,20 +422,22 @@ const ManageDeptUsers = () => {
                   </Select>
                 </FormControl>
               ) : (
-                <Autocomplete
+                <PaginatedAutocomplete
                   sx={{ width: 300 }}
-                  options={departments.map(({ id, name }) => ({
-                    label: name,
-                    value: id,
-                  }))}
+                  label="Select Department"
+                  fetchOptionsApi={getDepartmentOptions}
+                  extraParams={{ shipyardId: shipyard?.id }}
+                  pageSize={100}
                   isOptionEqualToValue={(option, value) =>
-                    option.value === value?.value
+                    option.id === value?.value
                   }
-                  getOptionLabel={(option) => option.label || ""}
-                  onChange={(_, value) => setSelectedDepartment(value)}
-                  renderInput={(params) => (
-                    <TextField {...params} label="Select Department" />
-                  )}
+                  getOptionLabel={(option) => option.name || ""}
+                  onChange={(value) =>
+                    setSelectedDepartment({
+                      label: value.name,
+                      value: value.id,
+                    })
+                  }
                 />
               )}
 
@@ -471,7 +473,7 @@ const ManageDeptUsers = () => {
       )}
 
       <MainCard content={false}>
-        {lists?.length ? (
+        {!_.isEmpty(selectedDepartment) && lists?.length ? (
           <Stack
             direction={{ xs: "column", sm: "row" }}
             spacing={2}
@@ -496,7 +498,7 @@ const ManageDeptUsers = () => {
           <></>
         )}
 
-        {lists?.length ? (
+        {!_.isEmpty(selectedDepartment) && lists?.length ? (
           <ReactTable
             {...{
               data: lists,

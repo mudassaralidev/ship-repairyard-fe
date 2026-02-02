@@ -1,24 +1,24 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState } from "react";
 
 // material-ui
-import { Grid, Typography, Stack } from '@mui/material';
+import { Grid, Typography, Stack } from "@mui/material";
 
-import { useDispatch, useSelector } from 'react-redux';
-import _ from 'lodash';
-import useAuth from 'hooks/useAuth';
-import { fetchShips } from '../../redux/features/ships/actions';
-import Loader from 'components/Loader';
-import { fetchDockings } from '../../redux/features/dockings/actions';
-import RepairDetailCard from 'components/work-order/RepairCard';
-import dataApi from 'utils/dataApi';
-import { fetchWorkOrders } from '../../redux/features/work-order/actions';
-import Dropdown from 'components/work-order/Dropdown';
-import InfoMessage from 'components/work-order/InfoMessage';
-import WorkOrderTable from 'components/work-order/WorkOrderTable';
-import { repairOrders } from '../../redux/features/repair/actions';
-import InventoryOrderTable from 'components/work-order/InventoryOrderTable';
-import { fetchInventories } from '../../redux/features/inventory/actions';
-import DropdownDependencyInfo from 'components/@extended/DropdownDependencyInfo';
+import { useDispatch, useSelector } from "react-redux";
+import _ from "lodash";
+import useAuth from "hooks/useAuth";
+import { fetchShips } from "../../redux/features/ships/actions";
+import Loader from "components/Loader";
+import { fetchDockings } from "../../redux/features/dockings/actions";
+import RepairDetailCard from "components/work-order/RepairCard";
+import dataApi from "utils/dataApi";
+import { fetchWorkOrders } from "../../redux/features/work-order/actions";
+import Dropdown from "components/work-order/Dropdown";
+import InfoMessage from "components/work-order/InfoMessage";
+import WorkOrderTable from "components/work-order/WorkOrderTable";
+import { repairOrders } from "../../redux/features/repair/actions";
+import InventoryOrderTable from "components/work-order/InventoryOrderTable";
+import { fetchInventories } from "../../redux/features/inventory/actions";
+import DropdownDependencyInfo from "components/@extended/DropdownDependencyInfo";
 
 const ManageWorkOrders = () => {
   const { user } = useAuth();
@@ -29,12 +29,16 @@ const ManageWorkOrders = () => {
 
   const dispatch = useDispatch();
   const { shipyard } = useSelector((state) => state.shipyard);
-  const { dockings, status: fetchingDockings } = useSelector((state) => state.docking);
+  const { dockings, status: fetchingDockings } = useSelector(
+    (state) => state.docking,
+  );
   const { ships, status: fetchingShips } = useSelector((state) => state.ship);
-  const { workOrders, inventoryOrders } = useSelector((state) => state.workOrder);
+  const { workOrders, inventoryOrders } = useSelector(
+    (state) => state.workOrder,
+  );
   const { inventories } = useSelector((state) => state.inventory);
-  const isAdminOrPM = ['ADMIN', 'PROJECT_MANAGER'].includes(user?.role);
-  const isForeman = user?.role === 'FOREMAN';
+  const isAdminOrPM = ["ADMIN", "PROJECT_MANAGER"].includes(user?.role);
+  const isForeman = user?.role === "FOREMAN";
 
   useEffect(() => {
     try {
@@ -42,8 +46,15 @@ const ManageWorkOrders = () => {
 
       if (isAdminOrPM) {
         (async () => {
-          dispatch(fetchShips({ shipyardID: user?.shipyard_id, queryParams: 'include_client=' }));
-          const [{ data }] = await Promise.all([dataApi.get('/v1/departments?include_foreman=true')]);
+          dispatch(
+            fetchShips({
+              shipyardID: user?.shipyard_id,
+              queryParams: { include_client: false },
+            }),
+          );
+          const [{ data }] = await Promise.all([
+            dataApi.get("/v1/departments?include_foreman=true"),
+          ]);
           dispatch(fetchInventories(user?.shipyard_id));
           setDepartments(data.departments);
         })();
@@ -52,7 +63,7 @@ const ManageWorkOrders = () => {
         dispatch(fetchWorkOrders());
       }
     } catch (error) {
-      console.error('Error occurred while getting dockings', error);
+      console.error("Error occurred while getting dockings", error);
     }
   }, [user]);
 
@@ -61,10 +72,15 @@ const ManageWorkOrders = () => {
       if (!selectedShip) return;
 
       (async () => {
-        dispatch(fetchDockings({ shipyardID: user?.shipyard_id, queryParams: `include_repairs=true&ship_id=${selectedShip?.id}` }));
+        dispatch(
+          fetchDockings({
+            shipyardID: user?.shipyard_id,
+            queryParams: `include_repairs=true&ship_id=${selectedShip?.id}`,
+          }),
+        );
       })();
     } catch (error) {
-      console.error('Error occurred while getting dockings', error);
+      console.error("Error occurred while getting dockings", error);
     }
   }, [selectedShip]);
 
@@ -76,17 +92,31 @@ const ManageWorkOrders = () => {
         dispatch(repairOrders(selectedRepair.id));
       })();
     } catch (error) {
-      console.error('Error occurred while getting dockings', error);
+      console.error("Error occurred while getting dockings", error);
     }
   }, [selectedRepair]);
 
-  if ([fetchingDockings, fetchingShips].includes('loading')) return <Loader />;
+  if ([fetchingDockings, fetchingShips].includes("loading")) return <Loader />;
 
   const renderInfoMessage = () => {
-    if (!selectedShip && !_.isEmpty(ships)) return <DropdownDependencyInfo visible={!selectedShip} requiredField="SHIP" />;
-    if (!selectedDocking && !_.isEmpty(dockings)) return <DropdownDependencyInfo visible={!selectedDocking} requiredField="DOCKING" />;
+    if (!selectedShip && !_.isEmpty(ships))
+      return (
+        <DropdownDependencyInfo visible={!selectedShip} requiredField="SHIP" />
+      );
+    if (!selectedDocking && !_.isEmpty(dockings))
+      return (
+        <DropdownDependencyInfo
+          visible={!selectedDocking}
+          requiredField="DOCKING"
+        />
+      );
     if (!selectedRepair && !_.isEmpty(selectedDocking?.repairs))
-      return <DropdownDependencyInfo visible={!selectedRepair} requiredField="REPAIR" />;
+      return (
+        <DropdownDependencyInfo
+          visible={!selectedRepair}
+          requiredField="REPAIR"
+        />
+      );
   };
 
   return (
@@ -95,9 +125,9 @@ const ManageWorkOrders = () => {
         variant="h2"
         sx={{
           fontSize: {
-            xs: 'h5.fontSize',
-            md: 'h2.fontSize'
-          }
+            xs: "h5.fontSize",
+            md: "h2.fontSize",
+          },
         }}
       >
         Manage WorkOrder
@@ -106,11 +136,20 @@ const ManageWorkOrders = () => {
       {_.isEmpty(shipyard) ? (
         <></>
       ) : (
-        <Grid container spacing={2} sx={{ marginTop: '16px', marginBottom: '8px' }}>
+        <Grid
+          container
+          spacing={2}
+          sx={{ marginTop: "16px", marginBottom: "8px" }}
+        >
           <Grid item xs={12}>
             <Stack direction="row" spacing={2} alignItems="center">
               {/* Shipyard Select */}
-              <Dropdown label="Shipyard" value={shipyard} options={[shipyard]} getOptionLabel={(opt) => opt?.name} />
+              <Dropdown
+                label="Shipyard"
+                value={shipyard}
+                options={[shipyard]}
+                getOptionLabel={(opt) => opt?.name}
+              />
               {/* Select ships */}
               {isAdminOrPM && (
                 <Dropdown
@@ -127,18 +166,20 @@ const ManageWorkOrders = () => {
               )}
 
               {/* Dockings - only for Admin */}
-              {isAdminOrPM && !_.isEmpty(selectedShip) && !_.isEmpty(dockings) && (
-                <Dropdown
-                  label="Dockings"
-                  value={selectedDocking}
-                  options={dockings}
-                  onChange={(e) => {
-                    setSelectedDocking(e.target.value);
-                    setSelectedRepair(null);
-                  }}
-                  getOptionLabel={(opt) => opt?.name}
-                />
-              )}
+              {isAdminOrPM &&
+                !_.isEmpty(selectedShip) &&
+                !_.isEmpty(dockings) && (
+                  <Dropdown
+                    label="Dockings"
+                    value={selectedDocking}
+                    options={dockings}
+                    onChange={(e) => {
+                      setSelectedDocking(e.target.value);
+                      setSelectedRepair(null);
+                    }}
+                    getOptionLabel={(opt) => opt?.name}
+                  />
+                )}
 
               {/* Repairs - only for Admin */}
               {isAdminOrPM && !_.isEmpty(selectedDocking?.repairs) && (
@@ -162,7 +203,10 @@ const ManageWorkOrders = () => {
                 linkText="Manage Dockings"
               />
               <InfoMessage
-                condition={!_.isEmpty(selectedDocking) && _.isEmpty(selectedDocking?.repairs)}
+                condition={
+                  !_.isEmpty(selectedDocking) &&
+                  _.isEmpty(selectedDocking?.repairs)
+                }
                 name={selectedDocking?.name}
                 entity="repairs"
                 linkTo="/dashboard/repairs"
@@ -179,7 +223,7 @@ const ManageWorkOrders = () => {
                   Repair Details
                 </Typography>
               </Grid>
-              <Grid item xs={12} sx={{ paddingTop: '0 !important' }}>
+              <Grid item xs={12} sx={{ paddingTop: "0 !important" }}>
                 <RepairDetailCard repair={selectedRepair} />
               </Grid>
             </>
@@ -192,7 +236,11 @@ const ManageWorkOrders = () => {
                 <Typography variant="h5" fontWeight="bold" gutterBottom>
                   Work Orders
                 </Typography>
-                <WorkOrderTable lists={selectedRepair || isForeman ? workOrders : []} repair={selectedRepair} departments={departments} />
+                <WorkOrderTable
+                  lists={selectedRepair || isForeman ? workOrders : []}
+                  repair={selectedRepair}
+                  departments={departments}
+                />
               </Grid>
 
               {isAdminOrPM && (

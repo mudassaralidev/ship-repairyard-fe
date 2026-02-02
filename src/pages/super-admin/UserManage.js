@@ -58,9 +58,8 @@ import AlertUserDelete from "components/users/AlertDelete";
 import _ from "lodash";
 import DropdownDependencyInfo from "components/@extended/DropdownDependencyInfo";
 import NoDataMessage from "components/@extended/NoDataMessage";
-import { resetShipyardState } from "../../redux/features/shipyard/slice";
 import { fetchShipyardOptionsApi } from "api/shipyard";
-import axios from "axios";
+import PaginatedAutocomplete from "components/@extended/PaginatedAutocomplete";
 
 export const fuzzyFilter = (row, columnId, value, addMeta) => {
   const itemRank = rankItem(row.getValue(columnId), value);
@@ -235,16 +234,7 @@ const UserListPage = () => {
   const [userModal, setUserModal] = useState(false);
   const [selectedUser, setSelectedUser] = useState(null);
   const [deleteId, setDeleteId] = useState("");
-  const [shipyardOptionsState, setShipyardOptionsState] = useState({
-    options: [],
-    loading: false,
-    search: "",
-    page: 1,
-    totalPages: 1,
-    selected: null,
-  });
-
-  const cancelToken = useRef(null);
+  const [selectedSY, setSelectedSY] = useState({});
 
   const userColsWithoutActions = userTableColumns("administratorUsers");
 
@@ -255,49 +245,6 @@ const UserListPage = () => {
       setPageSize(newPageSize);
     } else {
       setCurrentPage(newPage);
-    }
-  };
-
-  const handleSYSearch = _.debounce((value) => {
-    setShipyardOptionsState((prev) => ({
-      ...prev,
-      search: value,
-      page: 1,
-    }));
-    fetchOptions(value, 1);
-  }, 700);
-
-  const handleSYSelect = (value) => {
-    setShipyardOptionsState((prev) => ({
-      ...prev,
-      selected: value ? { label: value.name, value: value?.id } : value,
-    }));
-  };
-
-  const fetchOptions = async (searchValue = "", pageNum = 1) => {
-    setShipyardOptionsState((prev) => ({ ...prev, loading: true }));
-    try {
-      if (cancelToken.current) {
-        cancelToken.current.cancel("Operation canceled due to new request.");
-      }
-      cancelToken.current = axios.CancelToken.source();
-
-      const { options, pagination } = await fetchShipyardOptionsApi({
-        search: searchValue,
-        page: pageNum,
-        token: cancelToken.current.token,
-      });
-
-      setShipyardOptionsState((prev) => ({
-        ...prev,
-        options: _.uniqBy([...prev.options, ...options], "id"),
-        page: pageNum,
-        totalPages: pagination.totalPages,
-        loading: false,
-      }));
-    } catch (err) {
-      console.error(err);
-      setShipyardOptionsState((prev) => ({ ...prev, loading: false }));
     }
   };
 
@@ -356,22 +303,16 @@ const UserListPage = () => {
   };
 
   useEffect(() => {
-    fetchOptions();
-
-    return () => dispatch(resetShipyardState());
-  }, [dispatch]);
-
-  useEffect(() => {
-    if (!_.isEmpty(shipyardOptionsState.selected)) {
+    if (!_.isEmpty(selectedSY)) {
       dispatch(
         sySpecificUsers({
-          shipyard_id: shipyardOptionsState.selected.value,
+          shipyard_id: selectedSY.id,
           page: currentPage,
           pageSize,
         }),
       );
     }
-  }, [shipyardOptionsState.selected?.value, currentPage, pageSize, dispatch]);
+  }, [selectedSY.id, currentPage, pageSize, dispatch]);
 
   return (
     <>
@@ -385,63 +326,24 @@ const UserListPage = () => {
           <Typography variant="h2">Manage Administrative Users</Typography>
         </Grid>
         <Grid item xs={12} md={6}>
-          <Autocomplete
+          <PaginatedAutocomplete
             sx={{ width: 300 }}
-            options={shipyardOptionsState.options}
+            label="Select Shipyard"
+            value={selectedSY}
+            fetchOptionsApi={fetchShipyardOptionsApi}
+            extraParams={{}}
+            pageSize={100}
             getOptionLabel={(option) => option.name || ""}
-            onInputChange={(event, value, reason) => {
-              if (reason === "input") {
-                handleSYSearch(value); // only trigger search when user types
-              }
-            }}
-            onChange={(_, value) => handleSYSelect(value)}
-            loading={shipyardOptionsState.loading}
-            value={{
-              id: shipyardOptionsState?.selected?.value,
-              name: shipyardOptionsState?.selected?.label,
-            }}
-            renderInput={(params) => (
-              <TextField
-                {...params}
-                label="Select Shipyard"
-                InputProps={{
-                  ...params.InputProps,
-                  endAdornment: (
-                    <>
-                      {shipyardOptionsState.loading ? (
-                        <CircularProgress color="inherit" size={20} />
-                      ) : null}
-                      {params.InputProps.endAdornment}
-                    </>
-                  ),
-                }}
-              />
-            )}
-            ListboxProps={{
-              onScroll: (e) => {
-                const listboxNode = e.currentTarget;
-                if (
-                  listboxNode.scrollTop + listboxNode.clientHeight >=
-                  listboxNode.scrollHeight - 1
-                ) {
-                  if (
-                    !shipyardOptionsState.loading &&
-                    shipyardOptionsState.page < shipyardOptionsState.totalPages
-                  ) {
-                    fetchOptions(
-                      shipyardOptionsState.search,
-                      shipyardOptionsState.page + 1,
-                    );
-                  }
-                }
-              },
+            isOptionEqualToValue={(option, value) => option === value}
+            onChange={(option) => {
+              setSelectedSY({ label: option.name, value: option.id });
             }}
           />
         </Grid>
       </Grid>
-      {_.isEmpty(shipyardOptionsState.selected) ? (
+      {_.isEmpty(selectedSY) ? (
         <DropdownDependencyInfo
-          visible={_.isEmpty(shipyardOptionsState.selected)}
+          visible={_.isEmpty(selectedSY)}
           requiredField="Shipyard"
         />
       ) : (
@@ -513,7 +415,7 @@ const UserListPage = () => {
               open={userModal}
               modalToggler={setUserModal}
               user={selectedUser}
-              shipyard={shipyardOptionsState.selected}
+              shipyard={selectedSY}
             />
           )}
         </MainCard>

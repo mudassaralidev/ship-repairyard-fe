@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from "react";
 import {
   Button,
   DialogActions,
@@ -10,19 +10,21 @@ import {
   TextField,
   MenuItem,
   Autocomplete,
-  Typography
-} from '@mui/material';
-import { useFormik, Form, FormikProvider } from 'formik';
-import * as Yup from 'yup';
-import { useDispatch, useSelector } from 'react-redux';
-import { clearSuccessMessage } from '../../redux/features/ships/slice';
-import { toast } from 'react-toastify';
-import { createShip, updateShip } from '../../redux/features/ships/actions';
-import useAuth from 'hooks/useAuth';
+  Typography,
+} from "@mui/material";
+import { useFormik, Form, FormikProvider } from "formik";
+import * as Yup from "yup";
+import { useDispatch, useSelector } from "react-redux";
+import { clearSuccessMessage } from "../../redux/features/ships/slice";
+import { toast } from "react-toastify";
+import { createShip, updateShip } from "../../redux/features/ships/actions";
+import useAuth from "hooks/useAuth";
+import { fetchClientsOptionsApi } from "api/shipyard";
+import PaginatedAutocomplete from "components/@extended/PaginatedAutocomplete";
 
 const validationSchema = Yup.object().shape({
-  shipyard_id: Yup.string().required('Shipyard is required'),
-  name: Yup.string().required('Ship name is required, please enter ship name'),
+  shipyard_id: Yup.string().required("Shipyard is required"),
+  name: Yup.string().required("Ship name is required, please enter ship name"),
   type: Yup.string().nullable(),
   length: Yup.number().nullable(),
   beam: Yup.number().nullable(),
@@ -32,18 +34,23 @@ const validationSchema = Yup.object().shape({
   year_built: Yup.number().integer().nullable(),
   classification: Yup.string().nullable(),
   flag: Yup.string().nullable(),
-  client_user_id: Yup.string().required('Company is required, Please select company')
+  client_user_id: Yup.string().required(
+    "Company is required, Please select company",
+  ),
 });
 
-const FormAddEditShip = ({ shipyard, clients, ship, closeModal }) => {
+const FormAddEditShip = ({ shipyard, ship, closeModal }) => {
   const dispatch = useDispatch();
   const { successMessage, status } = useSelector((state) => state.ship);
   const { user } = useAuth();
+  const [selectedClient, setSelectedClient] = useState(
+    ship ? ship.client : null,
+  );
 
   const formik = useFormik({
     initialValues: {
-      shipyard_id: shipyard?.id ?? '',
-      name: ship?.name || '',
+      shipyard_id: shipyard?.id ?? "",
+      name: ship?.name || "",
       type: ship?.type || null,
       length: ship?.length || null,
       beam: ship?.beam || null,
@@ -53,7 +60,7 @@ const FormAddEditShip = ({ shipyard, clients, ship, closeModal }) => {
       year_built: ship?.year_built || null,
       classification: ship?.classification || null,
       flag: ship?.flag || null,
-      client_user_id: ship?.client?.id || ''
+      client_user_id: ship?.client?.id || "",
     },
     validationSchema: validationSchema,
     onSubmit: async (values, { setSubmitting }) => {
@@ -73,10 +80,17 @@ const FormAddEditShip = ({ shipyard, clients, ship, closeModal }) => {
       } finally {
         setSubmitting(false);
       }
-    }
+    },
   });
 
-  const { handleSubmit, getFieldProps, touched, errors, isSubmitting, setFieldValue } = formik;
+  const {
+    handleSubmit,
+    getFieldProps,
+    touched,
+    errors,
+    isSubmitting,
+    setFieldValue,
+  } = formik;
 
   useEffect(() => {
     if (successMessage) {
@@ -85,7 +99,7 @@ const FormAddEditShip = ({ shipyard, clients, ship, closeModal }) => {
       closeModal();
     }
 
-    if (status === 'failed') {
+    if (status === "failed") {
       closeModal();
       dispatch(clearSuccessMessage());
     }
@@ -94,7 +108,7 @@ const FormAddEditShip = ({ shipyard, clients, ship, closeModal }) => {
   return (
     <FormikProvider value={formik}>
       <Form autoComplete="off" noValidate onSubmit={handleSubmit}>
-        <DialogTitle>{ship ? 'Update Ship' : 'New Ship'}</DialogTitle>
+        <DialogTitle>{ship ? "Update Ship" : "New Ship"}</DialogTitle>
         <Divider />
         <DialogContent sx={{ p: 2.5 }}>
           <Grid container spacing={3}>
@@ -105,7 +119,7 @@ const FormAddEditShip = ({ shipyard, clients, ship, closeModal }) => {
                   select
                   label="Shipyard"
                   id="shipyard_id"
-                  {...getFieldProps('shipyard_id')}
+                  {...getFieldProps("shipyard_id")}
                   error={Boolean(touched.shipyard_id && errors.shipyard_id)}
                   helperText={touched.shipyard_id && errors.shipyard_id}
                 >
@@ -119,31 +133,35 @@ const FormAddEditShip = ({ shipyard, clients, ship, closeModal }) => {
             {/* Client User ID Select */}
             <Grid item xs={12} sm={6}>
               <Stack spacing={1}>
-                <Autocomplete
-                  id="client_user_id"
-                  defaultValue={ship?.client || null}
-                  options={clients}
+                <PaginatedAutocomplete
+                  label="Select Company"
+                  value={selectedClient}
+                  extraParams={{ shipyardId: shipyard?.id }}
+                  fetchOptionsApi={fetchClientsOptionsApi} // 🔁 your paginated API
+                  pageSize={100}
+                  disabled={Boolean(ship?.docking_count)}
                   getOptionLabel={(option) => option.name}
-                  onChange={(_, value) => setFieldValue('client_user_id', value ? value.id : '')}
-                  isOptionEqualToValue={(option, value) => option.id === value?.id}
-                  disabled={ship?.docking_count ? true : false}
-                  renderOption={(props, option) => (
-                    <li {...props} key={option.id}>
-                      {option.name}
-                    </li>
-                  )}
-                  renderInput={(params) => (
-                    <TextField
-                      {...params}
-                      label="Select Company"
-                      error={Boolean(touched.client_user_id && errors.client_user_id)}
-                      helperText={touched.client_user_id && errors.client_user_id}
-                    />
-                  )}
+                  isOptionEqualToValue={(option, value) =>
+                    option.id === value?.id
+                  }
+                  onChange={(option) => {
+                    setFieldValue("client_user_id", option ? option.id : "");
+                    setSelectedClient(option);
+                  }}
+                  error={touched.client_user_id && errors.client_user_id}
+                  helperText={touched.client_user_id && errors.client_user_id}
                 />
-                {ship?.docking_count && (
-                  <Typography sx={{ color: '#FF4D4F', fontSize: '12px', margin: '0px !important' }}>
-                    NOTE: Can not be changed due to active dockings on this company
+
+                {ship?.docking_count > 0 && (
+                  <Typography
+                    sx={{
+                      color: "#FF4D4F",
+                      fontSize: "12px",
+                      margin: "0px !important",
+                    }}
+                  >
+                    NOTE: Can not be changed due to active dockings on this
+                    company
                   </Typography>
                 )}
               </Stack>
@@ -156,7 +174,7 @@ const FormAddEditShip = ({ shipyard, clients, ship, closeModal }) => {
                   label="Ship Name"
                   id="name"
                   placeholder="Enter Ship Name"
-                  {...getFieldProps('name')}
+                  {...getFieldProps("name")}
                   error={Boolean(touched.name && errors.name)}
                   helperText={touched.name && errors.name}
                 />
@@ -166,28 +184,51 @@ const FormAddEditShip = ({ shipyard, clients, ship, closeModal }) => {
             {/* Ship Type */}
             <Grid item xs={12} sm={6}>
               <Stack spacing={1}>
-                <TextField label="Ship Type" id="type" placeholder="Enter Ship Type" {...getFieldProps('type')} />
+                <TextField
+                  label="Ship Type"
+                  id="type"
+                  placeholder="Enter Ship Type"
+                  {...getFieldProps("type")}
+                />
               </Stack>
             </Grid>
 
             {/* Length */}
             <Grid item xs={12} sm={6}>
               <Stack spacing={1}>
-                <TextField label="Length" id="length" placeholder="Enter Length" type="number" {...getFieldProps('length')} />
+                <TextField
+                  label="Length"
+                  id="length"
+                  placeholder="Enter Length"
+                  type="number"
+                  {...getFieldProps("length")}
+                />
               </Stack>
             </Grid>
 
             {/* Beam */}
             <Grid item xs={12} sm={6}>
               <Stack spacing={1}>
-                <TextField label="Beam" id="beam" placeholder="Enter Beam" type="number" {...getFieldProps('beam')} />
+                <TextField
+                  label="Beam"
+                  id="beam"
+                  placeholder="Enter Beam"
+                  type="number"
+                  {...getFieldProps("beam")}
+                />
               </Stack>
             </Grid>
 
             {/* Draft */}
             <Grid item xs={12} sm={6}>
               <Stack spacing={1}>
-                <TextField label="Draft" id="draft" placeholder="Enter Draft" type="number" {...getFieldProps('draft')} />
+                <TextField
+                  label="Draft"
+                  id="draft"
+                  placeholder="Enter Draft"
+                  type="number"
+                  {...getFieldProps("draft")}
+                />
               </Stack>
             </Grid>
 
@@ -199,7 +240,7 @@ const FormAddEditShip = ({ shipyard, clients, ship, closeModal }) => {
                   id="gross_tonnage"
                   placeholder="Enter Gross Tonnage"
                   type="number"
-                  {...getFieldProps('gross_tonnage')}
+                  {...getFieldProps("gross_tonnage")}
                 />
               </Stack>
             </Grid>
@@ -212,7 +253,7 @@ const FormAddEditShip = ({ shipyard, clients, ship, closeModal }) => {
                   id="net_tonnage"
                   placeholder="Enter Net Tonnage"
                   type="number"
-                  {...getFieldProps('net_tonnage')}
+                  {...getFieldProps("net_tonnage")}
                 />
               </Stack>
             </Grid>
@@ -225,7 +266,7 @@ const FormAddEditShip = ({ shipyard, clients, ship, closeModal }) => {
                   id="year_built"
                   placeholder="Enter Year Built"
                   type="number"
-                  {...getFieldProps('year_built')}
+                  {...getFieldProps("year_built")}
                 />
               </Stack>
             </Grid>
@@ -237,7 +278,7 @@ const FormAddEditShip = ({ shipyard, clients, ship, closeModal }) => {
                   label="Classification"
                   id="classification"
                   placeholder="Enter Classification"
-                  {...getFieldProps('classification')}
+                  {...getFieldProps("classification")}
                 />
               </Stack>
             </Grid>
@@ -245,7 +286,12 @@ const FormAddEditShip = ({ shipyard, clients, ship, closeModal }) => {
             {/* Flag */}
             <Grid item xs={12} sm={6}>
               <Stack spacing={1}>
-                <TextField label="Flag" id="flag" placeholder="Enter Flag" {...getFieldProps('flag')} />
+                <TextField
+                  label="Flag"
+                  id="flag"
+                  placeholder="Enter Flag"
+                  {...getFieldProps("flag")}
+                />
               </Stack>
             </Grid>
           </Grid>
@@ -256,7 +302,7 @@ const FormAddEditShip = ({ shipyard, clients, ship, closeModal }) => {
             Cancel
           </Button>
           <Button type="submit" variant="contained" disabled={isSubmitting}>
-            {ship ? 'Update' : 'Add'}
+            {ship ? "Update" : "Add"}
           </Button>
         </DialogActions>
       </Form>

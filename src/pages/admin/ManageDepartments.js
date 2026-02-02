@@ -1,7 +1,7 @@
-import { Fragment, useEffect, useMemo, useState } from 'react';
+import { Fragment, useEffect, useMemo, useState } from "react";
 
 // material-ui
-import { alpha, useTheme } from '@mui/material/styles';
+import { alpha, useTheme } from "@mui/material/styles";
 import {
   Box,
   Button,
@@ -20,8 +20,8 @@ import {
   TableRow,
   Tooltip,
   Typography,
-  useMediaQuery
-} from '@mui/material';
+  useMediaQuery,
+} from "@mui/material";
 
 // third-party
 import {
@@ -31,27 +31,31 @@ import {
   getPaginationRowModel,
   getFilteredRowModel,
   getExpandedRowModel,
-  useReactTable
-} from '@tanstack/react-table';
-import { rankItem } from '@tanstack/match-sorter-utils';
+  useReactTable,
+} from "@tanstack/react-table";
+import { rankItem } from "@tanstack/match-sorter-utils";
 
 // project-import
-import ScrollX from 'components/ScrollX';
-import MainCard from 'components/MainCard';
-import IconButton from 'components/@extended/IconButton';
+import ScrollX from "components/ScrollX";
+import MainCard from "components/MainCard";
+import IconButton from "components/@extended/IconButton";
 
-import { DebouncedInput, RowSelection, TablePagination } from 'components/third-party/react-table';
+import {
+  DebouncedInput,
+  RowSelection,
+  TablePagination,
+} from "components/third-party/react-table";
 
 // assets
-import { DeleteOutlined, EditOutlined, PlusOutlined } from '@ant-design/icons';
-import { useDispatch, useSelector } from 'react-redux';
-import { departmentColumns } from 'utils/constants';
-import useAuth from 'hooks/useAuth';
-import { deleteDepartment, getDepartments } from 'api/department';
-import DepartmentModal from 'components/department/DepartmentModal';
-import UserModal from 'components/users/UserModal';
-import AlertDeleteRecord from 'components/AlerDelete';
-import NoDataMessage from 'components/@extended/NoDataMessage';
+import { DeleteOutlined, EditOutlined, PlusOutlined } from "@ant-design/icons";
+import { useDispatch, useSelector } from "react-redux";
+import { departmentColumns } from "utils/constants";
+import useAuth from "hooks/useAuth";
+import { deleteDepartment, getDepartments } from "api/department";
+import DepartmentModal from "components/department/DepartmentModal";
+import UserModal from "components/users/UserModal";
+import AlertDeleteRecord from "components/AlerDelete";
+import NoDataMessage from "components/@extended/NoDataMessage";
 
 export const fuzzyFilter = (row, columnId, value, addMeta) => {
   const itemRank = rankItem(row.getValue(columnId), value);
@@ -71,7 +75,7 @@ function ReactTable({ data, columns, globalFilter, setGlobalFilter }) {
     columns,
     state: {
       rowSelection,
-      globalFilter
+      globalFilter,
     },
     enableRowSelection: true,
     onRowSelectionChange: setRowSelection,
@@ -83,7 +87,7 @@ function ReactTable({ data, columns, globalFilter, setGlobalFilter }) {
     getPaginationRowModel: getPaginationRowModel(),
     getExpandedRowModel: getExpandedRowModel(),
     globalFilterFn: fuzzyFilter,
-    debugTable: true
+    debugTable: true,
   });
 
   const backColor = alpha(theme.palette.primary.lighter, 0.1);
@@ -92,8 +96,8 @@ function ReactTable({ data, columns, globalFilter, setGlobalFilter }) {
     (columns) =>
       columns.accessorKey &&
       headers.push({
-        label: typeof columns.header === 'string' ? columns.header : '#'
-      })
+        label: typeof columns.header === "string" ? columns.header : "#",
+      }),
   );
 
   return (
@@ -107,10 +111,22 @@ function ReactTable({ data, columns, globalFilter, setGlobalFilter }) {
                 <TableRow key={headerGroup.id}>
                   {headerGroup.headers.map((header) => {
                     return (
-                      <TableCell key={header.id} {...header.column.columnDef.meta}>
+                      <TableCell
+                        key={header.id}
+                        {...header.column.columnDef.meta}
+                      >
                         {header.isPlaceholder ? null : (
-                          <Stack direction="row" spacing={1} alignItems="center">
-                            <Box>{flexRender(header.column.columnDef.header, header.getContext())}</Box>
+                          <Stack
+                            direction="row"
+                            spacing={1}
+                            alignItems="center"
+                          >
+                            <Box>
+                              {flexRender(
+                                header.column.columnDef.header,
+                                header.getContext(),
+                              )}
+                            </Box>
                           </Stack>
                         )}
                       </TableCell>
@@ -125,12 +141,20 @@ function ReactTable({ data, columns, globalFilter, setGlobalFilter }) {
                   <TableRow>
                     {row.getVisibleCells().map((cell) => (
                       <TableCell key={cell.id} {...cell.column.columnDef.meta}>
-                        {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                        {flexRender(
+                          cell.column.columnDef.cell,
+                          cell.getContext(),
+                        )}
                       </TableCell>
                     ))}
                   </TableRow>
                   {row.getIsExpanded() && (
-                    <TableRow sx={{ bgcolor: backColor, '&:hover': { bgcolor: `${backColor} !important` } }}>
+                    <TableRow
+                      sx={{
+                        bgcolor: backColor,
+                        "&:hover": { bgcolor: `${backColor} !important` },
+                      }}
+                    >
                       <TableCell colSpan={row.getVisibleCells().length}>
                         {/* <ExpandingUserDetail data={row.original} /> */}
                         <>Expanding Detail</>
@@ -150,7 +174,7 @@ function ReactTable({ data, columns, globalFilter, setGlobalFilter }) {
                 setPageSize: table.setPageSize,
                 setPageIndex: table.setPageIndex,
                 getState: table.getState,
-                getPageCount: table.getPageCount
+                getPageCount: table.getPageCount,
               }}
             />
           </Box>
@@ -162,7 +186,7 @@ function ReactTable({ data, columns, globalFilter, setGlobalFilter }) {
 
 const ManageDepartments = () => {
   const theme = useTheme();
-  const matchDownSM = useMediaQuery(theme.breakpoints.down('sm'));
+  const matchDownSM = useMediaQuery(theme.breakpoints.down("sm"));
 
   const dispatch = useDispatch();
   const { shipyard } = useSelector((state) => state.shipyard);
@@ -171,7 +195,7 @@ const ManageDepartments = () => {
   const [loading, setLoading] = useState(true);
 
   const [open, setOpen] = useState(false);
-  const [globalFilter, setGlobalFilter] = useState('');
+  const [globalFilter, setGlobalFilter] = useState("");
 
   const [addEditModal, setAddEditModal] = useState(false);
   const [selectedDepartment, setSelectedDepartment] = useState(null);
@@ -189,7 +213,7 @@ const ManageDepartments = () => {
         setDepartments(departments);
       })();
     } catch (error) {
-      console.error('Error occurred while getting departments', error);
+      console.error("Error occurred while getting departments", error);
     } finally {
       setLoading(false);
     }
@@ -199,7 +223,7 @@ const ManageDepartments = () => {
     () => [
       ...departmentColumns,
       {
-        header: 'Add Foreman',
+        header: "Add Foreman",
         cell: ({ row }) => {
           return row?.original?.foreman?.name ? (
             <></>
@@ -209,24 +233,32 @@ const ManageDepartments = () => {
               startIcon={<PlusOutlined />}
               onClick={(e) => {
                 e.stopPropagation();
-                setSelectedDepartment({ label: row.original.name, value: row.original.id });
+                setSelectedDepartment({
+                  label: row.original.name,
+                  value: row.original.id,
+                });
                 setUserModal(true);
               }}
             >
               Add
             </Button>
           );
-        }
+        },
       },
       {
-        header: 'Actions',
+        header: "Actions",
         meta: {
-          className: 'cell-center'
+          className: "cell-center",
         },
         disableSortBy: true,
         cell: ({ row }) => {
           return (
-            <Stack direction="row" alignItems="center" justifyContent="center" spacing={0}>
+            <Stack
+              direction="row"
+              alignItems="center"
+              justifyContent="center"
+              spacing={0}
+            >
               <Tooltip title="Edit">
                 <IconButton
                   color="primary"
@@ -253,10 +285,10 @@ const ManageDepartments = () => {
               </Tooltip>
             </Stack>
           );
-        }
-      }
+        },
+      },
     ],
-    [theme]
+    [theme],
   );
 
   const modalToggler = () => {
@@ -270,9 +302,9 @@ const ManageDepartments = () => {
         variant="h2"
         sx={{
           fontSize: {
-            xs: 'h5.fontSize',
-            md: 'h2.fontSize'
-          }
+            xs: "h5.fontSize",
+            md: "h2.fontSize",
+          },
         }}
       >
         Manage Departments
@@ -280,11 +312,22 @@ const ManageDepartments = () => {
       {_.isEmpty(shipyard) ? (
         <></>
       ) : (
-        <Grid container spacing={2} sx={{ marginTop: '16px', marginBottom: '8px' }}>
+        <Grid
+          container
+          spacing={2}
+          sx={{ marginTop: "16px", marginBottom: "8px" }}
+        >
           <Grid item xs={12} md={6} lg={2}>
             <FormControl>
-              <InputLabel id="demo-simple-select-helper-label">Shipyard</InputLabel>
-              <Select labelId="demo-simple-select-helper-label" id="demo-simple-select-helper" value={shipyard?.id} label="Shipyard">
+              <InputLabel id="demo-simple-select-helper-label">
+                Shipyard
+              </InputLabel>
+              <Select
+                labelId="demo-simple-select-helper-label"
+                id="demo-simple-select-helper"
+                value={shipyard?.id}
+                label="Shipyard"
+              >
                 <MenuItem value={shipyard?.id}>{shipyard?.name}</MenuItem>
               </Select>
             </FormControl>
@@ -293,21 +336,37 @@ const ManageDepartments = () => {
       )}
       <MainCard content={false}>
         <Stack
-          direction={{ xs: 'column', sm: 'row' }}
+          direction={{ xs: "column", sm: "row" }}
           spacing={2}
           alignItems="center"
           justifyContent="space-between"
-          sx={{ padding: 2, ...(matchDownSM && { '& .MuiOutlinedInput-root, & .MuiFormControl-root': { width: '100%' } }) }}
+          sx={{
+            padding: 2,
+            ...(matchDownSM && {
+              "& .MuiOutlinedInput-root, & .MuiFormControl-root": {
+                width: "100%",
+              },
+            }),
+          }}
         >
           <DebouncedInput
-            value={globalFilter ?? ''}
+            value={globalFilter ?? ""}
             onFilterChange={(value) => setGlobalFilter(String(value))}
             placeholder={`Search ${departments.length} records...`}
           />
 
-          <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} alignItems="center" sx={{ width: { xs: '100%', sm: 'auto' } }}>
+          <Stack
+            direction={{ xs: "column", sm: "row" }}
+            spacing={2}
+            alignItems="center"
+            sx={{ width: { xs: "100%", sm: "auto" } }}
+          >
             <Stack direction="row" spacing={2} alignItems="center">
-              <Button variant="contained" startIcon={<PlusOutlined />} onClick={modalToggler}>
+              <Button
+                variant="contained"
+                startIcon={<PlusOutlined />}
+                onClick={modalToggler}
+              >
                 Create Department
               </Button>
             </Stack>
@@ -322,7 +381,7 @@ const ManageDepartments = () => {
               data: departments,
               columns,
               globalFilter,
-              setGlobalFilter
+              setGlobalFilter,
             }}
           />
         )}
@@ -347,7 +406,11 @@ const ManageDepartments = () => {
                   return [department, ...preState];
                 });
               } else {
-                setDepartments((preState) => preState.map((dept) => (dept.id === department.id ? department : dept)));
+                setDepartments((preState) =>
+                  preState.map((dept) =>
+                    dept.id === department.id ? department : dept,
+                  ),
+                );
               }
             }}
           />
@@ -358,7 +421,7 @@ const ManageDepartments = () => {
             modalToggler={() => setUserModal(false)}
             shipyard={{ label: shipyard.name, value: shipyard.id }}
             department={selectedDepartment}
-            roleMap="ADMIN_FOREMAN"
+            roleCategory="foremen"
           />
         )}
       </MainCard>

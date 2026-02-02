@@ -235,7 +235,6 @@ const ManageClientUser = () => {
   const [userModal, setUserModal] = useState(false);
   const [selectedUser, setSelectedUser] = useState(null);
   const [deleteId, setDeleteId] = useState("");
-  const [activeBtn, setActiveBtn] = useState("");
   const [assignClientModal, setAssignClientModal] = useState(false);
   const [roleCategory] = useState(
     ["ADMIN", "CALCULATOR_ENGINEER"].includes(user.role) ? "clients" : "",
@@ -393,42 +392,6 @@ const ManageClientUser = () => {
               </Select>
             </FormControl>
           </Grid>
-          {user?.role === "ADMIN" && (
-            <Grid item xs={12} md={6}>
-              <Stack direction="row" gap={2}>
-                <Button
-                  variant={activeBtn === "client" ? "contained" : "outlined"}
-                  onClick={() => {
-                    if (activeBtn === "client") {
-                      setActiveBtn("");
-                      setGlobalFilter("");
-                      return;
-                    }
-                    setActiveBtn("client");
-                    setGlobalFilter("CLIENT");
-                  }}
-                >
-                  Clients
-                </Button>
-                <Button
-                  variant={
-                    activeBtn === "superintendent" ? "contained" : "outlined"
-                  }
-                  onClick={() => {
-                    if (activeBtn === "superintendent") {
-                      setActiveBtn("");
-                      setGlobalFilter("");
-                      return;
-                    }
-                    setActiveBtn("superintendent");
-                    setGlobalFilter("SUPERINTENDENT");
-                  }}
-                >
-                  Superintendents
-                </Button>
-              </Stack>
-            </Grid>
-          )}
         </Grid>
       )}
 

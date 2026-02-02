@@ -86,7 +86,7 @@ const FormAddEditDockingPlace = ({ dockingPlace, closeModal }) => {
               <Grid item xs={12}>
                 <Alert severity="info">
                   Docking Place ID: {dockingPlace.id} | Status:{" "}
-                  {dockingPlace.is_used ? "In Use" : "Available"}
+                  {dockingPlace.is_used}
                 </Alert>
               </Grid>
             )}

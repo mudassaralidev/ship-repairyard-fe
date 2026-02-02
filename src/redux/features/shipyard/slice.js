@@ -29,7 +29,6 @@ const shipyardSlice = createSlice({
     requestSuccess: (state, action) => {
       state.status = "succeeded";
       state.shipyards = action.payload.data || action.payload;
-      console.log("action.payload", action.payload);
       if (action.payload.pagination) {
         state.shipyardsPagination = action.payload.pagination;
       }
