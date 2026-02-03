@@ -272,11 +272,7 @@ const ManageClientUser = () => {
     }
   }, [user, roleCategory]);
 
-  useEffect(() => {
-    return () => {
-      dispatch(resetShipyardState());
-    };
-  }, [dispatch]);
+  useEffect((_) => (_) => dispatch(resetShipyardState()), [dispatch]);
 
   const columns = useMemo(
     () => [

@@ -17,7 +17,6 @@ import ManageDockings from "./ManageDockings";
 import DockingModal from "components/docking/DokcingModal";
 import useAuth from "hooks/useAuth";
 import dataApi from "utils/dataApi";
-import { fetchInventoriesApi } from "api/shipyard";
 import ManageRepairs from "./ManageRepairs";
 import RepairModal from "components/repair/RepairModal";
 import WorkOrderTable from "components/work-order/WorkOrderTable";
@@ -46,7 +45,6 @@ const ShipDetails = () => {
   const { shipyard } = useSelector((state) => state.shipyard);
   const [dockingModal, setDockingModal] = useState(false);
   const [departments, setDepartments] = useState([]);
-  const [inventories, setInventories] = useState([]);
   const [selectedDocking, setSelectedDocking] = useState(null);
   const [repairModal, setRepairModal] = useState(false);
   const [loading, setLoading] = useState([true]);
@@ -66,12 +64,10 @@ const ShipDetails = () => {
     dispatch(fetchShip(id));
     (async () => {
       try {
-        const [{ data: departsData }, inventories] = await Promise.all([
+        const [{ data: departsData }] = await Promise.all([
           dataApi.get("/v1/departments?include_foreman=true"),
-          fetchInventoriesApi(shipyard_id),
         ]);
         setDepartments(departsData.departments);
-        setInventories(inventories);
         setLoading(false);
       } catch (error) {
         toast.error(
@@ -208,7 +204,6 @@ const ShipDetails = () => {
                     <ManageRepairs
                       repairData={repair}
                       departsData={departments}
-                      inventoryData={inventories}
                       docking={docking}
                     />
                     {/* Work Order */}
@@ -262,7 +257,6 @@ const ShipDetails = () => {
                           hideSYName={true}
                           showTitle={false}
                           showCreateBtn={false}
-                          inventories={inventories}
                           repair={repair}
                         />
                         {/* </Box> */}

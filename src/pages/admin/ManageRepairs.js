@@ -1,7 +1,7 @@
-import { Fragment, useEffect, useMemo, useState } from 'react';
+import { Fragment, useEffect, useMemo, useState } from "react";
 
 // material-ui
-import { alpha, useTheme } from '@mui/material/styles';
+import { alpha, useTheme } from "@mui/material/styles";
 import {
   Autocomplete,
   Box,
@@ -23,8 +23,8 @@ import {
   TextField,
   Tooltip,
   Typography,
-  useMediaQuery
-} from '@mui/material';
+  useMediaQuery,
+} from "@mui/material";
 
 // third-party
 import {
@@ -34,50 +34,58 @@ import {
   getPaginationRowModel,
   getFilteredRowModel,
   getExpandedRowModel,
-  useReactTable
-} from '@tanstack/react-table';
-import { rankItem } from '@tanstack/match-sorter-utils';
+  useReactTable,
+} from "@tanstack/react-table";
+import { rankItem } from "@tanstack/match-sorter-utils";
 
 // project-import
-import ScrollX from 'components/ScrollX';
-import MainCard from 'components/MainCard';
-import IconButton from 'components/@extended/IconButton';
+import ScrollX from "components/ScrollX";
+import MainCard from "components/MainCard";
+import IconButton from "components/@extended/IconButton";
 
-import { DebouncedInput, RowSelection, TablePagination } from 'components/third-party/react-table';
+import {
+  DebouncedInput,
+  RowSelection,
+  TablePagination,
+} from "components/third-party/react-table";
 
 // assets
-import { DeleteOutlined, EditOutlined, EyeOutlined, PlusOutlined } from '@ant-design/icons';
-import { useDispatch, useSelector } from 'react-redux';
-import { repairColumns } from 'utils/constants';
-import _ from 'lodash';
-import useAuth from 'hooks/useAuth';
-import Loader from 'components/Loader';
-import { fetchRepairs } from '../../redux/features/repair/actions';
-import RepairModal from 'components/repair/RepairModal';
-import { getDockingNamesForRepair } from 'api/docking';
-import UpdateStatusModal from 'components/repair/UpdateStatusModal';
-import ExpandingRepairHistory from 'components/repair/RepairHistory';
-import WorkOrderModal from 'components/work-order/WorkOrderModal';
-import dataApi from 'utils/dataApi';
-import { toast } from 'react-toastify';
-import { fetchInventoriesApi } from 'api/shipyard';
-import NoDataMessage from 'components/@extended/NoDataMessage';
-import DropdownDependencyInfo from 'components/@extended/DropdownDependencyInfo';
+import {
+  DeleteOutlined,
+  EditOutlined,
+  EyeOutlined,
+  PlusOutlined,
+} from "@ant-design/icons";
+import { useDispatch, useSelector } from "react-redux";
+import { repairColumns } from "utils/constants";
+import _ from "lodash";
+import useAuth from "hooks/useAuth";
+import Loader from "components/Loader";
+import { fetchRepairs } from "../../redux/features/repair/actions";
+import RepairModal from "components/repair/RepairModal";
+import { getDockingNamesForRepair } from "api/docking";
+import UpdateStatusModal from "components/repair/UpdateStatusModal";
+import ExpandingRepairHistory from "components/repair/RepairHistory";
+import WorkOrderModal from "components/work-order/WorkOrderModal";
+import dataApi from "utils/dataApi";
+import { toast } from "react-toastify";
+import NoDataMessage from "components/@extended/NoDataMessage";
+import DropdownDependencyInfo from "components/@extended/DropdownDependencyInfo";
 
 const getStatusChipProps = (status) => {
-  const normalized = status?.toUpperCase?.() ?? '';
+  const normalized = status?.toUpperCase?.() ?? "";
 
   const statusMap = {
-    INITIATED: { color: 'secondary', label: 'INITIATED' },
-    APPROVED: { color: 'info', label: 'APPROVED' },
-    BLOCKED: { color: 'error', label: 'BLOCKED' },
-    COMPLETED: { color: 'success', label: 'COMPLETED' }
+    INITIATED: { color: "secondary", label: "INITIATED" },
+    APPROVED: { color: "info", label: "APPROVED" },
+    BLOCKED: { color: "error", label: "BLOCKED" },
+    COMPLETED: { color: "success", label: "COMPLETED" },
   };
 
   return {
-    ...(statusMap[normalized] || { color: 'default', label: normalized }),
-    size: 'medium',
-    variant: 'dark'
+    ...(statusMap[normalized] || { color: "default", label: normalized }),
+    size: "medium",
+    variant: "dark",
   };
 };
 
@@ -89,7 +97,13 @@ export const fuzzyFilter = (row, columnId, value, addMeta) => {
   return itemRank.passed;
 };
 
-function ReactTable({ data, columns, globalFilter, setGlobalFilter, showPagination }) {
+function ReactTable({
+  data,
+  columns,
+  globalFilter,
+  setGlobalFilter,
+  showPagination,
+}) {
   const theme = useTheme();
 
   const [rowSelection, setRowSelection] = useState({});
@@ -99,7 +113,7 @@ function ReactTable({ data, columns, globalFilter, setGlobalFilter, showPaginati
     columns,
     state: {
       rowSelection,
-      globalFilter
+      globalFilter,
     },
     enableRowSelection: true,
     onRowSelectionChange: setRowSelection,
@@ -110,7 +124,7 @@ function ReactTable({ data, columns, globalFilter, setGlobalFilter, showPaginati
     getCoreRowModel: getCoreRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
     getExpandedRowModel: getExpandedRowModel(),
-    globalFilterFn: fuzzyFilter
+    globalFilterFn: fuzzyFilter,
   });
 
   const backColor = alpha(theme.palette.primary.lighter, 0.1);
@@ -119,8 +133,8 @@ function ReactTable({ data, columns, globalFilter, setGlobalFilter, showPaginati
     (columns) =>
       columns.accessorKey &&
       headers.push({
-        label: typeof columns.header === 'string' ? columns.header : '#'
-      })
+        label: typeof columns.header === "string" ? columns.header : "#",
+      }),
   );
 
   return (
@@ -134,10 +148,22 @@ function ReactTable({ data, columns, globalFilter, setGlobalFilter, showPaginati
                 <TableRow key={headerGroup.id}>
                   {headerGroup.headers.map((header) => {
                     return (
-                      <TableCell key={header.id} {...header.column.columnDef.meta}>
+                      <TableCell
+                        key={header.id}
+                        {...header.column.columnDef.meta}
+                      >
                         {header.isPlaceholder ? null : (
-                          <Stack direction="row" spacing={1} alignItems="center">
-                            <Box>{flexRender(header.column.columnDef.header, header.getContext())}</Box>
+                          <Stack
+                            direction="row"
+                            spacing={1}
+                            alignItems="center"
+                          >
+                            <Box>
+                              {flexRender(
+                                header.column.columnDef.header,
+                                header.getContext(),
+                              )}
+                            </Box>
                           </Stack>
                         )}
                       </TableCell>
@@ -152,12 +178,20 @@ function ReactTable({ data, columns, globalFilter, setGlobalFilter, showPaginati
                   <TableRow>
                     {row.getVisibleCells().map((cell) => (
                       <TableCell key={cell.id} {...cell.column.columnDef.meta}>
-                        {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                        {flexRender(
+                          cell.column.columnDef.cell,
+                          cell.getContext(),
+                        )}
                       </TableCell>
                     ))}
                   </TableRow>
                   {row.getIsExpanded() && (
-                    <TableRow sx={{ bgcolor: backColor, '&:hover': { bgcolor: `${backColor} !important` } }}>
+                    <TableRow
+                      sx={{
+                        bgcolor: backColor,
+                        "&:hover": { bgcolor: `${backColor} !important` },
+                      }}
+                    >
                       <TableCell colSpan={row.getVisibleCells().length}>
                         {/* <ExpandingUserDetail data={row.original} /> */}
                         <ExpandingRepairHistory repairId={row.original.id} />
@@ -178,7 +212,7 @@ function ReactTable({ data, columns, globalFilter, setGlobalFilter, showPaginati
                   setPageSize: table.setPageSize,
                   setPageIndex: table.setPageIndex,
                   getState: table.getState,
-                  getPageCount: table.getPageCount
+                  getPageCount: table.getPageCount,
                 }}
               />
             </Box>
@@ -191,14 +225,16 @@ function ReactTable({ data, columns, globalFilter, setGlobalFilter, showPaginati
   );
 }
 
-const ManageRepairs = ({ repairData, departsData = [], inventoryData = [], docking }) => {
+const ManageRepairs = ({ repairData, departsData = [], docking }) => {
   const theme = useTheme();
-  const matchDownSM = useMediaQuery(theme.breakpoints.down('sm'));
+  const matchDownSM = useMediaQuery(theme.breakpoints.down("sm"));
   const { user } = useAuth();
 
   const dispatch = useDispatch();
   const { shipyard } = useSelector((state) => state.shipyard);
-  const { repairs: lists, status: fetchingRepairs } = useSelector((state) => state.repair);
+  const { repairs: lists, status: fetchingRepairs } = useSelector(
+    (state) => state.repair,
+  );
   const [selectedRepair, setSelectedRepair] = useState(null);
   const [repairModal, setRepairModal] = useState(false);
   const [dockingNames, setDockingNames] = useState([]);
@@ -206,10 +242,9 @@ const ManageRepairs = ({ repairData, departsData = [], inventoryData = [], docki
   const [updateStatusModal, setUpdateStatusModal] = useState(false);
   const [workOrderModal, setWOModal] = useState(false);
   const [departments, setDepartments] = useState(departsData);
-  const [inventories, setInventories] = useState(inventoryData);
 
   const [open, setOpen] = useState(false);
-  const [globalFilter, setGlobalFilter] = useState('');
+  const [globalFilter, setGlobalFilter] = useState("");
 
   const repairColsWithoutActions = repairColumns;
 
@@ -222,21 +257,25 @@ const ManageRepairs = ({ repairData, departsData = [], inventoryData = [], docki
   useEffect(() => {
     if (!user || repairData) return;
 
-    try {
-      (async () => {
-        const [data, { data: departsData }, inventories] = await Promise.all([
+    const fetchData = async () => {
+      try {
+        const [data, { data: departsData }] = await Promise.all([
           getDockingNamesForRepair(shipyard_id),
-          dataApi.get('/v1/departments?include_foreman=true'),
-          fetchInventoriesApi(shipyard_id)
+          dataApi.get("/v1/departments?include_foreman=true"),
         ]);
+
         setDockingNames(data);
         setDepartments(departsData.departments);
-        setInventories(inventories);
-      })();
-    } catch (error) {
-      console.error('Error occurred while getting repairs', error);
-      toast.error(error?.response?.data?.message || 'Some error occurred while getting data for repair');
-    }
+      } catch (error) {
+        console.error("Error occurred while getting repairs", error);
+        toast.error(
+          error?.response?.data?.message ||
+            "Some error occurred while getting data for repair",
+        );
+      }
+    };
+
+    fetchData();
   }, [user]);
 
   useEffect(() => {
@@ -245,8 +284,11 @@ const ManageRepairs = ({ repairData, departsData = [], inventoryData = [], docki
     try {
       dispatch(fetchRepairs(selectedDocking.id));
     } catch (error) {
-      console.error('Error occurred while getting repairs', error);
-      toast.error(error?.response?.data?.message || 'Some error occurred while getting data for repair');
+      console.error("Error occurred while getting repairs", error);
+      toast.error(
+        error?.response?.data?.message ||
+          "Some error occurred while getting data for repair",
+      );
     }
   }, [selectedDocking]);
 
@@ -254,22 +296,28 @@ const ManageRepairs = ({ repairData, departsData = [], inventoryData = [], docki
     () => [
       ...repairColsWithoutActions,
       {
-        header: 'Order Type',
-        id: 'order_type',
+        header: "Order Type",
+        id: "order_type",
         cell: ({ row }) => {
-          const { requires_work_order, requires_subcontractor, status } = row.original;
-          if (requires_work_order && status === 'APPROVED')
+          const { requires_work_order, requires_subcontractor, status } =
+            row.original;
+          if (requires_work_order && status === "APPROVED")
             return (
-              <Stack direction="row" gap={1} justifyContent="center" alignItems="center">
+              <Stack
+                direction="row"
+                gap={1}
+                justifyContent="center"
+                alignItems="center"
+              >
                 <Typography>Work Order</Typography>
                 <Button
                   sx={{
-                    padding: '0px',
-                    minWidth: '24px',
-                    maxHeight: '24px',
-                    '& .MuiButton-startIcon': {
-                      marginRight: '0px' // Remove the default margin
-                    }
+                    padding: "0px",
+                    minWidth: "24px",
+                    maxHeight: "24px",
+                    "& .MuiButton-startIcon": {
+                      marginRight: "0px", // Remove the default margin
+                    },
                   }}
                   variant="outlined"
                   startIcon={<PlusOutlined />}
@@ -280,23 +328,23 @@ const ManageRepairs = ({ repairData, departsData = [], inventoryData = [], docki
                 />
               </Stack>
             );
-          if (requires_work_order) return 'Work Order';
-          if (requires_subcontractor) return 'Subcontractor Order';
-          return '-';
-        }
+          if (requires_work_order) return "Work Order";
+          if (requires_subcontractor) return "Subcontractor Order";
+          return "-";
+        },
       },
 
       {
-        header: 'Status',
+        header: "Status",
         cell: ({ row }) => (
           <Tooltip title="Update Status" arrow>
             <Button
               variant="text"
               size="small"
               sx={{
-                textTransform: 'capitalize', // Makes ENUM values like "APPROVED" more readable
-                cursor: 'pointer',
-                minWidth: '100px'
+                textTransform: "capitalize", // Makes ENUM values like "APPROVED" more readable
+                cursor: "pointer",
+                minWidth: "100px",
               }}
               onClick={() => {
                 setSelectedRepair(row.original);
@@ -306,26 +354,39 @@ const ManageRepairs = ({ repairData, departsData = [], inventoryData = [], docki
               <Chip {...getStatusChipProps(row.original.status)} />
             </Button>
           </Tooltip>
-        )
+        ),
       },
 
       {
-        header: 'Actions',
+        header: "Actions",
         meta: {
-          className: 'cell-center'
+          className: "cell-center",
         },
         disableSortBy: true,
         cell: ({ row }) => {
           const collapseIcon =
             row.getCanExpand() && row.getIsExpanded() ? (
-              <PlusOutlined style={{ color: 'rgb(255, 77, 79)', transform: 'rotate(45deg)' }} />
+              <PlusOutlined
+                style={{
+                  color: "rgb(255, 77, 79)",
+                  transform: "rotate(45deg)",
+                }}
+              />
             ) : (
               <EyeOutlined />
             );
           return (
-            <Stack direction="row" alignItems="center" justifyContent="center" spacing={0}>
+            <Stack
+              direction="row"
+              alignItems="center"
+              justifyContent="center"
+              spacing={0}
+            >
               <Tooltip title="Repair History">
-                <IconButton color="secondary" onClick={row.getToggleExpandedHandler()}>
+                <IconButton
+                  color="secondary"
+                  onClick={row.getToggleExpandedHandler()}
+                >
                   {collapseIcon}
                 </IconButton>
               </Tooltip>
@@ -355,10 +416,10 @@ const ManageRepairs = ({ repairData, departsData = [], inventoryData = [], docki
               </Tooltip>
             </Stack>
           );
-        }
-      }
+        },
+      },
     ],
-    [theme]
+    [theme],
   );
 
   const modalToggler = () => {
@@ -366,12 +427,20 @@ const ManageRepairs = ({ repairData, departsData = [], inventoryData = [], docki
     setSelectedRepair(null);
   };
 
-  if ([fetchingRepairs].includes('loading')) return <Loader />;
+  if ([fetchingRepairs].includes("loading")) return <Loader />;
 
   const renderInfoMessage = () => {
-    if (!selectedDocking) return <DropdownDependencyInfo visible={!selectedDocking} requiredField="DOCKING" />;
+    if (!selectedDocking)
+      return (
+        <DropdownDependencyInfo
+          visible={!selectedDocking}
+          requiredField="DOCKING"
+        />
+      );
 
-    return <NoDataMessage message="Selected docking has no any active REPAIRS. You can create new one from above button" />;
+    return (
+      <NoDataMessage message="Selected docking has no any active REPAIRS. You can create new one from above button" />
+    );
   };
 
   return (
@@ -381,9 +450,9 @@ const ManageRepairs = ({ repairData, departsData = [], inventoryData = [], docki
           variant="h2"
           sx={{
             fontSize: {
-              xs: 'h5.fontSize',
-              md: 'h2.fontSize'
-            }
+              xs: "h5.fontSize",
+              md: "h2.fontSize",
+            },
           }}
         >
           Manage Repairs
@@ -393,13 +462,22 @@ const ManageRepairs = ({ repairData, departsData = [], inventoryData = [], docki
       {_.isEmpty(shipyard) || repairData ? (
         <></>
       ) : (
-        <Grid container spacing={2} sx={{ marginTop: '16px', marginBottom: '8px' }}>
+        <Grid
+          container
+          spacing={2}
+          sx={{ marginTop: "16px", marginBottom: "8px" }}
+        >
           <Grid item xs={12}>
             <Stack direction="row" spacing={2} alignItems="center">
               {/* Shipyard Select */}
               <FormControl sx={{ minWidth: 200 }}>
                 <InputLabel id="shipyard-select-label">Shipyard</InputLabel>
-                <Select labelId="shipyard-select-label" id="shipyard-select" value={shipyard?.id || ''} label="Shipyard">
+                <Select
+                  labelId="shipyard-select-label"
+                  id="shipyard-select"
+                  value={shipyard?.id || ""}
+                  label="Shipyard"
+                >
                   <MenuItem value={shipyard?.id}>{shipyard?.name}</MenuItem>
                 </Select>
               </FormControl>
@@ -412,13 +490,17 @@ const ManageRepairs = ({ repairData, departsData = [], inventoryData = [], docki
                   onChange={(e, value) => {
                     setSelectedDocking(value);
                   }}
-                  isOptionEqualToValue={(option, value) => option.id === value?.id}
+                  isOptionEqualToValue={(option, value) =>
+                    option.id === value?.id
+                  }
                   renderOption={(props, option) => (
                     <li {...props} key={option.id}>
                       {option.name}
                     </li>
                   )}
-                  renderInput={(params) => <TextField {...params} label="Docking" />}
+                  renderInput={(params) => (
+                    <TextField {...params} label="Docking" />
+                  )}
                 />
               </FormControl>
             </Stack>
@@ -429,21 +511,37 @@ const ManageRepairs = ({ repairData, departsData = [], inventoryData = [], docki
       <MainCard content={false}>
         {!repairData && selectedDocking && (
           <Stack
-            direction={{ xs: 'column', sm: 'row' }}
+            direction={{ xs: "column", sm: "row" }}
             spacing={2}
             alignItems="center"
             justifyContent="space-between"
-            sx={{ padding: 2, ...(matchDownSM && { '& .MuiOutlinedInput-root, & .MuiFormControl-root': { width: '100%' } }) }}
+            sx={{
+              padding: 2,
+              ...(matchDownSM && {
+                "& .MuiOutlinedInput-root, & .MuiFormControl-root": {
+                  width: "100%",
+                },
+              }),
+            }}
           >
             <DebouncedInput
-              value={globalFilter ?? ''}
+              value={globalFilter ?? ""}
               onFilterChange={(value) => setGlobalFilter(String(value))}
               placeholder={`Search ${lists.length} records...`}
             />
 
-            <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} alignItems="center" sx={{ width: { xs: '100%', sm: 'auto' } }}>
+            <Stack
+              direction={{ xs: "column", sm: "row" }}
+              spacing={2}
+              alignItems="center"
+              sx={{ width: { xs: "100%", sm: "auto" } }}
+            >
               <Stack direction="row" spacing={2} alignItems="center">
-                <Button variant="contained" startIcon={<PlusOutlined />} onClick={modalToggler}>
+                <Button
+                  variant="contained"
+                  startIcon={<PlusOutlined />}
+                  onClick={modalToggler}
+                >
                   Create Repair
                 </Button>
               </Stack>
@@ -459,7 +557,7 @@ const ManageRepairs = ({ repairData, departsData = [], inventoryData = [], docki
               globalFilter,
               setGlobalFilter,
               repairId: selectedRepair?.id,
-              showPagination: !repairData
+              showPagination: !repairData,
             }}
           />
         ) : (
@@ -495,7 +593,6 @@ const ManageRepairs = ({ repairData, departsData = [], inventoryData = [], docki
             }}
             repair={selectedRepair}
             departments={departments}
-            inventories={inventories}
           />
         )}
       </MainCard>

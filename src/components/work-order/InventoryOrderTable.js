@@ -1,7 +1,7 @@
-import { Fragment, useMemo, useState } from 'react';
+import { Fragment, useMemo, useState } from "react";
 
 // material-ui
-import { alpha, useTheme } from '@mui/material/styles';
+import { alpha, useTheme } from "@mui/material/styles";
 import {
   Box,
   Button,
@@ -20,8 +20,8 @@ import {
   TableRow,
   Tooltip,
   Typography,
-  useMediaQuery
-} from '@mui/material';
+  useMediaQuery,
+} from "@mui/material";
 
 // third-party
 import {
@@ -31,25 +31,29 @@ import {
   getPaginationRowModel,
   getFilteredRowModel,
   getExpandedRowModel,
-  useReactTable
-} from '@tanstack/react-table';
-import { rankItem } from '@tanstack/match-sorter-utils';
+  useReactTable,
+} from "@tanstack/react-table";
+import { rankItem } from "@tanstack/match-sorter-utils";
 
 // project-import
-import ScrollX from 'components/ScrollX';
-import MainCard from 'components/MainCard';
-import IconButton from 'components/@extended/IconButton';
+import ScrollX from "components/ScrollX";
+import MainCard from "components/MainCard";
+import IconButton from "components/@extended/IconButton";
 
-import { DebouncedInput, RowSelection, TablePagination } from 'components/third-party/react-table';
+import {
+  DebouncedInput,
+  RowSelection,
+  TablePagination,
+} from "components/third-party/react-table";
 
 // assets
-import { DeleteOutlined, EditOutlined, PlusOutlined } from '@ant-design/icons';
-import { useDispatch, useSelector } from 'react-redux';
-import { inventoryOrderColumns } from 'utils/constants';
-import _ from 'lodash';
-import Loader from 'components/Loader';
-import NoDataMessage from 'components/@extended/NoDataMessage';
-import WorkOrderModal from './WorkOrderModal';
+import { DeleteOutlined, EditOutlined, PlusOutlined } from "@ant-design/icons";
+import { useDispatch, useSelector } from "react-redux";
+import { inventoryOrderColumns } from "utils/constants";
+import _ from "lodash";
+import Loader from "components/Loader";
+import NoDataMessage from "components/@extended/NoDataMessage";
+import WorkOrderModal from "./WorkOrderModal";
 
 export const fuzzyFilter = (row, columnId, value, addMeta) => {
   const itemRank = rankItem(row.getValue(columnId), value);
@@ -59,7 +63,13 @@ export const fuzzyFilter = (row, columnId, value, addMeta) => {
   return itemRank.passed;
 };
 
-function ReactTable({ data, columns, globalFilter, setGlobalFilter, showPagination }) {
+function ReactTable({
+  data,
+  columns,
+  globalFilter,
+  setGlobalFilter,
+  showPagination,
+}) {
   const theme = useTheme();
 
   const [rowSelection, setRowSelection] = useState({});
@@ -69,7 +79,7 @@ function ReactTable({ data, columns, globalFilter, setGlobalFilter, showPaginati
     columns,
     state: {
       rowSelection,
-      globalFilter
+      globalFilter,
     },
     enableRowSelection: true,
     onRowSelectionChange: setRowSelection,
@@ -80,7 +90,7 @@ function ReactTable({ data, columns, globalFilter, setGlobalFilter, showPaginati
     getCoreRowModel: getCoreRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
     getExpandedRowModel: getExpandedRowModel(),
-    globalFilterFn: fuzzyFilter
+    globalFilterFn: fuzzyFilter,
   });
 
   const backColor = alpha(theme.palette.primary.lighter, 0.1);
@@ -89,8 +99,8 @@ function ReactTable({ data, columns, globalFilter, setGlobalFilter, showPaginati
     (columns) =>
       columns.accessorKey &&
       headers.push({
-        label: typeof columns.header === 'string' ? columns.header : '#'
-      })
+        label: typeof columns.header === "string" ? columns.header : "#",
+      }),
   );
 
   return (
@@ -104,10 +114,22 @@ function ReactTable({ data, columns, globalFilter, setGlobalFilter, showPaginati
                 <TableRow key={headerGroup.id}>
                   {headerGroup.headers.map((header) => {
                     return (
-                      <TableCell key={header.id} {...header.column.columnDef.meta}>
+                      <TableCell
+                        key={header.id}
+                        {...header.column.columnDef.meta}
+                      >
                         {header.isPlaceholder ? null : (
-                          <Stack direction="row" spacing={1} alignItems="center">
-                            <Box>{flexRender(header.column.columnDef.header, header.getContext())}</Box>
+                          <Stack
+                            direction="row"
+                            spacing={1}
+                            alignItems="center"
+                          >
+                            <Box>
+                              {flexRender(
+                                header.column.columnDef.header,
+                                header.getContext(),
+                              )}
+                            </Box>
                           </Stack>
                         )}
                       </TableCell>
@@ -122,13 +144,23 @@ function ReactTable({ data, columns, globalFilter, setGlobalFilter, showPaginati
                   <TableRow>
                     {row.getVisibleCells().map((cell) => (
                       <TableCell key={cell.id} {...cell.column.columnDef.meta}>
-                        {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                        {flexRender(
+                          cell.column.columnDef.cell,
+                          cell.getContext(),
+                        )}
                       </TableCell>
                     ))}
                   </TableRow>
                   {row.getIsExpanded() && (
-                    <TableRow sx={{ bgcolor: backColor, '&:hover': { bgcolor: `${backColor} !important` } }}>
-                      <TableCell colSpan={row.getVisibleCells().length}></TableCell>
+                    <TableRow
+                      sx={{
+                        bgcolor: backColor,
+                        "&:hover": { bgcolor: `${backColor} !important` },
+                      }}
+                    >
+                      <TableCell
+                        colSpan={row.getVisibleCells().length}
+                      ></TableCell>
                     </TableRow>
                   )}
                 </Fragment>
@@ -145,7 +177,7 @@ function ReactTable({ data, columns, globalFilter, setGlobalFilter, showPaginati
                   setPageSize: table.setPageSize,
                   setPageIndex: table.setPageIndex,
                   getState: table.getState,
-                  getPageCount: table.getPageCount
+                  getPageCount: table.getPageCount,
                 }}
               />
             </Box>
@@ -163,10 +195,9 @@ const InventoryOrderTable = ({
   showPagination = true,
   showCreateBtn = true,
   repair,
-  inventories = []
 }) => {
   const theme = useTheme();
-  const matchDownSM = useMediaQuery(theme.breakpoints.down('sm'));
+  const matchDownSM = useMediaQuery(theme.breakpoints.down("sm"));
 
   const dispatch = useDispatch();
   const { shipyard } = useSelector((state) => state.shipyard);
@@ -174,7 +205,7 @@ const InventoryOrderTable = ({
   const [inventoryOrderModal, setInventoryOrderModal] = useState(false);
 
   const [open, setOpen] = useState(false);
-  const [globalFilter, setGlobalFilter] = useState('');
+  const [globalFilter, setGlobalFilter] = useState("");
 
   const colsWithoutActions = inventoryOrderColumns; // import this from your constants
 
@@ -186,14 +217,19 @@ const InventoryOrderTable = ({
     () => [
       ...colsWithoutActions,
       {
-        header: 'Actions',
+        header: "Actions",
         meta: {
-          className: 'cell-center'
+          className: "cell-center",
         },
         disableSortBy: true,
         cell: ({ row }) => {
           return (
-            <Stack direction="row" alignItems="center" justifyContent="center" spacing={0}>
+            <Stack
+              direction="row"
+              alignItems="center"
+              justifyContent="center"
+              spacing={0}
+            >
               <Tooltip title="Edit">
                 <IconButton
                   color="primary"
@@ -220,10 +256,10 @@ const InventoryOrderTable = ({
               </Tooltip>
             </Stack>
           );
-        }
-      }
+        },
+      },
     ],
-    [theme]
+    [theme],
   );
 
   const modalToggler = () => {
@@ -240,9 +276,9 @@ const InventoryOrderTable = ({
           variant="h2"
           sx={{
             fontSize: {
-              xs: 'h5.fontSize',
-              md: 'h2.fontSize'
-            }
+              xs: "h5.fontSize",
+              md: "h2.fontSize",
+            },
           }}
         >
           Manage Inventory Orders
@@ -250,12 +286,21 @@ const InventoryOrderTable = ({
       )}
 
       {_.isEmpty(shipyard) || hideSYName ? null : (
-        <Grid container spacing={2} sx={{ marginTop: '16px', marginBottom: '8px' }}>
+        <Grid
+          container
+          spacing={2}
+          sx={{ marginTop: "16px", marginBottom: "8px" }}
+        >
           <Grid item xs={12}>
             <Stack direction="row" spacing={2} alignItems="center">
               <FormControl sx={{ minWidth: 200 }}>
                 <InputLabel id="shipyard-select-label">Shipyard</InputLabel>
-                <Select labelId="shipyard-select-label" id="shipyard-select" value={shipyard?.id || ''} label="Shipyard">
+                <Select
+                  labelId="shipyard-select-label"
+                  id="shipyard-select"
+                  value={shipyard?.id || ""}
+                  label="Shipyard"
+                >
                   <MenuItem value={shipyard?.id}>{shipyard?.name}</MenuItem>
                 </Select>
               </FormControl>
@@ -267,21 +312,37 @@ const InventoryOrderTable = ({
       <MainCard content={false}>
         {showCreateBtn && (
           <Stack
-            direction={{ xs: 'column', sm: 'row' }}
+            direction={{ xs: "column", sm: "row" }}
             spacing={2}
             alignItems="center"
             justifyContent="space-between"
-            sx={{ padding: 2, ...(matchDownSM && { '& .MuiOutlinedInput-root, & .MuiFormControl-root': { width: '100%' } }) }}
+            sx={{
+              padding: 2,
+              ...(matchDownSM && {
+                "& .MuiOutlinedInput-root, & .MuiFormControl-root": {
+                  width: "100%",
+                },
+              }),
+            }}
           >
             <DebouncedInput
-              value={globalFilter ?? ''}
+              value={globalFilter ?? ""}
               onFilterChange={(value) => setGlobalFilter(String(value))}
               placeholder={`Search ${lists?.length} records...`}
             />
 
-            <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} alignItems="center" sx={{ width: { xs: '100%', sm: 'auto' } }}>
+            <Stack
+              direction={{ xs: "column", sm: "row" }}
+              spacing={2}
+              alignItems="center"
+              sx={{ width: { xs: "100%", sm: "auto" } }}
+            >
               <Stack direction="row" spacing={2} alignItems="center">
-                <Button variant="contained" startIcon={<PlusOutlined />} onClick={modalToggler}>
+                <Button
+                  variant="contained"
+                  startIcon={<PlusOutlined />}
+                  onClick={modalToggler}
+                >
                   Create Inventory Order
                 </Button>
               </Stack>
@@ -296,7 +357,7 @@ const InventoryOrderTable = ({
               columns,
               globalFilter,
               setGlobalFilter,
-              showPagination
+              showPagination,
             }}
           />
         ) : (
@@ -310,8 +371,7 @@ const InventoryOrderTable = ({
             repair={repair}
             shipyard={shipyard}
             inventoryOrder={selectedInventoryOrder}
-            inventories={inventories}
-            type={'Inventory Order'}
+            type={"Inventory Order"}
           />
         )}
       </MainCard>

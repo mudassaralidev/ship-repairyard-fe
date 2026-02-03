@@ -53,6 +53,22 @@ export const fetchClientsOptionsApi = async (cancelToken, params) => {
   };
 };
 
+export const fetchInventoryOptionsApi = async (cancelToken, params) => {
+  const { shipyardId, ...rest } = params;
+  const { data } = await axios.get(
+    `v1/shipyards/${shipyardId}/inventories/options`,
+    {
+      params: rest,
+      cancelToken,
+    },
+  );
+
+  return {
+    options: data?.data || [],
+    pagination: data?.pagination || {},
+  };
+};
+
 export const fetchShipyardApi = async (id) => {
   const { data } = await axios.get(`v1/shipyards/${id}`);
   return data.data;
@@ -100,10 +116,12 @@ export const createSYUserApi = async ({ shipyard_id, data }) => {
   }
 };
 
-export const fetchInventoriesApi = async (id) => {
+export const fetchInventoriesApi = async ({ shipyardId, queryParams }) => {
   try {
-    const { data } = await axios.get(`v1/shipyards/${id}/inventories`);
-    return data.inventories;
+    const { data } = await axios.get(`v1/shipyards/${shipyardId}/inventories`, {
+      params: queryParams,
+    });
+    return data;
   } catch (error) {
     console.log("Error while fetching inventories on shipyard", error.message);
     throw error;
@@ -116,7 +134,7 @@ export const createInventoryApi = async (id, data) => {
       `v1/shipyards/${id}/inventory`,
       data,
     );
-    return responseData.inventory;
+    return responseData.data;
   } catch (error) {
     console.log("Error while creating inventory on shipyard", error.message);
     throw error;
@@ -129,7 +147,7 @@ export const updateInventoryApi = async (id, inventoryID, data) => {
       `v1/shipyards/${id}/inventory/${inventoryID}`,
       data,
     );
-    return responseData.inventory;
+    return responseData.data;
   } catch (error) {
     console.log("Error while updating inventory on shipyard", error.message);
     throw error;

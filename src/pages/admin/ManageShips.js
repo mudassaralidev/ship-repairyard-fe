@@ -358,11 +358,7 @@ const ManageShips = ({
     }
   }, [user, shipData?.id]);
 
-  useEffect(() => {
-    return () => {
-      dispatch(resetPagination());
-    };
-  }, [dispatch]);
+  useEffect((_) => (_) => dispatch(resetPagination()), [dispatch]);
 
   return (
     <>

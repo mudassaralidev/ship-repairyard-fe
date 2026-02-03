@@ -1,4 +1,4 @@
-import axios from 'utils/dataApi';
+import axios from "utils/dataApi";
 
 export const fetchRepairsApi = async (dockingID) => {
   try {
@@ -47,8 +47,11 @@ export const getRepairHistory = async (id) => {
 
 export const createInventoryOrder = async (repairID, data) => {
   try {
-    const { data: res } = await axios.post(`v1/repairs/${repairID}/inventory-order`, data);
-    return res;
+    const { data: res } = await axios.post(
+      `v1/repairs/${repairID}/inventory-order`,
+      data,
+    );
+    return res.data;
   } catch (error) {
     throw error;
   }
@@ -56,8 +59,11 @@ export const createInventoryOrder = async (repairID, data) => {
 
 export const updateInventoryOrderApi = async (repairID, orderID, data) => {
   try {
-    const { data: res } = await axios.put(`v1/repairs/${repairID}/inventory-order/${orderID}`, data);
-    return res;
+    const { data: res } = await axios.put(
+      `v1/repairs/${repairID}/inventory-order/${orderID}`,
+      data,
+    );
+    return res.data;
   } catch (error) {
     throw error;
   }

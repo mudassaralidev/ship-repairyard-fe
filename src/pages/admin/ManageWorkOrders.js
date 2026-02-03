@@ -17,7 +17,6 @@ import InfoMessage from "components/work-order/InfoMessage";
 import WorkOrderTable from "components/work-order/WorkOrderTable";
 import { repairOrders } from "../../redux/features/repair/actions";
 import InventoryOrderTable from "components/work-order/InventoryOrderTable";
-import { fetchInventories } from "../../redux/features/inventory/actions";
 import DropdownDependencyInfo from "components/@extended/DropdownDependencyInfo";
 
 const ManageWorkOrders = () => {
@@ -36,7 +35,6 @@ const ManageWorkOrders = () => {
   const { workOrders, inventoryOrders } = useSelector(
     (state) => state.workOrder,
   );
-  const { inventories } = useSelector((state) => state.inventory);
   const isAdminOrPM = ["ADMIN", "PROJECT_MANAGER"].includes(user?.role);
   const isForeman = user?.role === "FOREMAN";
 
@@ -55,7 +53,6 @@ const ManageWorkOrders = () => {
           const [{ data }] = await Promise.all([
             dataApi.get("/v1/departments?include_foreman=true"),
           ]);
-          dispatch(fetchInventories(user?.shipyard_id));
           setDepartments(data.departments);
         })();
       } else if (isForeman) {
@@ -254,7 +251,6 @@ const ManageWorkOrders = () => {
                     hideSYName={true}
                     repair={selectedRepair}
                     departments={departments}
-                    inventories={inventories}
                   />
                 </Grid>
               )}

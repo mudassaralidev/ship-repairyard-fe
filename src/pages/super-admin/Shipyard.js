@@ -319,11 +319,7 @@ const ShipyardListPage = () => {
     dispatch(fetchShipyards(currentPage, pageSize));
   }, [dispatch, currentPage, pageSize]);
 
-  useEffect(() => {
-    return () => {
-      dispatch(resetShipyardState());
-    };
-  }, [dispatch]);
+  useEffect((_) => (_) => dispatch(resetShipyardState()), [dispatch]);
 
   return (
     <MainCard content={false}>

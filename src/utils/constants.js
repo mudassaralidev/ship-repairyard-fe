@@ -2,6 +2,7 @@ import { useMemo } from "react";
 import dayjs from "dayjs";
 import { Tooltip, Typography } from "@mui/material";
 import { Link } from "react-router-dom";
+import { DollarOutlined } from "@ant-design/icons";
 
 export const shipyardColumnsWithoutActions = [
   {
@@ -341,6 +342,20 @@ export const inventoryColumns = [
     accessorKey: "remaining_quantity",
   },
   {
+    header: "Unit Price",
+    accessorKey: "unit_price",
+    cell: ({ row }) => {
+      const price = parseFloat(row.original.unit_price);
+
+      return (
+        <span style={{ display: "flex", alignItems: "center", gap: 6 }}>
+          <DollarOutlined />
+          {price.toFixed(2)}
+        </span>
+      );
+    },
+  },
+  {
     header: "Creator",
     accessorKey: "creator",
   },
@@ -445,14 +460,9 @@ export const inventoryOrderColumns = [
     accessorKey: "quantity",
   },
   {
-    header: "Cost Per Qty",
+    header: "Total Cost",
     accessorKey: "cost",
     cell: ({ row }) => `$${parseFloat(row.original.cost).toFixed(2)}`,
-  },
-  {
-    header: "Total Cost",
-    cell: ({ row }) =>
-      `$${parseFloat(row.original.cost * row.original.quantity).toFixed(2)}`,
   },
 ];
 

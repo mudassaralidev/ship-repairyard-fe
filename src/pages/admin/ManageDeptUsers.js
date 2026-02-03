@@ -345,11 +345,7 @@ const ManageDeptUsers = () => {
     );
   }, [selectedDepartment]);
 
-  useEffect(() => {
-    return () => {
-      dispatch(resetShipyardState());
-    };
-  }, [dispatch]);
+  useEffect((_) => (_) => dispatch(resetShipyardState()), [dispatch]);
 
   if (loading) return <></>;
 

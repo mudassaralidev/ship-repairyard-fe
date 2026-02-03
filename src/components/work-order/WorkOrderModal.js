@@ -1,16 +1,24 @@
 // material-ui
-import { Grid, Modal, Stack } from '@mui/material';
+import { Grid, Modal, Stack } from "@mui/material";
 
 // project-imports
-import MainCard from 'components/MainCard';
-import SimpleBar from 'components/third-party/SimpleBar';
-import FormAddEditWorkOrder from './FormAddEditWorkOrder';
-import { useState } from 'react';
-import FormAddEditInventoryOrder from './FormAddEditInventoryOrder';
-import Dropdown from './Dropdown';
+import MainCard from "components/MainCard";
+import SimpleBar from "components/third-party/SimpleBar";
+import FormAddEditWorkOrder from "./FormAddEditWorkOrder";
+import { useState } from "react";
+import FormAddEditInventoryOrder from "./FormAddEditInventoryOrder";
+import Dropdown from "./Dropdown";
 
-const WorkOrderModal = ({ open, modalToggler, repair, workOrder, departments, inventories, type, inventoryOrder }) => {
-  const [selectedOrder, setSelectedOrder] = useState(type || 'Work Order');
+const WorkOrderModal = ({
+  open,
+  modalToggler,
+  repair,
+  workOrder,
+  departments,
+  type,
+  inventoryOrder,
+}) => {
+  const [selectedOrder, setSelectedOrder] = useState(type || "Work Order");
   return (
     <>
       {open && (
@@ -20,24 +28,30 @@ const WorkOrderModal = ({ open, modalToggler, repair, workOrder, departments, in
           aria-labelledby="modal-user-add-label"
           aria-describedby="modal-user-add-description"
           sx={{
-            '& .MuiPaper-root:focus': {
-              outline: 'none'
-            }
+            "& .MuiPaper-root:focus": {
+              outline: "none",
+            },
           }}
         >
           <MainCard
-            sx={{ width: `calc(100% - 48px)`, minWidth: 340, maxWidth: 880, height: 'auto', maxHeight: 'calc(100vh - 48px)' }}
+            sx={{
+              width: `calc(100% - 48px)`,
+              minWidth: 340,
+              maxWidth: 880,
+              height: "auto",
+              maxHeight: "calc(100vh - 48px)",
+            }}
             modal
             content={false}
           >
             <SimpleBar
               sx={{
                 maxHeight: `calc(100vh - 48px)`,
-                '& .simplebar-content': {
-                  display: 'flex',
-                  flexDirection: 'column',
-                  paddingTop: selectedOrder ? '16px !important' : '0px'
-                }
+                "& .simplebar-content": {
+                  display: "flex",
+                  flexDirection: "column",
+                  paddingTop: selectedOrder ? "16px !important" : "0px",
+                },
               }}
             >
               {!type && (
@@ -48,7 +62,11 @@ const WorkOrderModal = ({ open, modalToggler, repair, workOrder, departments, in
                       <Dropdown
                         label="Order Type"
                         value={selectedOrder}
-                        options={[...(type ? [type] : ['Work Order', 'Inventory Order'])]}
+                        options={[
+                          ...(type
+                            ? [type]
+                            : ["Work Order", "Inventory Order"]),
+                        ]}
                         onChange={(e) => setSelectedOrder(e.target.value)}
                         getOptionLabel={(opt) => opt}
                       />
@@ -58,15 +76,19 @@ const WorkOrderModal = ({ open, modalToggler, repair, workOrder, departments, in
                 </Grid>
               )}
 
-              {selectedOrder === 'Work Order' && (
-                <FormAddEditWorkOrder closeModal={modalToggler} workOrder={workOrder} repair={repair} departments={departments} />
+              {selectedOrder === "Work Order" && (
+                <FormAddEditWorkOrder
+                  closeModal={modalToggler}
+                  workOrder={workOrder}
+                  repair={repair}
+                  departments={departments}
+                />
               )}
-              {selectedOrder === 'Inventory Order' && (
+              {selectedOrder === "Inventory Order" && (
                 <FormAddEditInventoryOrder
                   closeModal={modalToggler}
                   repair={repair}
                   departments={departments}
-                  inventories={inventories}
                   inventoryOrder={inventoryOrder}
                 />
               )}
