@@ -17,6 +17,14 @@ export const createShipApi = async (data) => {
   return response.ship;
 };
 
+export const createBulkShipApi = async (clientId, data) => {
+  const { data: response } = await axios.post(
+    `v1/ships/${clientId}/bulk`,
+    data,
+  );
+  return response.data;
+};
+
 export const updateShipApi = async (id, data) => {
   const { data: response } = await axios.put(`v1/ships/${id}`, data);
   return response.ship;

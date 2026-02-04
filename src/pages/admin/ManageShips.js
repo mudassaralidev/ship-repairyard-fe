@@ -60,6 +60,7 @@ import AddEditShipModal from "components/ships/AddEditShipModal";
 import DockingModal from "components/docking/DokcingModal";
 import NoDataMessage from "components/@extended/NoDataMessage";
 import { resetPagination } from "../../redux/features/ships/slice";
+import BulkShipImportModal from "components/ships/BulkShipImportModal";
 
 export const fuzzyFilter = (row, columnId, value, addMeta) => {
   const itemRank = rankItem(row.getValue(columnId), value);
@@ -241,6 +242,7 @@ const ManageShips = ({
   const [deleteId, setDeleteId] = useState("");
   const [pageSize, setPageSize] = useState(50);
   const [currentPage, setCurrentPage] = useState(1);
+  const [fileModalOpen, setFileModalOpen] = useState(false);
 
   const handleClose = () => {
     setOpen(!open);
@@ -356,7 +358,7 @@ const ManageShips = ({
         }
       })();
     }
-  }, [user, shipData?.id]);
+  }, [user, shipData?.id, currentPage]);
 
   useEffect((_) => (_) => dispatch(resetPagination()), [dispatch]);
 
@@ -397,6 +399,13 @@ const ManageShips = ({
                   <MenuItem value={shipyard?.id}>{shipyard?.name}</MenuItem>
                 </Select>
               </FormControl>
+              <Button
+                variant="contained"
+                startIcon={<PlusOutlined />}
+                onClick={(_) => setFileModalOpen(true)}
+              >
+                Import Ships
+              </Button>
             </Stack>
           </Grid>
         </Grid>
@@ -484,6 +493,12 @@ const ManageShips = ({
             }}
             shipyard={shipyard}
             ship={selectedShip}
+          />
+        )}
+        {fileModalOpen && (
+          <BulkShipImportModal
+            open={fileModalOpen}
+            modalToggler={(_) => setFileModalOpen(!fileModalOpen)}
           />
         )}
       </MainCard>
