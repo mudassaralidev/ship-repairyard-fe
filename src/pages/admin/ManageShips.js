@@ -229,7 +229,7 @@ const ManageShips = ({
 
   const dispatch = useDispatch();
   const {
-    shipyard: { shipyard, status },
+    shipyard: { shipyard },
     ship: { ships: lists = [], status: shipStatus, pagination } = {},
   } = useSelector((state) => state);
   const [selectedShip, setSelectedShip] = useState({});
@@ -450,9 +450,7 @@ const ManageShips = ({
           </Stack>
         )}
 
-        {status === "loading" ||
-        shipStatus === "loading" ||
-        (!shipData && !lists.length) ? (
+        {shipStatus === "loading" || (!shipData && !lists.length) ? (
           <NoDataMessage message="There is no SHIP data available. You can create new one from above button" />
         ) : (
           <ReactTable

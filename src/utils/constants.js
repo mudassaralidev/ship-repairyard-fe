@@ -532,7 +532,32 @@ export const getFieldsByRole = ({
       { key: "email", label: "Email", type: "text", colVal: 6 },
       { key: "address", label: "Address", type: "text", colVal: 6 },
     ],
-    EMPLOYEE: [],
+    EMPLOYEE: [
+      {
+        key: "status",
+        label: "Status",
+        type: "select",
+        colVal: 6,
+        options: [
+          { label: "Free", value: "FREE" },
+          { label: "Occupied", value: "OCCUPIED" },
+          { label: "Out of Sick", value: "ON_LEAVE" },
+        ],
+      },
+    ],
+    FOREMAN: [
+      {
+        key: "status",
+        label: "Status",
+        type: "select",
+        colVal: 6,
+        options: [
+          { label: "Free", value: "FREE" },
+          { label: "Occupied", value: "OCCUPIED" },
+          { label: "Out of Sick", value: "ON_LEAVE" },
+        ],
+      },
+    ],
     CLIENT: [
       { key: "email", label: "Email", type: "text", colVal: 6 },
       { key: "address", label: "Address", type: "text", colVal: 6 },

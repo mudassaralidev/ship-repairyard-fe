@@ -39,6 +39,7 @@ const getInitialValues = (user) => {
     department_id: "",
     foreman_id: "",
     address: "",
+    status: "",
   };
 
   return user ? { ...baseValues, ...user } : baseValues;
@@ -79,6 +80,7 @@ const validationSchemas = (user) => ({
       : {}),
     phone: Yup.string().required("Contact is required"),
     department_id: Yup.string().required("Department is required"),
+    status: Yup.string().required("Status is required"),
   }),
   EMPLOYEE: Yup.object().shape({
     shipyard_id: Yup.string().required("Shipyard is required"),
@@ -87,6 +89,7 @@ const validationSchemas = (user) => ({
     last_name: Yup.string(),
     phone: Yup.string().required("Contact is required"),
     department_id: Yup.string().required("Department is required"),
+    status: Yup.string().required("Status is required"),
   }),
   TECHNICAL_PURCHASER: Yup.object().shape({
     shipyard_id: Yup.string().required("Shipyard is required"),
@@ -207,7 +210,11 @@ const FormAddUser = ({
               {...getFieldProps(key)}
               onChange={(e) => {
                 const selectedValue = e.target ? e.target.value : "";
-                if (key === "role_id") handleRoleChange(selectedValue);
+                if (key === "role_id") {
+                  handleRoleChange(selectedValue);
+                } else {
+                  getFieldProps(key).onChange(e);
+                }
               }}
               error={Boolean(touched[key] && errors[key])}
               helperText={touched[key] && errors[key]}

@@ -5,6 +5,7 @@ import { alpha, useTheme } from "@mui/material/styles";
 import {
   Box,
   Button,
+  Chip,
   Divider,
   FormControl,
   Grid,
@@ -61,6 +62,23 @@ import NoDataMessage from "components/@extended/NoDataMessage";
 import DropdownDependencyInfo from "components/@extended/DropdownDependencyInfo";
 import { resetShipyardState } from "../../redux/features/shipyard/slice";
 import PaginatedAutocomplete from "components/@extended/PaginatedAutocomplete";
+import UpdateUserStatusModal from "components/users/UpdateUserStatusModal";
+
+const getStatusChipProps = (status) => {
+  const normalized = status?.toUpperCase?.() ?? "";
+
+  const statusMap = {
+    FREE: { color: "secondary", label: "Free" },
+    OCCUPIED: { color: "success", label: "Occupied" },
+    ON_LEAVE: { color: "error", label: "On Leave" },
+  };
+
+  return {
+    ...(statusMap[normalized] || { color: "default", label: normalized }),
+    size: "medium",
+    variant: "dark",
+  };
+};
 
 export const fuzzyFilter = (row, columnId, value, addMeta) => {
   const itemRank = rankItem(row.getValue(columnId), value);
@@ -234,6 +252,7 @@ const ManageDeptUsers = () => {
   const [globalFilter, setGlobalFilter] = useState("");
 
   const [userModal, setUserModal] = useState(false);
+  const [statusModalOpen, setStatusModalOpen] = useState(false);
   const [roleCategory, setRoleCategory] = useState("");
   const [selectedUser, setSelectedUser] = useState(null);
   const [deleteId, setDeleteId] = useState("");
@@ -249,6 +268,28 @@ const ManageDeptUsers = () => {
   const columns = useMemo(
     () => [
       ...userColsWithoutActions,
+      {
+        header: "Status",
+        cell: ({ row }) => (
+          <Tooltip title="Update Status" arrow>
+            <Button
+              variant="text"
+              size="small"
+              sx={{
+                textTransform: "capitalize", // Makes ENUM values like "APPROVED" more readable
+                cursor: "pointer",
+                minWidth: "100px",
+              }}
+              onClick={() => {
+                setSelectedUser(row.original);
+                setStatusModalOpen(true);
+              }}
+            >
+              <Chip {...getStatusChipProps(row.original.status)} />
+            </Button>
+          </Tooltip>
+        ),
+      },
 
       {
         header: "Actions",
@@ -427,13 +468,17 @@ const ManageDeptUsers = () => {
                   isOptionEqualToValue={(option, value) =>
                     option.id === value?.value
                   }
-                  getOptionLabel={(option) => option.name || ""}
-                  onChange={(value) =>
-                    setSelectedDepartment({
-                      label: value.name,
-                      value: value.id,
-                    })
-                  }
+                  getOptionLabel={(option) => option?.name || ""}
+                  onChange={(value) => {
+                    if (!value) {
+                      setSelectedDepartment({});
+                    } else {
+                      setSelectedDepartment({
+                        label: value?.name,
+                        value: value?.id,
+                      });
+                    }
+                  }}
                 />
               )}
 
@@ -526,6 +571,14 @@ const ManageDeptUsers = () => {
             shipyard={{ value: shipyard?.id, label: shipyard?.name }}
             department={selectedDepartment}
             roleCategory={roleCategory}
+          />
+        )}
+        {statusModalOpen && (
+          <UpdateUserStatusModal
+            open={statusModalOpen}
+            userId={selectedUser?.id || ""}
+            currentStatus={selectedUser?.status || ""}
+            modalToggler={() => setStatusModalOpen(!statusModalOpen)}
           />
         )}
       </MainCard>
